@@ -1,4 +1,4 @@
 .zig-cache
 *.fit
 *.csv
-profile.js
+dev/
