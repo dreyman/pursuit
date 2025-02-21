@@ -7,30 +7,6 @@ pub fn printAsJson(prefix: []const u8, val: anytype) void {
     p("{s} {}\n", .{ prefix, std.json.fmt(val, .{ .whitespace = .indent_4 }) });
 }
 
-pub fn printRecord(record: profile.Record) void {
-    p("Record {{\n", .{});
-    p("\ttimestamp = {d}\n", .{record.timestamp});
-    p("\tlat = {d}\n", .{record.lat orelse 0});
-    p("\tlon = {d}\n", .{record.lon orelse 0});
-    p("\taltitude = {d}\n", .{record.altitude orelse 0});
-    p("\tdistance = {d}\n", .{record.distance orelse 0});
-    p("\tspeed = {d}\n", .{record.speed orelse 0});
-    p("\tgrade = {d}\n", .{record.grade orelse 0});
-    p("\ttemperature = {d}\n", .{record.temperature orelse 0});
-    p("}}\n", .{});
-}
-
-pub fn printFileId(fileId: profile.FileId) void {
-    p("File ID {{\n", .{});
-    p("\ttype = {d}\n", .{fileId.file_type});
-    p("\tmanufacturer = {d}\n", .{fileId.manufacturer});
-    p("\tproduct = {d}\n", .{fileId.product});
-    p("\tserial_number = {d}\n", .{fileId.serial_number});
-    p("\ttime_created = {d}\n", .{fileId.time_created});
-    p("\tnumber = {d}\n", .{fileId.number});
-    p("}}\n", .{});
-}
-
 pub fn printFitHeader(header: fit.Header) void {
     p("Fit Header \\{", .{});
     p("\tsize = {d}", .{header.size()});

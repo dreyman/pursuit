@@ -123,13 +123,5 @@ pub const Message = struct {
             // fixme this won't work with non-int types
             return std.mem.readVarInt(T, val, message.arch);
         }
-
-        pub fn decode(
-            message: *const Message.Data,
-            bytes: []const u8,
-            comptime T: type,
-        ) T {
-            return std.mem.readVarInt(T, bytes, message.arch);
-        }
     };
 };

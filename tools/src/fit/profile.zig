@@ -2,19 +2,14 @@ const std = @import("std");
 
 const fit = @import("fit_protocol.zig");
 
-pub const message_file_id = 0;
-// pub const message_device_settings = 2;
-pub const message_record = 20;
-// pub const message_event = 21;
-pub const message_session = 18;
-pub const message_activity = 34;
+pub const file_id_type_activity = 4;
 
-pub const message_file_id_type_activity = 4;
-
-pub const MessageType = enum(u16) {
+pub const CommonMessage = enum(u16) {
     file_id = 0,
-    record = 20,
+    device_settings = 2,
     session = 18,
+    record = 20,
+    event = 21,
     activity = 34,
 };
 
@@ -109,7 +104,7 @@ pub const session_fields = [_]Field{
     .{ .name = "start_time", .type = ?u32, .id = 2 },
     .{ .name = "start_position_lat", .type = ?i32, .id = 3 },
     .{ .name = "start_position_lon", .type = ?i32, .id = 4 },
-    .{ .name = "sport", .type = ?u8, .id = 5 },
+    .{ .name = "sport", .type = ?u8, .id = 5 }, // running = 1, cycling = 2
     .{ .name = "sub_sport", .type = ?u8, .id = 6 },
     .{ .name = "total_elapsed_time", .type = ?u32, .id = 7, .scale = 1000 },
     .{ .name = "total_timer_time", .type = ?u32, .id = 8, .scale = 1000 },

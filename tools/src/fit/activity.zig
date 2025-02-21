@@ -23,17 +23,18 @@ pub const Activity = struct {
 pub fn createActivity(alloc: std.mem.Allocator, fit: Fit) !Activity {
     if (fit.messages.items.len < 2) return Error.Invalid;
     const first = fit.messages.items[0];
-    if (first.global_id != profile.message_file_id) return Error.Invalid;
+    if (first.global_id != @intFromEnum(profile.CommonMessage.file_id)) return Error.Invalid;
     const file_id = profile.decodeFileId(first) orelse unreachable;
-    if (file_id.file_type != profile.message_file_id_type_activity) return Error.NotAnActivity;
+    if (file_id.file_type != profile.file_id_type_activity) return Error.NotAnActivity;
 
     var records = ArrayList(profile.Record).init(alloc);
     errdefer records.deinit();
+    // fixme if there's no data in the source fit then this will stay undefined
     var session: profile.Session = undefined;
     var activity: profile.Activity = undefined;
-    for (1..fit.messages.items.len) |idx| {
-        const msg = fit.messages.items[idx];
-        switch (std.meta.intToEnum(profile.MessageType, msg.global_id) catch continue) {
+    for (1..fit.messages.items.len) |i| {
+        const msg = fit.messages.items[i];
+        switch (std.meta.intToEnum(profile.CommonMessage, msg.global_id) catch continue) {
             .record => {
                 const record = profile.decodeRecord(msg) orelse unreachable;
                 records.append(record) catch unreachable;
@@ -53,7 +54,7 @@ pub fn createActivity(alloc: std.mem.Allocator, fit: Fit) !Activity {
 }
 
 test "activity creation" {
-    const bytes = try util.fileAsBytes(t.allocator, "/home/ihor/code/zig-plgrnd/example.fit");
+    const bytes = try util.fileAsBytes(t.allocator, "/home/ihor/code/wild-fields/tools/src/fit/example.fit");
     defer t.allocator.free(bytes);
 
     var decoded_fit = try fit_decoder.decode(t.allocator, bytes);
@@ -71,5 +72,5 @@ test "activity creation" {
         fit_debug.printAsJson("Record", rec);
     }
 
-    try t.expect(activity.file_id.file_type == profile.message_file_id_type_activity);
+    try t.expect(activity.file_id.file_type == profile.file_id_type_activity);
 }
