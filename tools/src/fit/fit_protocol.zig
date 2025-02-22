@@ -84,7 +84,7 @@ pub const Message = struct {
     pub const Definition = struct {
         fields: []Message.Definition.Field,
         dev_fields: []Message.Definition.Field,
-        // fixme mb get rid of `arch` field, just reverse byte array if arch == little
+        // TODO mb get rid of `arch` field, just reverse byte array if arch == little
         arch: std.builtin.Endian,
         global_id: u16,
         local_id: u4,

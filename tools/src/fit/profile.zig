@@ -1,4 +1,5 @@
 const std = @import("std");
+const assert = std.debug.assert;
 
 const fit = @import("fit_protocol.zig");
 
@@ -27,6 +28,8 @@ pub const Field = struct {
 pub fn Message(comptime fields: []const Field) type {
     var struct_fields = [_]std.builtin.Type.StructField{undefined} ** fields.len;
     inline for (fields, 0..) |field, idx| {
+        const ti = @typeInfo(field.type);
+        assert(ti == .int or (ti == .optional and @typeInfo(ti.optional.child) == .int));
         struct_fields[idx] = .{
             .name = field.name,
             .type = field.type,
