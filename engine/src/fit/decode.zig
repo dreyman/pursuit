@@ -10,12 +10,15 @@ const util = @import("util.zig");
 const fit_debug = @import("debug.zig");
 
 pub const DecodeError = error{
+    InvalidFitFile,
     InvalidFitHeader,
     InvalidArchitectureValue,
     DefinitionNotFound,
 };
 
+// fixme check array boundaries
 pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
+    if (fit_bytes.len < fit.header_len_min) return DecodeError.InvalidFitFile;
     const header_size = fit_bytes[0];
     if (header_size != fit.header_len_min and header_size != fit.header_len_max) {
         return DecodeError.InvalidFitHeader;
@@ -58,6 +61,7 @@ pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
     }
     return .{
         .alloc = alloc,
+        .bytes = fit_bytes,
         .header = fit_header,
         .messages = messages,
     };

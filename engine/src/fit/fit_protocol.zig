@@ -11,6 +11,7 @@ pub const field_definition_bytes_len = 3;
 pub const timestamp_offset: u32 = 631065600;
 
 pub const Fit = struct {
+    bytes: []const u8,
     header: Header,
     messages: std.ArrayList(Message.Data),
     alloc: std.mem.Allocator,
@@ -20,6 +21,7 @@ pub const Fit = struct {
             self.alloc.free(mesg.fields);
         }
         self.messages.deinit();
+        self.alloc.free(self.bytes);
     }
 };
 
