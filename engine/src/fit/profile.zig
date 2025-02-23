@@ -25,6 +25,13 @@ pub const Field = struct {
     pub const message_index = 254;
 };
 
+pub const Sport = enum(u8) {
+    running = 1,
+    cycling = 2,
+    walking = 11,
+    hiking = 17,
+};
+
 pub fn Message(comptime fields: []const Field) type {
     var struct_fields = [_]std.builtin.Type.StructField{undefined} ** fields.len;
     inline for (fields, 0..) |field, idx| {
@@ -94,7 +101,6 @@ pub const record_fields = [_]Field{
     .{ .name = "speed", .type = ?u16, .id = 6, .scale = 1000 },
     .{ .name = "grade", .type = ?u16, .id = 9, .scale = 100 },
     .{ .name = "temperature", .type = ?i8, .id = 13 },
-    .{ .name = "my_custom_field", .type = ?i8, .id = 14 },
 };
 
 pub const Session = Message(&session_fields);

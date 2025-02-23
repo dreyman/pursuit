@@ -4,7 +4,9 @@ const fs = std.fs;
 const posix = std.posix;
 const assert = std.debug.assert;
 
-const storage = @import("core/storage.zig");
+const storage = @import("storage.zig");
+const fit = @import("fit/fit.zig");
+const Activity = @import("core/activity.zig").Activity;
 
 const wf_dir_name = ".wild-fields";
 
@@ -43,6 +45,8 @@ pub fn main() !void {
             else => try writeAndExit("err: ", .{}),
         };
     }
+
+    try writeAndExit(help, .{});
 }
 
 fn writeAndExit(comptime format: []const u8, args: anytype) !noreturn {
@@ -71,11 +75,11 @@ pub const help =
 const Command = struct {
     pub fn init(alloc: mem.Allocator) !void {
         storage.create(alloc) catch |err| switch (err) {
-            error.HomeDirNotFound => try writeErrorAndExit("home dir not found.", .{}),
+            error.HomeDirNotFound => try writeErrorAndExit("ome dir not found.", .{}),
             error.PathAlreadyExists => try writeErrorAndExit("already initialized.", .{}),
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
-        try writeAndExit("Done", .{});
+        try writeAndExit("done.", .{});
     }
 
     pub fn addFitActivity(alloc: mem.Allocator, fit_file_path: []const u8) !void {
@@ -86,14 +90,31 @@ const Command = struct {
         defer alloc.free(absolute_path);
 
         const file = fs.openFileAbsolute(absolute_path, .{}) catch |err| switch (err) {
-            error.FileNotFound => try writeErrorAndExit("file not found", .{}),
+            error.FileNotFound => try writeErrorAndExit("File not found", .{}),
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
         defer file.close();
 
-        storage.addFitActivity(alloc, file) catch |err| switch (err) {
+        const fit_activity = fit.decodeActivityFromFile(alloc, file) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
+
+        const activity = Activity.createFromFit(fit_activity) catch |err| switch (err) {
+            error.UnsupportedFitSession => try writeErrorAndExit(
+                "fit file contains unsupported data/fields.",
+                .{},
+            ),
+            error.UnsupportedFitSport => try writeErrorAndExit(
+                "unknown acitivity type (sport).",
+                .{},
+            ),
+        };
+        storage.addActivity(alloc, activity, absolute_path) catch |err| switch (err) {
+            error.PathAlreadyExists => try writeErrorAndExit("already exists.", .{}),
+            else => try writeErrorAndExit("{s}", .{@errorName(err)}),
+        };
+
+        try writeAndExit("done.", .{});
     }
 };
 

@@ -3,26 +3,46 @@ const mem = std.mem;
 const fs = std.fs;
 const posix = std.posix;
 
-const fit = @import("../fit/fit.zig");
+const fit = @import("fit/fit.zig");
+const Activity = @import("core/activity.zig").Activity;
 
 const wf_dir_name = ".wild-fields";
 
 pub const Error = error{HomeDirNotFound} || posix.MakeDirError;
 
+pub const Entry = struct {
+    activity: Activity,
+    file: []const u8,
+};
+
 pub fn create(alloc: mem.Allocator) Error!void {
-    const home = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
-    const wf_dir = "/" ++ wf_dir_name;
-    const absolute_path = alloc.alloc(u8, home.len + wf_dir.len) catch unreachable;
-    defer alloc.free(absolute_path);
-    @memcpy(absolute_path[0..home.len], home);
-    @memcpy(absolute_path[home.len..], wf_dir);
-    try fs.makeDirAbsolute(absolute_path);
+    const path = try getStorageDirPath(alloc);
+    defer alloc.free(path);
+    try fs.makeDirAbsolute(path);
 }
 
-// check if the file type is supported
 // copy the file
 // parse ...
-pub fn addFitActivity(alloc: mem.Allocator, file: fs.File) !void {
-    const activity = try fit.decodeActivityFromFile(alloc, file);
-    std.debug.print("Activity records len: {d}\n", .{activity.records.items.len});
+pub fn addActivity(alloc: mem.Allocator, activity: Activity, file: []const u8) !void {
+    const dir_path = try getActivityDirPath(alloc, activity);
+    defer alloc.free(dir_path);
+    try fs.makeDirAbsolute(dir_path);
+    const acitity_file_path = std.fmt.allocPrint(
+        alloc,
+        "{s}/{d}.fit",
+        .{ dir_path, activity.timestamp },
+    ) catch unreachable;
+    defer alloc.free(acitity_file_path);
+    try fs.copyFileAbsolute(file, acitity_file_path, .{});
+}
+
+fn getStorageDirPath(alloc: mem.Allocator) ![]const u8 {
+    const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
+    return std.fmt.allocPrint(alloc, "{s}/{s}", .{ home_path, wf_dir_name }) catch unreachable;
+}
+
+fn getActivityDirPath(alloc: mem.Allocator, activity: Activity) ![]const u8 {
+    const storage = try getStorageDirPath(alloc);
+    defer alloc.free(storage);
+    return std.fmt.allocPrint(alloc, "{s}/{d}", .{ storage, activity.timestamp }) catch unreachable;
 }

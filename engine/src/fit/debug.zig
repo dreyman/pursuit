@@ -33,13 +33,3 @@ pub fn printDefinitionMessageSimple(def: fit.Fit.Message.Definition) void {
         profile.getMessageName(def.global_id),
     });
 }
-
-pub fn printDefinitionMessage(def: fit.Message.Definition) void {
-    p("Definition Message [\n", .{});
-    p("\tarch = {s}\n", .{@tagName(def.arch)});
-    p("\tglobal_id = {d}\n", .{def.global_id});
-    p("\tlocal_id = {d}\n", .{def.local_id});
-    p("\tfields = {d}\n", .{def.fields.len});
-    p("\tdev_fields = {d}\n", .{def.dev_fields.len});
-    p("]\n", .{});
-}
