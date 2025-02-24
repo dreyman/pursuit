@@ -55,9 +55,9 @@ pub fn Message(comptime fields: []const Field) type {
 
 pub fn decodeFn(
     comptime fields: []const Field,
-) *const fn (fit.Message.Data) ?Message(fields) {
+) *const fn (fit.Message.Data) Message(fields) {
     const decode = struct {
-        fn decode(message: fit.Message.Data) ?Message(fields) {
+        fn decode(message: fit.Message.Data) Message(fields) {
             var res: Message(fields) = undefined;
             inline for (fields) |field| {
                 const type_info = @typeInfo(field.type);
@@ -113,7 +113,7 @@ pub const session_fields = [_]Field{
     .{ .name = "start_time", .type = ?u32, .id = 2 },
     .{ .name = "start_position_lat", .type = ?i32, .id = 3 },
     .{ .name = "start_position_lon", .type = ?i32, .id = 4 },
-    .{ .name = "sport", .type = ?u8, .id = 5 }, // running = 1, cycling = 2
+    .{ .name = "sport", .type = ?u8, .id = 5 },
     .{ .name = "sub_sport", .type = ?u8, .id = 6 },
     .{ .name = "total_elapsed_time", .type = ?u32, .id = 7, .scale = 1000 },
     .{ .name = "total_timer_time", .type = ?u32, .id = 8, .scale = 1000 },

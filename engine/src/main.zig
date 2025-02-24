@@ -7,6 +7,7 @@ const assert = std.debug.assert;
 const storage = @import("storage.zig");
 const fit = @import("fit/fit.zig");
 const Activity = @import("core/activity.zig").Activity;
+const core = @import("core.zig");
 
 const wf_dir_name = ".wild-fields";
 
@@ -101,7 +102,7 @@ const Command = struct {
 
         const activity = Activity.createFromFit(fit_activity) catch |err| switch (err) {
             error.UnsupportedFitSession => try writeErrorAndExit(
-                "fit file contains unsupported data/fields.",
+                "fit session contains unsupported data/fields.",
                 .{},
             ),
             error.UnsupportedFitSport => try writeErrorAndExit(
@@ -109,7 +110,10 @@ const Command = struct {
                 .{},
             ),
         };
-        storage.addActivity(alloc, activity, absolute_path) catch |err| switch (err) {
+        const latlons = try core.LatLon.createFromFit(alloc, fit_activity);
+        defer alloc.free(latlons);
+
+        storage.addActivity(alloc, activity, absolute_path, latlons) catch |err| switch (err) {
             error.PathAlreadyExists => try writeErrorAndExit("already exists.", .{}),
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
@@ -119,5 +123,9 @@ const Command = struct {
 };
 
 test "wip" {
+    const lat: f64 = 48.958845;
+    const lon: f64 = 32.22583;
+    std.debug.print("48.958845, 32.22583\n", .{});
+    std.debug.print("{d}, {d}\n", .{ lat, lon });
     try std.testing.expect(4 == 4);
 }

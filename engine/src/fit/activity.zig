@@ -26,13 +26,15 @@ pub const Activity = struct {
     pub fn create(alloc: std.mem.Allocator, fit: Fit) !Activity {
         if (fit.messages.items.len < 2) return Error.Invalid;
         const first = fit.messages.items[0];
-        if (first.global_id != @intFromEnum(profile.CommonMessage.file_id)) return Error.Invalid;
-        const file_id = profile.decodeFileId(first) orelse unreachable;
-        if (file_id.file_type != profile.file_id_type_activity) return Error.NotAnActivity;
+        if (first.global_id != @intFromEnum(profile.CommonMessage.file_id))
+            return Error.Invalid;
+        const file_id = profile.decodeFileId(first);
+        if (file_id.file_type != profile.file_id_type_activity)
+            return Error.NotAnActivity;
 
         var records = ArrayList(profile.Record).init(alloc);
         errdefer records.deinit();
-        // fixme if there's no session data in the source fit then this will stay undefined
+        // fixme if there's no session data in the source fit then this will remain undefined
         var session: profile.Session = undefined;
         var sessions_count: usize = 0;
         var activity: profile.Activity = undefined;
@@ -40,17 +42,19 @@ pub const Activity = struct {
             const msg = fit.messages.items[i];
             switch (std.meta.intToEnum(profile.CommonMessage, msg.global_id) catch continue) {
                 .record => {
-                    const record = profile.decodeRecord(msg) orelse unreachable;
-                    records.append(record) catch unreachable;
+                    const record = profile.decodeRecord(msg);
+                    if (record.lat != null and record.lon != null) {
+                        records.append(record) catch unreachable;
+                    }
                 },
                 .session => {
-                    session = profile.decodeSession(msg) orelse unreachable;
+                    session = profile.decodeSession(msg);
                     sessions_count += 1;
                     if (sessions_count > 1) {
                         return Error.FitActivityMultipleSessions;
                     }
                 },
-                .activity => activity = profile.decodeActivity(msg) orelse unreachable,
+                .activity => activity = profile.decodeActivity(msg),
                 else => {},
             }
         }

@@ -9,7 +9,7 @@ pub fn fileAsBytes(alloc: std.mem.Allocator, file_path: []const u8) ![]u8 {
     return buf;
 }
 
-pub fn semicirclesToDegrees(semicircles: ?i32) ?f32 {
+pub fn semicirclesToDegrees(semicircles: ?i32) ?f64 {
     if (semicircles == null) return null;
     const radians = (@as(f32, @floatFromInt(semicircles.?)) * std.math.pi) / 0x80000000;
     return std.math.radiansToDegrees(radians);

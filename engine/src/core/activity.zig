@@ -37,8 +37,7 @@ pub const Activity = struct {
         const sport = std.meta.intToEnum(
             fit.Sport,
             fit_activity.session.sport orelse return Error.UnsupportedFitSport,
-        ) catch
-            return Error.UnsupportedFitSport;
+        ) catch return Error.UnsupportedFitSport;
         return .{
             .type = Type.fromFitSport(sport),
             .timestamp = fit_activity.session.timestamp orelse
