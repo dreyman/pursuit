@@ -16,6 +16,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation("io.javalin:javalin:6.4.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
+    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
 }
 
 tasks.test {
