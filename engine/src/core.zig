@@ -6,6 +6,7 @@ const calc = @import("calc.zig");
 const geo = @import("geo.zig");
 
 pub const Summary = struct {
+    timestamp: u32,
     distance: u32,
     total_time: u32,
     moving_time: u32,
@@ -66,6 +67,7 @@ pub fn routeFromFit(
 
 pub fn createSummary(route: geo.Route) Summary {
     var summary: Summary = .{
+        .timestamp = route.timestamps[0],
         .distance = 0,
         .total_time = 0,
         .moving_time = 0,

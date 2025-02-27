@@ -23,11 +23,11 @@ pub fn main() !void {
 
     assert(args.skip());
     const command = args.next() orelse {
-        try writeAndExit(help, .{});
+        try writeAndExit(help, .{}, 1);
     };
 
     if (mem.eql(u8, command, "help")) {
-        try writeAndExit(help, .{});
+        try writeAndExit(help, .{}, 1);
     }
 
     if (mem.eql(u8, command, "init")) {
@@ -36,30 +36,30 @@ pub fn main() !void {
     }
 
     if (mem.eql(u8, command, "version")) {
-        try writeAndExit("0.0.1-wip", .{});
+        try writeAndExit("0.0.1-wip", .{}, 1);
     }
 
     if (mem.eql(u8, command, "add")) {
         const filepath = args.next() orelse {
-            try writeAndExit("err: expected fit file path", .{});
+            try writeAndExit("err: expected fit file path", .{}, 1);
         };
         Command.addFitActivity(allocator, filepath) catch |err| switch (err) {
-            else => try writeAndExit("err: ", .{}),
+            else => try writeAndExit("err: ", .{}, 1),
         };
     }
 
-    try writeAndExit(help, .{});
+    try writeAndExit(help, .{}, 0);
 }
 
-fn writeAndExit(comptime format: []const u8, args: anytype) !noreturn {
+fn writeAndExit(comptime format: []const u8, args: anytype, exit_val: u8) !noreturn {
     const out = std.io.getStdOut().writer();
     try out.print(format, args);
     try out.print("\n", .{});
-    std.process.exit(0);
+    std.process.exit(exit_val);
 }
 
 fn writeErrorAndExit(comptime format: []const u8, args: anytype) !noreturn {
-    try writeAndExit("error: " ++ format, args);
+    try writeAndExit("error: " ++ format, args, 1);
 }
 
 pub const help =
@@ -81,7 +81,7 @@ const Command = struct {
             error.PathAlreadyExists => try writeErrorAndExit("already initialized.", .{}),
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
-        try writeAndExit("done.", .{});
+        try writeAndExit("done.", .{}, 0);
     }
 
     pub fn addFitActivity(alloc: mem.Allocator, fit_file_path: []const u8) !void {
@@ -131,7 +131,7 @@ const Command = struct {
         //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         // };
 
-        try writeAndExit("done.", .{});
+        try writeAndExit("done.", .{}, 0);
     }
 };
 
