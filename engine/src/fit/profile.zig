@@ -55,10 +55,13 @@ pub fn Message(comptime fields: []const Field) type {
 
 pub fn decodeFn(
     comptime fields: []const Field,
-) *const fn (fit.Message.Data) Message(fields) {
+) *const fn (std.mem.Allocator, fit.Message.Data) *Message(fields) {
     const decode = struct {
-        fn decode(message: fit.Message.Data) Message(fields) {
-            var res: Message(fields) = undefined;
+        fn decode(
+            allocator: std.mem.Allocator,
+            message: fit.Message.Data,
+        ) *Message(fields) {
+            var res = allocator.create(Message(fields)) catch unreachable;
             inline for (fields) |field| {
                 const type_info = @typeInfo(field.type);
                 const field_type = switch (type_info) {

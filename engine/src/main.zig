@@ -1,5 +1,6 @@
 const std = @import("std");
 const mem = std.mem;
+const math = std.math;
 const fs = std.fs;
 const posix = std.posix;
 const assert = std.debug.assert;
@@ -87,10 +88,10 @@ const Command = struct {
         const cwd_path = try fs.cwd().realpathAlloc(alloc, ".");
         defer alloc.free(cwd_path);
 
-        const absolute_path = try std.fs.path.resolve(alloc, &.{ cwd_path, fit_file_path });
-        defer alloc.free(absolute_path);
+        const src_file_path = try std.fs.path.resolve(alloc, &.{ cwd_path, fit_file_path });
+        defer alloc.free(src_file_path);
 
-        const file = fs.openFileAbsolute(absolute_path, .{}) catch |err| switch (err) {
+        const file = fs.openFileAbsolute(src_file_path, .{}) catch |err| switch (err) {
             error.FileNotFound => try writeErrorAndExit("File not found", .{}),
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
@@ -99,24 +100,36 @@ const Command = struct {
         const fit_activity = fit.decodeActivityFromFile(alloc, file) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
+        // const distance = core.fitActivityDistance(fit_activity);
+        // std.debug.print("\n\t\tDISTANCE: {d}\n", .{distance});
 
-        const activity = Activity.createFromFit(fit_activity) catch |err| switch (err) {
-            error.UnsupportedFitSession => try writeErrorAndExit(
-                "fit session contains unsupported data/fields.",
-                .{},
-            ),
-            error.UnsupportedFitSport => try writeErrorAndExit(
-                "unknown acitivity type (sport).",
-                .{},
-            ),
-        };
-        const latlons = try core.LatLon.createFromFit(alloc, fit_activity);
-        defer alloc.free(latlons);
+        // const activity = Activity.createFromFit(fit_activity) catch |err| switch (err) {
+        //     error.UnsupportedFitSession => try writeErrorAndExit(
+        //         "fit session contains unsupported data/fields.",
+        //         .{},
+        //     ),
+        //     error.UnsupportedFitSport => try writeErrorAndExit(
+        //         "unknown acitivity type (sport).",
+        //         .{},
+        //     ),
+        // };
+        var route = core.routeFromFit(alloc, fit_activity, .radians);
+        defer route.deinit();
+        const summary = core.createSummary(route);
+        for (route.points) |point| {
+            var p = point;
+            p.lat = math.radiansToDegrees(point.lat);
+            p.lon = math.radiansToDegrees(point.lon);
+        }
 
-        storage.addActivity(alloc, activity, absolute_path, latlons) catch |err| switch (err) {
-            error.PathAlreadyExists => try writeErrorAndExit("already exists.", .{}),
+        storage.addEntry(alloc, src_file_path, route, summary) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
+
+        // storage.addActivity(alloc, activity, src_file_path, points) catch |err| switch (err) {
+        //     error.PathAlreadyExists => try writeErrorAndExit("already exists.", .{}),
+        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
+        // };
 
         try writeAndExit("done.", .{});
     }

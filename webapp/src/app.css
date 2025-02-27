@@ -4,3 +4,9 @@ body {
     background: #1c1c1c;
     color: #ccc;
 }
+
+a {
+    font-size: 22px;
+    color: blue;
+    text-decoration: underline;
+}

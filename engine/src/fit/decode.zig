@@ -1,4 +1,6 @@
 const std = @import("std");
+const mem = std.mem;
+const Endian = std.builtin.Endian;
 const assert = std.debug.assert;
 const print = std.debug.print;
 const t = std.testing;
@@ -15,6 +17,36 @@ pub const DecodeError = error{
     InvalidArchitectureValue,
     DefinitionNotFound,
 };
+
+// pub fn decodeActivitySimple(
+//     allocator: mem.Allocator,
+//     fit_bytes: []const u8,
+// ) !struct {
+//     lat: std.ArrayList(i32),
+//     lon: std.ArrayList(i32),
+//     time: std.ArrayList(u32),
+// } {
+//     if (fit_bytes.len < fit.header_len_min) return DecodeError.InvalidFitFile;
+//     const header_size = fit_bytes[0];
+//     if (header_size != fit.header_len_min and header_size != fit.header_len_max) {
+//         return DecodeError.InvalidFitHeader;
+//     }
+//     const fit_header: fit.Header = .{ .bytes = fit_bytes[0..header_size] };
+//     const pos: usize = fit_header.size();
+//     // file id message definition
+//     const def_header: fit.Message.Header = .{ .byte = fit_bytes[pos] };
+//     if (def_header.messageType() != .definition)
+//         return DecodeError.InvalidFitFile;
+//     const endian: Endian = if (fit_bytes[pos + 2] == 0)
+//         .little
+//     else if (fit_bytes[pos + 2] == 1)
+//         .big
+//     else
+//         return DecodeError.InvalidFitFile;
+//     const id = mem.readVarInt(fit_bytes[pos + 3 .. pos + 5], endian);
+//     if (id != profile.CommonMessage.file_id) return DecodeError.InvalidFitFile;
+
+// }
 
 // fixme check array boundaries
 pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
@@ -68,7 +100,7 @@ pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
 }
 
 pub fn decodeDefinitionMessage(
-    alloc: std.mem.Allocator,
+    alloc: mem.Allocator,
     header: fit.Message.Header,
     bytes: []const u8,
 ) DecodeError!struct { usize, fit.Message.Definition } {

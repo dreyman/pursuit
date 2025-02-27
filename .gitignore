@@ -2,4 +2,3 @@
 zig-out/
 *.fit
 *.csv
-dev/

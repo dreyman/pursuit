@@ -2,11 +2,13 @@ const std = @import("std");
 const mem = std.mem;
 const fs = std.fs;
 const posix = std.posix;
+const json = std.json;
 
 const fit = @import("fit/fit.zig");
 const fit_protocol = @import("fit/fit_protocol.zig");
 const Activity = @import("core/activity.zig").Activity;
 const core = @import("core.zig");
+const geo = @import("geo.zig");
 
 const wf_dir_name = ".wild-fields";
 
@@ -23,13 +25,84 @@ pub fn create(alloc: mem.Allocator) Error!void {
     try fs.makeDirAbsolute(path);
 }
 
-// copy the file
-// parse ...
+pub fn addEntry(
+    allocator: mem.Allocator,
+    original_file_path: []const u8,
+    route: geo.Route,
+    summary: core.Summary,
+) !void {
+    const entry_dir_path = try getEntryDirPath(allocator, route.timestamps[0]);
+    defer allocator.free(entry_dir_path);
+    try fs.makeDirAbsolute(entry_dir_path);
+    errdefer fs.deleteDirAbsolute(entry_dir_path) catch unreachable; // fixme
+
+    const original_copy_path = try std.fmt.allocPrint(
+        allocator,
+        "{s}/original.fit", // fixme mb it's better to preserve original file name
+        .{entry_dir_path},
+    );
+    defer allocator.free(original_copy_path);
+    try fs.copyFileAbsolute(original_file_path, original_copy_path, .{});
+    errdefer fs.deleteFileAbsolute(original_copy_path) catch unreachable; // fixme
+
+    const route_file_path = try std.fmt.allocPrint(allocator, "{s}/route", .{entry_dir_path});
+    defer allocator.free(route_file_path);
+    const complete_route_file_path = try std.fmt.allocPrint(allocator, "{s}/complete_route", .{entry_dir_path});
+    defer allocator.free(complete_route_file_path);
+
+    try createRouteFile(route_file_path, route, false);
+    try createRouteFile(complete_route_file_path, route, true);
+
+    const summary_file_path = try std.fmt.allocPrint(allocator, "{s}/summary.json", .{entry_dir_path});
+    defer allocator.free(summary_file_path);
+    const summary_file = try fs.createFileAbsolute(summary_file_path, .{});
+    defer summary_file.close();
+    errdefer fs.deleteFileAbsolute(summary_file_path) catch unreachable; // fixme
+
+    try json.stringify(
+        summary,
+        .{ .whitespace = .indent_4 },
+        summary_file.writer(),
+    );
+}
+
+fn createRouteFile(
+    file_path: []const u8,
+    route: geo.Route,
+    include_time: bool,
+) !void {
+    const file = try fs.createFileAbsolute(file_path, .{});
+    defer file.close();
+    errdefer fs.deleteFileAbsolute(file_path) catch unreachable; // fixme
+
+    const writer = file.writer();
+    try writer.writeInt(u32, @intCast(route.points.len), .big);
+    for (route.points, 0..) |point, i| {
+        try writer.writeAll(&mem.toBytes(point.lat));
+        try writer.writeAll(&mem.toBytes(point.lon));
+        if (include_time) {
+            try writer.writeAll(&mem.toBytes(route.timestamps[i]));
+        }
+        // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lat)), .big);
+        // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lon)), .big);
+    }
+}
+
+// pub fn addFromFile(fit_activity_file_path: []const u8) !void {
+//     // parse fit activity => mb some sort of decodeActivitySimple
+//     //      which produces 3 arrays []f32 lat, []f32 lon, []u32 timestamp
+
+//     // copy original file
+//     // create route bin file
+//     // create route+time bin file
+//     // create summary json file
+// }
+
 pub fn addActivity(
     alloc: mem.Allocator,
     activity: Activity,
     file_path: []const u8,
-    latlons: []core.LatLon,
+    points: []geo.Point(),
 ) !void {
     const acitivity_dir = try getActivityDirPath(alloc, activity);
     defer alloc.free(acitivity_dir);
@@ -41,33 +114,35 @@ pub fn addActivity(
     );
     defer alloc.free(acitity_file_path);
     try fs.copyFileAbsolute(file_path, acitity_file_path, .{});
-    // write LatLon to file
-    const latlon_file_path = try std.fmt.allocPrint(alloc, "{s}/latlon", .{acitivity_dir});
-    defer alloc.free(latlon_file_path);
-    const file = try fs.createFileAbsolute(latlon_file_path, .{});
+    // write route to file
+    const route_file_path = try std.fmt.allocPrint(alloc, "{s}/route", .{acitivity_dir});
+    defer alloc.free(route_file_path);
+    const file = try fs.createFileAbsolute(route_file_path, .{});
     defer file.close();
     const writer = file.writer();
-    std.debug.print("Write logs:\n", .{});
-    try writer.writeInt(u32, @intCast(latlons.len), .big);
-    try writer.writeInt(u32, @intCast(latlons.len), .big); // reserved kinda
-    for (latlons, 0..) |latlon, i| {
-        if (i < 10) {
-            std.debug.print("{d}, {d}\n", .{ latlon.lat, latlon.lon });
-        }
-        if (i != 0 and i % 300 == 0) {
-            std.debug.print("every 300th: {d}, {d}\n", .{ latlon.lat, latlon.lon });
-        }
-        try writer.writeAll(&mem.toBytes(latlon.lat));
-        try writer.writeAll(&mem.toBytes(latlon.lon));
+    try writer.writeInt(u32, @intCast(points.len), .big);
+    try writer.writeInt(u32, @intCast(points.len), .big); // reserved kinda
+    for (points) |point| {
+        try writer.writeAll(&mem.toBytes(point.lat));
+        try writer.writeAll(&mem.toBytes(point.lon));
         // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lat)), .big);
         // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lon)), .big);
     }
-    std.debug.print("======== write logs ==============", .{});
 }
 
 fn getStorageDirPath(alloc: mem.Allocator) ![]const u8 {
     const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
     return std.fmt.allocPrint(alloc, "{s}/{s}", .{ home_path, wf_dir_name }) catch unreachable;
+}
+
+fn getEntryDirPath(a: mem.Allocator, id: u32) ![]const u8 {
+    const storage = try getStorageDirPath(a);
+    defer a.free(storage);
+    return std.fmt.allocPrint(
+        a,
+        "{s}/{d}",
+        .{ storage, id },
+    ) catch unreachable;
 }
 
 fn getActivityDirPath(alloc: mem.Allocator, activity: Activity) ![]const u8 {
