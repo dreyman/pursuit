@@ -5,19 +5,37 @@ import '../app.css'
 let { children } = $props()
 </script>
 
-<nav class="w-full px-4 py-1">
-    <ul>
-        <li>
-            <a href="/list">List</a>
-        </li>
-    </ul>
-</nav>
-{@render children()}
+<div class="flex h-full w-full">
+    <aside class="flex flex-col">
+        <nav class="space-between flex flex-wrap px-2">
+            <ul class="flex flex-col">
+                <li>
+                    <a href="/list">List</a>
+                </li>
+                <li>
+                    <a href="/new">New</a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="page-content flex flex-col items-center">
+        {@render children()}
+    </div>
+</div>
 
 <style>
+aside {
+    background: #1c1c1c;
+}
+
 nav {
-    background: #ccc;
-    color: #000;
+    background: #1c1c1c;
+    color: #ccc;
     font-size: 1.5rem;
+}
+
+.page-content {
+    width: 100%;
 }
 </style>

@@ -73,7 +73,6 @@ pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
 
     var pos: usize = header_size;
     var size: usize = undefined;
-    // while (pos < 300) {
     while (pos < fit_bytes.len - 2) {
         const header: fit.Message.Header = .{ .byte = fit_bytes[pos] };
         pos += 1;
@@ -116,8 +115,6 @@ pub fn decodeDefinitionMessage(
     pos += field_defs.len * fit.field_definition_bytes_len;
 
     const dev_fields_count = if (header.containsDevData()) bytes[pos] else 0;
-    // fixme: remove later; make sure for now that test fit file doesn't include dev fields
-    assert(dev_fields_count == 0);
     if (dev_fields_count > 0) pos += 1;
     const dev_field_defs = decodeFieldDefinitions(alloc, bytes[pos..], dev_fields_count);
     pos += dev_field_defs.len * fit.field_definition_bytes_len;

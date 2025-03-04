@@ -1,15 +1,15 @@
 <script>
 /** @type {import('./$types').PageProps} */
-let { data: activities } = $props()
-
-console.log('list: ', activities.items)
+let { data } = $props()
+const routes = data.routes
+console.log('ROUTES COUNT: ', routes.length)
 </script>
 
-<ul>
-    {#each activities.items as item}
+<ul class="flex flex-col gap-4">
+    {#each routes as route}
         <li>
-            <a href="/activity/{item}">
-                {item}
+            <a href="/entry/{route.id}">
+                {route.name.substring(0, 10)}: {route.stats.distance / 100}km
             </a>
         </li>
     {/each}

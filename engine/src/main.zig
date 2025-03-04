@@ -2,13 +2,15 @@ const std = @import("std");
 const mem = std.mem;
 const math = std.math;
 const fs = std.fs;
+const json = std.json;
 const posix = std.posix;
 const assert = std.debug.assert;
 
 const storage = @import("storage.zig");
 const fit = @import("fit/fit.zig");
-const Activity = @import("core/activity.zig").Activity;
 const core = @import("core.zig");
+const geo = @import("geo.zig");
+const file_import = @import("file_import.zig");
 
 const wf_dir_name = ".wild-fields";
 
@@ -51,6 +53,15 @@ pub fn main() !void {
     try writeAndExit(help, .{}, 0);
 }
 
+fn writeResultAndExit(stats: geo.Route.Stats) !noreturn {
+    try json.stringify(
+        stats,
+        .{},
+        std.io.getStdOut().writer(),
+    );
+    std.process.exit(0);
+}
+
 fn writeAndExit(comptime format: []const u8, args: anytype, exit_val: u8) !noreturn {
     const out = std.io.getStdOut().writer();
     try out.print(format, args);
@@ -84,61 +95,46 @@ const Command = struct {
         try writeAndExit("done.", .{}, 0);
     }
 
-    pub fn addFitActivity(alloc: mem.Allocator, fit_file_path: []const u8) !void {
+    pub fn addFitActivity(alloc: mem.Allocator, file_path: []const u8) !void {
         const cwd_path = try fs.cwd().realpathAlloc(alloc, ".");
         defer alloc.free(cwd_path);
 
-        const src_file_path = try std.fs.path.resolve(alloc, &.{ cwd_path, fit_file_path });
-        defer alloc.free(src_file_path);
+        const gps_file_path = try std.fs.path.resolve(alloc, &.{ cwd_path, file_path });
+        defer alloc.free(gps_file_path);
 
-        const file = fs.openFileAbsolute(src_file_path, .{}) catch |err| switch (err) {
-            error.FileNotFound => try writeErrorAndExit("File not found", .{}),
+        const imporoted = file_import.importGpsFile(alloc, gps_file_path) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
-        defer file.close();
 
-        const fit_activity = fit.decodeActivityFromFile(alloc, file) catch |err| switch (err) {
+        storage.addEntry(alloc, gps_file_path, imporoted.route) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
-        // const distance = core.fitActivityDistance(fit_activity);
-        // std.debug.print("\n\t\tDISTANCE: {d}\n", .{distance});
 
-        // const activity = Activity.createFromFit(fit_activity) catch |err| switch (err) {
-        //     error.UnsupportedFitSession => try writeErrorAndExit(
-        //         "fit session contains unsupported data/fields.",
-        //         .{},
-        //     ),
-        //     error.UnsupportedFitSport => try writeErrorAndExit(
-        //         "unknown acitivity type (sport).",
-        //         .{},
-        //     ),
+        try writeResultAndExit(imporoted.stats);
+
+        // const file = fs.openFileAbsolute(src_file_path, .{}) catch |err| switch (err) {
+        //     error.FileNotFound => try writeErrorAndExit("File not found", .{}),
+        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         // };
-        var route = core.routeFromFit(alloc, fit_activity, .radians);
-        defer route.deinit();
-        const summary = core.createSummary(route);
-        for (route.points) |point| {
-            var p = point;
-            p.lat = math.radiansToDegrees(point.lat);
-            p.lon = math.radiansToDegrees(point.lon);
-        }
+        // defer file.close();
 
-        storage.addEntry(alloc, src_file_path, route, summary) catch |err| switch (err) {
-            else => try writeErrorAndExit("{s}", .{@errorName(err)}),
-        };
-
-        // storage.addActivity(alloc, activity, src_file_path, points) catch |err| switch (err) {
-        //     error.PathAlreadyExists => try writeErrorAndExit("already exists.", .{}),
+        // const fit_activity = fit.decodeActivityFromFile(alloc, file) catch |err| switch (err) {
         //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         // };
 
-        try writeAndExit("done.", .{}, 0);
+        // var route = core.routeFromFit(alloc, fit_activity, .radians);
+        // defer route.deinit();
+        // const stats = core.createStats(route);
+        // for (0..route.points.len) |i| {
+        //     var p = &route.points[i];
+        //     p.lat = math.radiansToDegrees(p.lat);
+        //     p.lon = math.radiansToDegrees(p.lon);
+        // }
+
+        // storage.addEntry(alloc, gps_file_path, route) catch |err| switch (err) {
+        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
+        // };
+
+        // try writeResultAndExit(imported.stats);
     }
 };
-
-test "wip" {
-    const lat: f64 = 48.958845;
-    const lon: f64 = 32.22583;
-    std.debug.print("48.958845, 32.22583\n", .{});
-    std.debug.print("{d}, {d}\n", .{ lat, lon });
-    try std.testing.expect(4 == 4);
-}

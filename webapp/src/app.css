@@ -1,12 +1,25 @@
 @import 'tailwindcss';
 
+:root {
+    --light-blue: rgb(138, 180, 248);
+/*    bg color*/
+    --dark-grey: rgb(32, 33, 36);
+/*    headering color*/
+    --light-grey: rgb(154, 160, 166);
+
+    --primary-color: var(--light-blue);
+    --link-color: var(--light-blue);
+}
+
+html, body {
+    height: 100%;
+}
+
 body {
-    background: #1c1c1c;
-    color: #ccc;
+    background: var(--dark-grey);
+    color: var(--light-grey);
 }
 
 a {
-    font-size: 22px;
-    color: blue;
-    text-decoration: underline;
+    color: var(--link-color);
 }

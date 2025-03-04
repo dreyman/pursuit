@@ -1,22 +1,39 @@
-const API_URL = 'http://localhost:7070';
+const API_URL = 'http://localhost:7070/api';
 
-export const Activity = {
-    list: listActivities,
-    route: activityRoute,
+/**
+ * @param {any} fetch
+ * @param {number} id
+ */
+export async function get_route(fetch, id) {
+    try {
+        const resp = await fetch(`${API_URL}/routes/${id}`)
+        if (resp.status != 200) return null
+        return await resp.json()
+    } catch (err) {
+        return null
+    }
 }
 
-export async function listActivities(fetch) {
+
+
+/** @param {any} fetch */
+export async function get_routes(fetch) {
     try {
-        const resp = await fetch(`${API_URL}/list`)
+        const resp = await fetch(`${API_URL}/routes`)
+        if (resp.status != 200) return []
         return await resp.json()
     } catch (err) {
         return []
     }
 }
 
-export async function activityRoute(fetch, id) {
+/**
+ * @param {any} fetch
+ * @param {number} id
+ */
+export async function get_track(fetch, id) {
     try {
-        const resp = await fetch(`${API_URL}/${id}/route`)
+        const resp = await fetch(`${API_URL}/routes/${id}/track`)
         if (resp.status != 200) return null
         const blob = await resp.blob()
         const arrayBuffer = await blob.arrayBuffer()
