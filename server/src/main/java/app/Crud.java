@@ -2,7 +2,6 @@ package app;
 
 import app.model.Route;
 
-import java.io.IOException;
 import java.util.List;
 
 public class Crud {
@@ -10,7 +9,7 @@ public class Crud {
     Database db;
     Cli cli;
 
-    final String cliPath = "/home/ihor/code/wild-fields/engine/zig-out/bin/wf";
+    final String cliPath = "/home/ihor/code/pursuit/engine/zig-out/bin/wf";
     final String dbUrl = "/home/ihor/.wild-fields/wf.db";
 
 

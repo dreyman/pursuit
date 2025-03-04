@@ -1,2 +1,2 @@
-rootProject.name = "http-api"
+rootProject.name = "server"
 

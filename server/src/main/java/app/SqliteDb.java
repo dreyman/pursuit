@@ -20,24 +20,36 @@ public class SqliteDb implements Database {
         try (var c = DriverManager.getConnection(dbUrl);
              var insertRoute = c.prepareStatement("INSERT INTO routes (id, name) VALUES (?, ?)");
              var insertStats = c.prepareStatement("""
-                     INSERT INTO route_stats (start,
+                     INSERT INTO route_stats (
+                                         route_type,
+                                         start,
                                          end,
                                          distance,
                                          total_time,
                                          moving_time,
-                                         pauses_count,
-                                         pauses_len,
-                                         untracked_distance)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                         stops_count,
+                                         stops_duration,
+                                         untracked_distance,
+                                         min_lat,
+                                         max_lat,
+                                         min_lon,
+                                         max_lon
+                                         )
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                      """)) {
-            insertStats.setInt(1, route.stats.start());
-            insertStats.setInt(2, route.stats.end());
-            insertStats.setInt(3, route.stats.distance());
-            insertStats.setInt(4, route.stats.totalTime());
-            insertStats.setInt(5, route.stats.movingTime());
-            insertStats.setInt(6, route.stats.pausesCount());
-            insertStats.setInt(7, route.stats.pausesLen());
-            insertStats.setInt(8, route.stats.untrackedDistance());
+            insertStats.setString(1, route.stats.routeType().toString());
+            insertStats.setInt(2, route.stats.start());
+            insertStats.setInt(3, route.stats.end());
+            insertStats.setInt(4, route.stats.distance());
+            insertStats.setInt(5, route.stats.totalTime());
+            insertStats.setInt(6, route.stats.movingTime());
+            insertStats.setInt(7, route.stats.stopsCount());
+            insertStats.setInt(8, route.stats.stopsDuration());
+            insertStats.setInt(9, route.stats.untrackedDistance());
+            insertStats.setFloat(10, route.stats.minLat());
+            insertStats.setFloat(11, route.stats.maxLat());
+            insertStats.setFloat(12, route.stats.minLat());
+            insertStats.setFloat(13, route.stats.maxLon());
 
             insertRoute.setInt(1, route.id);
             insertRoute.setString(2, route.name);
@@ -74,14 +86,19 @@ public class SqliteDb implements Database {
         route.id = rs.getInt("id");
         route.name = rs.getString("name");
         route.stats = new Route.Stats(
+                Route.Type.valueOf(rs.getString("route_type")),
                 rs.getInt("start"),
                 rs.getInt("end"),
                 rs.getInt("distance"),
                 rs.getInt("total_time"),
                 rs.getInt("moving_time"),
-                rs.getInt("pauses_count"),
-                rs.getInt("pauses_len"),
-                rs.getInt("untracked_distance")
+                rs.getInt("stops_count"),
+                rs.getInt("stops_duration"),
+                rs.getInt("untracked_distance"),
+                rs.getFloat("min_lat"),
+                rs.getFloat("max_lat"),
+                rs.getFloat("min_lon"),
+                rs.getFloat("max_lon")
         );
         return route;
     }
@@ -96,14 +113,19 @@ public class SqliteDb implements Database {
 
     static String create_route_stats_table_sql = """
                 CREATE TABLE IF NOT EXISTS route_stats (
-                    start INTEGER,
+                    route_type TEXT NOT NULL,
+                    start INTEGER NOT NULL,
                     end INTEGER NOT NULL,
                     distance INTEGER NOT NULL,
                     total_time INTEGER NOT NULL,
                     moving_time INTEGER NOT NULL,
-                    pauses_count INTEGER NOT NULL,
-                    pauses_len INTEGER NOT NULL,
-                    untracked_distance INTEGER NOT NULL
+                    stops_count INTEGER NOT NULL,
+                    stops_duration INTEGER NOT NULL,
+                    untracked_distance INTEGER NOT NULL,
+                    min_lat REAL NOT NULL,
+                    max_lat REAL NOT NULL,
+                    min_lon REAL NOT NULL,
+                    max_lon REAL NOT NULL
                 );
             """;
 

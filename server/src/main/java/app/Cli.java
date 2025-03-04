@@ -36,7 +36,7 @@ public class Cli {
                 var json = reader.readLine();
                 try {
                     var stats = gson.fromJson(json, Route.Stats.class);
-                    var route = gson.fromJson(json, Route.class);
+                    var route = new Route();
                     route.id = stats.start();
                     route.name = Instant.ofEpochSecond(stats.start()).toString();
                     route.stats = stats;
