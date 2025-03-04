@@ -6,7 +6,6 @@ const json = std.json;
 
 const fit = @import("fit/fit.zig");
 const fit_protocol = @import("fit/fit_protocol.zig");
-const core = @import("core.zig");
 const geo = @import("geo.zig");
 
 const wf_dir_name = ".wild-fields";

@@ -8,7 +8,6 @@ const assert = std.debug.assert;
 
 const storage = @import("storage.zig");
 const fit = @import("fit/fit.zig");
-const core = @import("core.zig");
 const geo = @import("geo.zig");
 const file_import = @import("file_import.zig");
 

@@ -6,7 +6,6 @@ const math = std.math;
 const fit = @import("fit/fit.zig");
 const calc = @import("calc.zig");
 const geo = @import("geo.zig");
-const core = @import("core.zig");
 
 pub fn importGpsFile(
     allocator: mem.Allocator,
@@ -19,7 +18,8 @@ pub fn importGpsFile(
     const fit_activity = try fit.decodeActivityFromFile(allocator, file);
 
     var route = routeFromFit(allocator, fit_activity, .radians);
-    const stats = geo.routeStats(route);
+    var stats = geo.routeStats(route);
+    stats.route_type = routeTypeFromFitSport(fit_activity.session.sport);
 
     for (0..route.points.len) |i| {
         var p = &route.points[i];
@@ -44,4 +44,16 @@ pub fn routeFromFit(
         route.timestamps[i] = rec.timestamp + fit.protocol.timestamp_offset;
     }
     return route;
+}
+
+pub fn routeTypeFromFitSport(fit_sport_val: ?u8) geo.Route.Type {
+    if (fit_sport_val == null) return .unknown;
+    const sport = std.meta.intToEnum(fit.Sport, fit_sport_val.?) catch
+        return .unknown;
+    return switch (sport) {
+        .running => geo.Route.Type.running,
+        .cycling => geo.Route.Type.cycling,
+        .walking => geo.Route.Type.walking,
+        .hiking => geo.Route.Type.hiking,
+    };
 }

@@ -27,6 +27,7 @@ pub const Route = struct {
     }
 
     pub const Stats = struct {
+        route_type: Route.Type,
         start: u32,
         end: u32,
         distance: u32,
@@ -40,6 +41,8 @@ pub const Route = struct {
         min_lon: f32,
         max_lon: f32,
     };
+
+    pub const Type = enum { cycling, running, walking, hiking, unknown };
 };
 
 pub const CoordUnit = enum {
@@ -50,6 +53,7 @@ pub const CoordUnit = enum {
 
 pub fn routeStats(route: Route) Route.Stats {
     var stats: Route.Stats = .{
+        .route_type = .unknown,
         .start = route.timestamps[0],
         .end = route.timestamps[route.timestamps.len - 1],
         .distance = 0,
