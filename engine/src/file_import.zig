@@ -1,73 +1,62 @@
 const std = @import("std");
+const assert = std.debug.assert;
 const fs = std.fs;
 const mem = std.mem;
-const math = std.math;
+const gzip = std.compress.gzip;
 
-const fit = @import("fit/fit.zig");
-const calc = @import("calc.zig");
+const fit_import = @import("import/fit_import.zig");
+const storage = @import("storage.zig");
+// const fit = @import("fit/fit.zig");
+// const calc = @import("calc.zig");
 const geo = @import("geo.zig");
 
+pub const Error = error{UnsupportedFileFormat};
+
+pub const SupportedExtension = enum {
+    fit,
+    fitgz,
+    // gpx,
+    // gpxgz,
+};
+
+pub const ImportResult = struct {
+    route: geo.Route,
+    stats: geo.Route.Stats,
+};
+
 pub fn importGpsFile(
-    allocator: mem.Allocator,
+    a: mem.Allocator,
     file_path: []const u8,
-) !struct { route: geo.Route, stats: geo.Route.Stats } {
-    const file = try fs.openFileAbsolute(file_path, .{});
-    defer file.close();
+) !ImportResult {
+    const ext = getExtension(file_path);
+    if (ext == null) return Error.UnsupportedFileFormat;
+    switch (ext.?) {
+        .fit => {
+            return try fit_import.importFitFilePath(a, file_path);
+        },
+        .fitgz => {
+            // fixme delete temp file
+            const name = fs.path.basename(file_path);
+            assert(mem.endsWith(u8, name, ".gz"));
+            const ungzipped_file_name = name[0 .. name.len - 3];
+            const ungzipped_file = try storage.createTempFile(a, ungzipped_file_name);
+            errdefer ungzipped_file.close();
+            const file = try fs.openFileAbsolute(file_path, .{});
+            defer file.close();
+            try gzip.decompress(file.reader(), ungzipped_file.writer());
 
-    // TODO: for now assume the file is .fit
-    const fit_activity = try fit.decodeActivityFromFile(allocator, file);
-
-    var route = routeFromFit(allocator, fit_activity, .radians);
-    var stats = geo.routeStats(route);
-    stats.type = routeTypeFromFitSport(fit_activity.session.sport);
-
-    stats.min_lat = math.radiansToDegrees(route.points[0].lat);
-    stats.max_lat = math.radiansToDegrees(route.points[0].lat);
-    stats.min_lon = math.radiansToDegrees(route.points[0].lon);
-    stats.max_lon = math.radiansToDegrees(route.points[0].lon);
-    for (0..route.points.len) |i| {
-        var p = &route.points[i];
-        p.lat = math.radiansToDegrees(p.lat);
-        p.lon = math.radiansToDegrees(p.lon);
-        if (p.lat < stats.min_lat) {
-            stats.min_lat = p.lat;
-        } else if (p.lat > stats.max_lat) {
-            stats.max_lat = p.lat;
-        }
-        if (p.lon < stats.min_lon) {
-            stats.min_lon = p.lon;
-        } else if (p.lon > stats.max_lon) {
-            stats.max_lon = p.lon;
-        }
+            const path = try storage.tempFilePath(a, ungzipped_file_name);
+            ungzipped_file.close();
+            return try fit_import.importFitFilePath(a, path);
+        },
     }
-
-    return .{ .route = route, .stats = stats };
 }
 
-pub fn routeFromFit(
-    allocator: mem.Allocator,
-    activity: fit.Activity,
-    unit: geo.CoordUnit,
-) geo.Route {
-    var route = geo.Route.init(allocator, activity.records.items.len) catch unreachable;
-    for (activity.records.items, 0..) |rec, i| {
-        route.points[i] = .{
-            .lat = calc.convertSemicircles(rec.lat.?, unit),
-            .lon = calc.convertSemicircles(rec.lon.?, unit),
-        };
-        route.timestamps[i] = rec.timestamp + fit.protocol.timestamp_offset;
-    }
-    return route;
-}
-
-pub fn routeTypeFromFitSport(fit_sport_val: ?u8) geo.Route.Type {
-    if (fit_sport_val == null) return .unknown;
-    const sport = std.meta.intToEnum(fit.Sport, fit_sport_val.?) catch
-        return .unknown;
-    return switch (sport) {
-        .running => geo.Route.Type.running,
-        .cycling => geo.Route.Type.cycling,
-        .walking => geo.Route.Type.walking,
-        .hiking => geo.Route.Type.hiking,
-    };
+pub fn getExtension(path_to_file: []const u8) ?SupportedExtension {
+    const name = fs.path.basename(path_to_file);
+    if (mem.endsWith(u8, name, ".fit")) return .fit;
+    if (mem.endsWith(u8, name, ".fit.gz")) return .fitgz;
+    // if (mem.endsWith(u8, name, ".gpx")) return .gpx;
+    // if (mem.endsWith(u8, name, ".gpx.gz")) return .gpxgz;
+    return null;
 }

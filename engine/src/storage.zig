@@ -13,7 +13,7 @@ const wf_dir_name = ".wild-fields";
 pub const Error = error{HomeDirNotFound} || posix.MakeDirError;
 
 pub fn create(alloc: mem.Allocator) Error!void {
-    const path = try getStorageDirPath(alloc);
+    const path = try storageDirPath(alloc);
     defer alloc.free(path);
     try fs.makeDirAbsolute(path);
 }
@@ -68,13 +68,29 @@ fn createRouteFile(
     }
 }
 
-fn getStorageDirPath(alloc: mem.Allocator) ![]const u8 {
+pub fn createTempFile(alloc: mem.Allocator, name: []const u8) !fs.File {
+    const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
+    const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, name }) catch unreachable;
+    return try fs.createFileAbsolute(path, .{});
+}
+
+fn storageDirPath(alloc: mem.Allocator) ![]const u8 {
     const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
     return std.fmt.allocPrint(alloc, "{s}/{s}", .{ home_path, wf_dir_name }) catch unreachable;
 }
 
+pub fn tempDirPath(alloc: mem.Allocator) ![]const u8 {
+    const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
+    return std.fmt.allocPrint(alloc, "{s}/{s}/temp", .{ home_path, wf_dir_name }) catch unreachable;
+}
+
+pub fn tempFilePath(alloc: mem.Allocator, filename: []const u8) ![]const u8 {
+    const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
+    return std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, filename }) catch unreachable;
+}
+
 fn getEntryDirPath(a: mem.Allocator, id: u32) ![]const u8 {
-    const storage = try getStorageDirPath(a);
+    const storage = try storageDirPath(a);
     defer a.free(storage);
     return std.fmt.allocPrint(
         a,

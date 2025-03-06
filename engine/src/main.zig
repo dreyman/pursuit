@@ -44,7 +44,7 @@ pub fn main() !void {
         const filepath = args.next() orelse {
             try writeAndExit("err: expected fit file path", .{}, 1);
         };
-        Command.addFitActivity(allocator, filepath) catch |err| switch (err) {
+        Command.importFromFile(allocator, filepath) catch |err| switch (err) {
             else => try writeAndExit("err: ", .{}, 1),
         };
     }
@@ -94,7 +94,7 @@ const Command = struct {
         try writeAndExit("done.", .{}, 0);
     }
 
-    pub fn addFitActivity(alloc: mem.Allocator, file_path: []const u8) !void {
+    pub fn importFromFile(alloc: mem.Allocator, file_path: []const u8) !void {
         const cwd_path = try fs.cwd().realpathAlloc(alloc, ".");
         defer alloc.free(cwd_path);
 
