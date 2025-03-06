@@ -35,25 +35,27 @@ pub fn importGpsFile(
             return try fit_import.importFitFilePath(a, file_path);
         },
         .fitgz => {
-            // fixme delete temp file
             const name = fs.path.basename(file_path);
             assert(mem.endsWith(u8, name, ".gz"));
-            const ungzipped_file_name = name[0 .. name.len - 3];
-            const ungzipped_file = try storage.createTempFile(a, ungzipped_file_name);
-            errdefer ungzipped_file.close();
+            const ungzipped_file_name = name[0 .. name.len - ".gz".len];
+            const ungzipped_file = try storage.createTempFile(a, ungzipped_file_name, .{ .read = true });
             const file = try fs.openFileAbsolute(file_path, .{});
-            defer file.close();
-            try gzip.decompress(file.reader(), ungzipped_file.writer());
+            defer {
+                ungzipped_file.close();
+                file.close();
+                storage.deleteTempFile(a, ungzipped_file_name) catch
+                    std.debug.print("failed to delete temp file\n", .{});
+            }
 
-            const path = try storage.tempFilePath(a, ungzipped_file_name);
-            ungzipped_file.close();
-            return try fit_import.importFitFilePath(a, path);
+            try gzip.decompress(file.reader(), ungzipped_file.writer());
+            try ungzipped_file.seekTo(0);
+            return try fit_import.importFitFile(a, ungzipped_file);
         },
     }
 }
 
-pub fn getExtension(path_to_file: []const u8) ?SupportedExtension {
-    const name = fs.path.basename(path_to_file);
+pub fn getExtension(file_path: []const u8) ?SupportedExtension {
+    const name = fs.path.basename(file_path);
     if (mem.endsWith(u8, name, ".fit")) return .fit;
     if (mem.endsWith(u8, name, ".fit.gz")) return .fitgz;
     // if (mem.endsWith(u8, name, ".gpx")) return .gpx;

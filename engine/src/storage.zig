@@ -68,10 +68,23 @@ fn createRouteFile(
     }
 }
 
-pub fn createTempFile(alloc: mem.Allocator, name: []const u8) !fs.File {
+pub fn createTempFile(
+    alloc: mem.Allocator,
+    name: []const u8,
+    flags: fs.File.CreateFlags,
+) !fs.File {
     const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
     const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, name }) catch unreachable;
-    return try fs.createFileAbsolute(path, .{});
+    return try fs.createFileAbsolute(path, flags);
+}
+
+pub fn deleteTempFile(
+    alloc: mem.Allocator,
+    name: []const u8,
+) !void {
+    const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
+    const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, name }) catch unreachable;
+    return try fs.deleteFileAbsolute(path);
 }
 
 fn storageDirPath(alloc: mem.Allocator) ![]const u8 {
