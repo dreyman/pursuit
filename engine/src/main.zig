@@ -110,30 +110,5 @@ const Command = struct {
         };
 
         try writeResultAndExit(imporoted.stats);
-
-        // const file = fs.openFileAbsolute(src_file_path, .{}) catch |err| switch (err) {
-        //     error.FileNotFound => try writeErrorAndExit("File not found", .{}),
-        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
-        // };
-        // defer file.close();
-
-        // const fit_activity = fit.decodeActivityFromFile(alloc, file) catch |err| switch (err) {
-        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
-        // };
-
-        // var route = core.routeFromFit(alloc, fit_activity, .radians);
-        // defer route.deinit();
-        // const stats = core.createStats(route);
-        // for (0..route.points.len) |i| {
-        //     var p = &route.points[i];
-        //     p.lat = math.radiansToDegrees(p.lat);
-        //     p.lon = math.radiansToDegrees(p.lon);
-        // }
-
-        // storage.addEntry(alloc, gps_file_path, route) catch |err| switch (err) {
-        //     else => try writeErrorAndExit("{s}", .{@errorName(err)}),
-        // };
-
-        // try writeResultAndExit(imported.stats);
     }
 };

@@ -19,12 +19,26 @@ pub fn importGpsFile(
 
     var route = routeFromFit(allocator, fit_activity, .radians);
     var stats = geo.routeStats(route);
-    stats.route_type = routeTypeFromFitSport(fit_activity.session.sport);
+    stats.type = routeTypeFromFitSport(fit_activity.session.sport);
 
+    stats.min_lat = math.radiansToDegrees(route.points[0].lat);
+    stats.max_lat = math.radiansToDegrees(route.points[0].lat);
+    stats.min_lon = math.radiansToDegrees(route.points[0].lon);
+    stats.max_lon = math.radiansToDegrees(route.points[0].lon);
     for (0..route.points.len) |i| {
         var p = &route.points[i];
         p.lat = math.radiansToDegrees(p.lat);
         p.lon = math.radiansToDegrees(p.lon);
+        if (p.lat < stats.min_lat) {
+            stats.min_lat = p.lat;
+        } else if (p.lat > stats.max_lat) {
+            stats.max_lat = p.lat;
+        }
+        if (p.lon < stats.min_lon) {
+            stats.min_lon = p.lon;
+        } else if (p.lon > stats.max_lon) {
+            stats.max_lon = p.lon;
+        }
     }
 
     return .{ .route = route, .stats = stats };

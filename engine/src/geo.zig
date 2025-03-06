@@ -27,7 +27,7 @@ pub const Route = struct {
     }
 
     pub const Stats = struct {
-        route_type: Route.Type,
+        type: Route.Type,
         start: u32,
         end: u32,
         distance: u32,
@@ -53,7 +53,7 @@ pub const CoordUnit = enum {
 
 pub fn routeStats(route: Route) Route.Stats {
     var stats: Route.Stats = .{
-        .route_type = .unknown,
+        .type = .unknown,
         .start = route.timestamps[0],
         .end = route.timestamps[route.timestamps.len - 1],
         .distance = 0,
@@ -62,10 +62,10 @@ pub fn routeStats(route: Route) Route.Stats {
         .stops_count = 0,
         .stops_duration = 0,
         .untracked_distance = 0,
-        .min_lat = route.points[0].lat,
-        .max_lat = route.points[0].lat,
-        .min_lon = route.points[0].lon,
-        .max_lon = route.points[0].lon,
+        .min_lat = 0,
+        .max_lat = 0,
+        .min_lon = 0,
+        .max_lon = 0,
     };
     var distance: f64 = 0;
     var untracked_distance: f64 = 0;
@@ -82,10 +82,6 @@ pub fn routeStats(route: Route) Route.Stats {
         } else {
             distance += calc.distance(prev, cur);
         }
-        if (cur.lat > stats.max_lat) stats.max_lat = cur.lat;
-        if (cur.lat < stats.min_lat) stats.min_lat = cur.lat;
-        if (cur.lon > stats.max_lon) stats.max_lon = cur.lon;
-        if (cur.lon < stats.min_lon) stats.min_lat = cur.lon;
     }
     stats.distance = @intFromFloat(distance * 100);
     stats.untracked_distance = @intFromFloat(untracked_distance * 100);
