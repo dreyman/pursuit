@@ -1,6 +1,6 @@
-package app;
+package pursuit;
 
-import app.model.Route;
+import pursuit.model.Route;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,11 +35,9 @@ public class Cli {
             try (var reader = process.inputReader()) {
                 var json = reader.readLine();
                 try {
-                    var stats = gson.fromJson(json, Route.Stats.class);
-                    var route = new Route();
-                    route.id = stats.start();
-                    route.name = Instant.ofEpochSecond(stats.start()).toString();
-                    route.stats = stats;
+                    var route = gson.fromJson(json, Route.class);
+                    route.id = route.start;
+                    route.name = Instant.ofEpochSecond(route.start).toString();
                     return route;
                 } catch (JsonSyntaxException x) {
                     throw new InvalidResult();

@@ -1,7 +1,6 @@
-package app;
+package pursuit;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import io.javalin.Javalin;
 import io.javalin.http.Handler;
 import io.javalin.http.UnprocessableContentResponse;
@@ -9,10 +8,12 @@ import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
+import pursuit.model.Bike;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
+import java.time.Instant;
 
 import static io.javalin.http.HttpStatus.NOT_FOUND;
 
@@ -44,7 +45,7 @@ public class Main {
                 .get("/api/routes/{id}/track", ctx -> {
                     try {
                         var id = Integer.parseInt(ctx.pathParam("id"));
-                        var trackFile = storage.getTrack(id);
+                        var trackFile = storage.getTrackFile(id);
                         if (trackFile.exists()) {
                             ctx.result(new FileInputStream(trackFile));
                         } else {
@@ -53,6 +54,12 @@ public class Main {
                     } catch (NumberFormatException x) {
                         ctx.status(NOT_FOUND);
                     }
+                })
+                .post("/api/bikes", ctx -> {
+                    // FIXME validation
+                    var bike = ctx.bodyAsClass(Bike.class);
+                    bike = crud.createBike(bike);
+                    ctx.json(bike);
                 })
                 .post("/api/upload", ctx -> {
                     var file = ctx.uploadedFile("file");
@@ -63,14 +70,20 @@ public class Main {
 
                     var route = crud.importFromFile(path);
                     new File(path).delete(); // fixme handle error
-                    if (route != null ) ctx.json(route);
+                    if (route != null) ctx.json(route);
                     else ctx.status(500);
+                })
+                .get("/api/bikes", ctx -> {
+                    ctx.json(crud.getBikes());
                 })
                 .start(7070);
     }
 
     static JsonMapper gsonMapper() {
-        Gson gson = new GsonBuilder().create();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Instant.class, (JsonSerializer<Instant>) (src, _, _)
+                        -> new JsonPrimitive(Long.toString(src.getEpochSecond())))
+                .create();
         return new JsonMapper() {
             @NotNull
             public String toJsonString(@NotNull Object obj, @NotNull Type type) {

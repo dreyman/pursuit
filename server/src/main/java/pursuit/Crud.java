@@ -1,7 +1,10 @@
-package app;
+package pursuit;
 
-import app.model.Route;
+import pursuit.database.SqliteDb;
+import pursuit.model.Bike;
+import pursuit.model.Route;
 
+import java.time.Instant;
 import java.util.List;
 
 public class Crud {
@@ -26,20 +29,29 @@ public class Crud {
         return db.getRoutes();
     }
 
-    public Route importFromFile(String path) throws Exception {
-//        try {
-        var route = cli.importFromFile(path);
-        if (route == null) return null;
-//            try {
-        db.saveRoute(route);
-        return route;
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                return null;
-//            }
-//        } catch (InterruptedException | IOException | Cli.InvalidResult x) {
-//            return null;
-//        }
+    public List<Bike> getBikes() throws Exception {
+        return db.getBikes();
     }
 
+    public Route importFromFile(String path) throws Exception {
+        var route = cli.importFromFile(path);
+        if (route == null) return null;
+        route.type = Route.Type.CYCLING; // FIXME set real type here
+        db.saveRoute(route);
+        return route;
+    }
+
+    public Bike createBike(Bike bike) throws Exception {
+        bike.id = randomString();
+        bike.distance = 0;
+        bike.time = 0;
+        bike.archived = false;
+        bike.created_at = Instant.now();
+        db.saveBike(bike);
+        return bike;
+    }
+
+    String randomString() {
+        return Long.toString(System.currentTimeMillis());
+    }
 }
