@@ -8,6 +8,16 @@ declare global {
         // interface PageState {}
         // interface Platform {}
     }
+
+    type Bike = {
+        id: string,
+        name: string,
+        distance: number,
+    }
+
+    type NewBike = {
+        name: string,
+    }
 }
 
 export {};

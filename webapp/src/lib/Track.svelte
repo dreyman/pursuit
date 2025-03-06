@@ -40,7 +40,7 @@ function draw_track(points) {
 
 <style>
 .map {
-    width: 700px;
+    width: 600px;
     height: 600px;
 }
 </style>

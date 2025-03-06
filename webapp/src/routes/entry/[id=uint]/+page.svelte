@@ -1,21 +1,32 @@
 <script>
 import Track from '$lib/Track.svelte'
+import Time from '$lib/Time.svelte'
+import Distance from '$lib/Distance.svelte'
+import Icon from '$lib/icons/Icon.svelte'
+import Edit from '$lib/icons/edit.svg.svelte'
 import * as util from '$lib/util.js'
 
 const { data } = $props()
 const route = data.route
+
+function onedit() {
+    console.log('EDIT')
+}
 </script>
 
 <div class="page mt-5 flex flex-col items-center gap-2">
-    <h1>{route.name}</h1>
-    <h2 class="date">{util.timestamp_to_string(route.stats.start * 1000)}</h2>
+    <h1 class="flex items-center gap-1">
+        <span>{route.name}</span>
+        <button onclick={onedit}><Icon Icon={Edit} size="lg" /></button>
+    </h1>
+    <div class="testr"></div>
+    <h2 class="date">{util.timestamp_to_string(route.start * 1000)}</h2>
     <div class="flex gap-6">
-        <span class="stats-item">{route.stats.distance / 100}km</span>
-        <span class="stats-item">{util.seconds_to_string(route.stats.totalTime)}</span>
-        <span class="stats-item">{util.seconds_to_string(route.stats.movingTime)}</span>
-        <span class="stats-item"
-            ><span class="font-bold"
-                >{((36 * route.stats.distance) / route.stats.movingTime).toFixed(1)}</span
+        <Distance val={route.distance} />
+        <Time seconds={route.total_time} />
+        <Time seconds={route.moving_time} />
+        <span class="text-xl"
+            ><span class="bold">{((36 * route.distance) / route.moving_time).toFixed(1)}</span
             >km/h</span
         >
     </div>
@@ -24,7 +35,7 @@ const route = data.route
 
 <style>
 .page {
-    /*    margin-top: 3rem;*/
+    margin-top: 1rem;
 }
 
 h1 {
@@ -32,11 +43,11 @@ h1 {
     line-height: 2rem;
 }
 
-.date {
-    font-size: 1.25rem;
+.bold {
+    font-weight: bold;
 }
 
-.stats-item {
-    font-size: 1rem;
+.date {
+    font-size: 1.25rem;
 }
 </style>

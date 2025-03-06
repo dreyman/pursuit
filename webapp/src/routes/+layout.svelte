@@ -15,6 +15,9 @@ let { children } = $props()
                 <li>
                     <a href="/new">New</a>
                 </li>
+                <li>
+                    <a href="/garage">Garage</a>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -32,10 +35,11 @@ aside {
 nav {
     background: #1c1c1c;
     color: #ccc;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
 }
 
 .page-content {
+    margin-top: 1rem;
     width: 100%;
 }
 </style>
