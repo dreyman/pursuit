@@ -29,36 +29,17 @@ pub fn importGpxFile(
 
     const gpx_data = try gpx.parse(a, bytes);
     const route = routeFromGpx(a, gpx_data);
-    var stats = core.routeStats(route, .degrees);
+    var stats = core.calcRouteStats(route, .degrees);
     stats.type = routeTypeFromGpxType(gpx_data.type);
-
-    stats.min_lat = route.points[0].lat;
-    stats.max_lat = route.points[0].lat;
-    stats.min_lon = route.points[0].lon;
-    stats.max_lon = route.points[0].lon;
-    for (route.points) |p| {
-        if (p.lat < stats.min_lat) {
-            stats.min_lat = p.lat;
-        } else if (p.lat > stats.max_lat) {
-            stats.max_lat = p.lat;
-        }
-        if (p.lon < stats.min_lon) {
-            stats.min_lon = p.lon;
-        } else if (p.lon > stats.max_lon) {
-            stats.max_lon = p.lon;
-        }
-    }
     return .{ .route = route, .stats = stats };
 }
 
 pub fn routeFromGpx(allocator: mem.Allocator, gpx_data: gpx.Gpx) core.Route {
     var route = core.Route.init(allocator, gpx_data.track.items.len) catch unreachable;
     for (gpx_data.track.items, 0..) |trkpt, i| {
-        route.points[i] = .{
-            .lat = @floatCast(trkpt.lat),
-            .lon = @floatCast(trkpt.lon),
-        };
-        route.timestamps[i] = trkpt.time;
+        route.lat[i] = @floatCast(trkpt.lat);
+        route.lon[i] = @floatCast(trkpt.lon);
+        route.time[i] = trkpt.time;
     }
     return route;
 }

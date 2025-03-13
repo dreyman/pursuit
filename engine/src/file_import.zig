@@ -5,7 +5,7 @@ const mem = std.mem;
 const gzip = std.compress.gzip;
 
 const fit_import = @import("import/fit_import.zig");
-// const gpx_import = @import("import/gpx_import.zig");
+const gpx_import = @import("import/gpx_import.zig");
 const storage = @import("storage.zig");
 const core = @import("core.zig");
 
@@ -31,8 +31,7 @@ pub fn importGpsFile(
     if (ext == null) return Error.UnsupportedFileFormat;
     switch (ext.?) {
         .fit => return try fit_import.importFitFilePath(a, file_path),
-        .gpx => unreachable,
-        // .gpx => return try gpx_import.importGpxFilePath(a, file_path),
+        .gpx => return try gpx_import.importGpxFilePath(a, file_path),
         .fitgz => {
             const name = fs.path.basename(file_path);
             assert(mem.endsWith(u8, name, ".gz"));

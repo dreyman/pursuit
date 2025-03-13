@@ -11,8 +11,8 @@ pub const Speed = struct {
 };
 
 pub const Distance = struct {
-    pub const km = f64;
-    pub const meters = u32;
+    pub const Km = f64;
+    pub const Meters = u32;
 };
 
 pub const Route = struct {
@@ -42,14 +42,14 @@ pub const Route = struct {
     }
 
     pub fn startPoint(route: *const Route) Point {
-        return Point{
+        return .{
             .lat = route.lat[0],
             .lon = route.lon[0],
         };
     }
 
     pub fn finishPoint(route: *const Route) Point {
-        return Point{
+        return .{
             .lat = route.lat[route.lat.len - 1],
             .lon = route.lon[route.lon.len - 1],
         };
@@ -88,12 +88,12 @@ pub const Stats = struct {
     finish_time: u32,
     start: Point,
     finish: Point,
-    distance: Distance.meters,
+    distance: Distance.Meters,
     total_time: u32,
     moving_time: u32,
     stops_count: u16,
     stops_duration: u32,
-    untracked_distance: Distance.meters,
+    untracked_distance: Distance.Meters,
     avg_moving_speed: Speed.MetersPerHour,
     avg_travel_speed: Speed.MetersPerHour,
     // max_speed: Speed.MetersPerHour,
@@ -124,8 +124,8 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
         .easternmost = undefined,
         .southernmost = undefined,
     };
-    var total_distance: f64 = 0;
-    var untracked_distance: Distance.km = 0;
+    var total_distance: Distance.Km = 0;
+    var untracked_distance: Distance.Km = 0;
     // var longest_gap: f64 = 0;
     var westernmost_idx: usize = 0;
     var easternmost_idx: usize = 0;
@@ -138,20 +138,15 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
         const prev_lon = route.lon[i - 1];
         const t1 = route.time[i - 1];
         const t2 = route.time[i];
+        const distance = switch (unit) {
+            .radians => calc.distanceRadians(prev_lat, prev_lon, cur_lat, cur_lon),
+            .degrees => calc.distanceDegrees(prev_lat, prev_lon, cur_lat, cur_lon),
+        };
         if (t2 - t1 > 1) {
             stats.stops_count += 1;
             stats.stops_duration += t2 - t1;
-            untracked_distance += calc.distance(prev_lat, prev_lon, cur_lat, cur_lon);
+            untracked_distance += distance;
         } else {
-            const distance = switch (unit) {
-                .radians => calc.distance(prev_lat, prev_lon, cur_lat, cur_lon),
-                .degrees => calc.distance(
-                    math.degreesToRadians(prev_lat),
-                    math.degreesToRadians(prev_lon),
-                    math.degreesToRadians(cur_lat),
-                    math.degreesToRadians(cur_lon),
-                ),
-            };
             total_distance += distance;
             // if (distance > longest_gap) longest_gap = distance;
         }
