@@ -3,6 +3,8 @@ const mem = std.mem;
 const fs = std.fs;
 const posix = std.posix;
 const json = std.json;
+const gzip = std.compress.gzip;
+const assert = std.debug.assert;
 
 const fit = @import("fit/fit.zig");
 const fit_protocol = @import("fit/fit_protocol.zig");
@@ -82,10 +84,23 @@ fn createStatsFile(
 
     const writer = file.writer();
     try std.json.stringify(stats, .{ .whitespace = .indent_4 }, writer);
-    // try writer.writeAll(std.json.fmt(
-    //     stats,
-    //     .{ .whitespace = .indent_4 },
-    // ));
+}
+
+pub fn ungzip(a: mem.Allocator, file_path: []const u8) !fs.File {
+    const name = fs.path.basename(file_path);
+    assert(mem.endsWith(u8, name, ".gz"));
+    const ungzipped_file_name = name[0 .. name.len - ".gz".len];
+    const ungzipped_file = try createTempFile(
+        a,
+        ungzipped_file_name,
+        .{ .read = true },
+    );
+    const file = try fs.openFileAbsolute(file_path, .{});
+    defer file.close();
+
+    try gzip.decompress(file.reader(), ungzipped_file.writer());
+    try ungzipped_file.seekTo(0);
+    return ungzipped_file;
 }
 
 pub fn createTempFile(
@@ -94,7 +109,11 @@ pub fn createTempFile(
     flags: fs.File.CreateFlags,
 ) !fs.File {
     const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
-    const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, name }) catch unreachable;
+    const path = std.fmt.allocPrint(
+        alloc,
+        "{s}/{s}/temp/{s}",
+        .{ home_path, wf_dir_name, name },
+    ) catch unreachable;
     return try fs.createFileAbsolute(path, flags);
 }
 
@@ -103,7 +122,11 @@ pub fn deleteTempFile(
     name: []const u8,
 ) !void {
     const home_path = posix.getenv("HOME") orelse return Error.HomeDirNotFound;
-    const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{ home_path, wf_dir_name, name }) catch unreachable;
+    const path = std.fmt.allocPrint(alloc, "{s}/{s}/temp/{s}", .{
+        home_path,
+        wf_dir_name,
+        name,
+    }) catch unreachable;
     return try fs.deleteFileAbsolute(path);
 }
 

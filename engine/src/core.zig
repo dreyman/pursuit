@@ -41,6 +41,13 @@ pub const Route = struct {
         r.allocator.free(r.time);
     }
 
+    pub fn point(route: *const Route, i: usize) Point {
+        return .{
+            .lat = route.lat[i],
+            .lon = route.lon[i],
+        };
+    }
+
     pub fn startPoint(route: *const Route) Point {
         return .{
             .lat = route.lat[0],
@@ -111,7 +118,7 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
         .start = route.startPoint(),
         .finish = route.finishPoint(),
         .distance = 0,
-        .total_time = 0,
+        .total_time = route.time[route.time.len - 1] - route.time[0],
         .moving_time = 0,
         .stops_count = 0,
         .stops_duration = 0,
@@ -155,13 +162,12 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
         if (cur_lat > route.lat[northernmost_idx]) northernmost_idx = i;
         if (cur_lat < route.lat[southernmost_idx]) southernmost_idx = i;
     }
-    stats.westernmost = Point{ .lat = route.lat[westernmost_idx], .lon = route.lon[westernmost_idx] };
-    stats.easternmost = Point{ .lat = route.lat[easternmost_idx], .lon = route.lon[easternmost_idx] };
-    stats.southernmost = Point{ .lat = route.lat[southernmost_idx], .lon = route.lon[southernmost_idx] };
-    stats.northernmost = Point{ .lat = route.lat[northernmost_idx], .lon = route.lon[northernmost_idx] };
+    stats.westernmost = route.point(westernmost_idx);
+    stats.easternmost = route.point(easternmost_idx);
+    stats.southernmost = route.point(southernmost_idx);
+    stats.northernmost = route.point(northernmost_idx);
     stats.distance = @intFromFloat(total_distance * 1_000);
     stats.untracked_distance = @intFromFloat(untracked_distance * 1_000);
-    stats.total_time = route.time[route.time.len - 1] - route.time[0];
     stats.moving_time = stats.total_time - stats.stops_duration;
     stats.avg_moving_speed = calc.avgSpeed(total_distance, stats.moving_time);
     stats.avg_travel_speed = calc.avgSpeed(total_distance, stats.total_time);

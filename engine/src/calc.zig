@@ -1,6 +1,11 @@
 const std = @import("std");
 const math = std.math;
 const testing = std.testing;
+const cos = math.cos;
+const sin = math.sin;
+const pow = math.pow;
+const asin = math.asin;
+const sqrt = math.sqrt;
 
 const core = @import("core.zig");
 const Distance = core.Distance;
@@ -26,8 +31,8 @@ pub fn convertSemicircles(semicircles: i32, unit: core.CoordUnit) f32 {
 pub fn distanceRadians(lat1: f32, lon1: f32, lat2: f32, lon2: f32) Distance.Km {
     const dlat: f64 = lat1 - lat2;
     const dlon: f64 = lon1 - lon2;
-    const a: f64 = math.pow(f64, math.sin(dlat / 2), 2) + math.cos(lat1) * math.cos(lat2) * math.pow(f64, math.sin(dlon / 2), 2);
-    const c: f64 = 2 * math.asin(math.sqrt(a));
+    const a: f64 = pow(f64, sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(f64, sin(dlon / 2), 2);
+    const c: f64 = 2 * asin(sqrt(a));
     return c * earth_r;
 }
 
