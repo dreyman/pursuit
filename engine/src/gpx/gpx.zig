@@ -6,35 +6,17 @@ const fmt = std.fmt;
 
 const indexOf = mem.indexOfPosLinear;
 
-pub const Error = error{ InvalidGpx, InvalidGpxTime };
-
-pub const CompactGpx = struct {
-    lat: []f64,
-    lon: []f64,
-    time: []u32,
-    ele: ?[]i32,
-    allocator: mem.Allocator,
-
-    // pub fn init(allocator: mem.Allocator, size: usize) !CompactGpx {
-    //     return .{
-    //         .lat = try allocator.alloc(f64, size),
-    //         .lon = try allocator.alloc(f64, size),
-    //         .time = try allocator.alloc(u32, size),
-    //         .ele = try allocator.alloc(i32, size),
-    //         .allocator = allocator,
-    //     };
-    // }
-};
+pub const Error = error{ InvalidGpx, InvalidGpxTime, InvalidGpxTemperature };
 
 pub const Gpx = struct {
     name: []const u8,
-    type: []const u8,
+    type: ?Type,
     track: std.ArrayList(Trkpt),
 
     pub fn init(allocator: mem.Allocator) Gpx {
         return .{
             .name = undefined,
-            .type = undefined,
+            .type = null,
             .track = std.ArrayList(Trkpt).init(allocator),
         };
     }
@@ -46,19 +28,23 @@ pub const Gpx = struct {
     pub const Trkpt = struct {
         lat: f64,
         lon: f64,
-        ele: f16, // fixme change to i32 or i16 or u16?
+        ele: i32,
         time: u32,
+        temp: ?i8,
 
         pub const tagname = "trkpt";
     };
+
+    pub const Type = enum { cycling, running };
 };
 
 pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
     var result = Gpx.init(a);
     errdefer result.deinit();
 
-    result.name = try tagContent(gpx, "name");
-    result.type = try tagContent(gpx, "type");
+    result.name = try tagContent(gpx, "name"); // fixme should copy bytes from src arr
+    const type_str = try tagContent(gpx, "type");
+    result.type = std.meta.stringToEnum(Gpx.Type, type_str);
 
     var pos: usize = 0;
     while (true) {
@@ -69,14 +55,15 @@ pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
         const lon = try attr(trkpt, "lon");
         const ele = try tagContent(trkpt, "ele");
         const time = try tagContent(trkpt, "time");
-
+        const temp = tagContent(trkpt, "gpxtpx:atemp") catch null;
+        const elevation = fmt.parseFloat(f32, ele) catch return Error.InvalidGpx;
         try result.track.append(.{
             .lat = fmt.parseFloat(f64, lat) catch return Error.InvalidGpx,
             .lon = fmt.parseFloat(f64, lon) catch return Error.InvalidGpx,
-            .ele = fmt.parseFloat(f16, ele) catch return Error.InvalidGpx,
+            .ele = @intFromFloat(elevation * 10),
             .time = timeStrToTimestamp(time) catch return Error.InvalidGpxTime,
+            .temp = if (temp == null) null else fmt.parseInt(i8, temp.?, 10) catch return Error.InvalidGpxTemperature,
         });
-
         pos += idx + trkpt.len;
     }
 }
@@ -96,7 +83,7 @@ test parse {
         \\          <time>2022-01-07T09:19:53Z</time>
         \\      </trkpt>
         \\      <trkpt lat="48.9667190" lon="32.2284070">
-        \\          <ele>126.0</ele>
+        \\          <ele>126.1</ele>
         \\          <time>2022-01-07T09:19:54Z</time>
         \\      </trkpt>
         \\  </trgseg>
@@ -106,7 +93,7 @@ test parse {
     defer gpx.deinit();
 
     try t.expect(mem.eql(u8, gpx.name, "Testing 🏝️"));
-    try t.expect(mem.eql(u8, gpx.type, "cycling"));
+    try t.expect(gpx.type == .cycling);
     try t.expect(gpx.track.items.len == 2);
     try t.expectError(Error.InvalidGpx, parse(t.allocator, gpx_content[0 .. gpx_content.len / 2]));
 }

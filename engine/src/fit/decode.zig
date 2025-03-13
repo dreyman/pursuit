@@ -15,37 +15,64 @@ pub const DecodeError = error{
     InvalidFitFile,
     InvalidFitHeader,
     InvalidArchitectureValue,
-    DefinitionNotFound,
+    DataWithoutDefinition,
 };
 
-// pub fn decodeActivitySimple(
-//     allocator: mem.Allocator,
-//     fit_bytes: []const u8,
-// ) !struct {
-//     lat: std.ArrayList(i32),
-//     lon: std.ArrayList(i32),
-//     time: std.ArrayList(u32),
-// } {
+pub const Result = struct {
+    lat: []f32,
+    lon: []f32,
+    time: []u32,
+    temperature: ?[]i8,
+    altitude: ?[]i32,
+};
+
+// pub fn decodeRoutePoints(alloc: std.mem.Allocator, fit_bytes: []const u8) !Result {
 //     if (fit_bytes.len < fit.header_len_min) return DecodeError.InvalidFitFile;
 //     const header_size = fit_bytes[0];
 //     if (header_size != fit.header_len_min and header_size != fit.header_len_max) {
 //         return DecodeError.InvalidFitHeader;
 //     }
 //     const fit_header: fit.Header = .{ .bytes = fit_bytes[0..header_size] };
-//     const pos: usize = fit_header.size();
-//     // file id message definition
-//     const def_header: fit.Message.Header = .{ .byte = fit_bytes[pos] };
-//     if (def_header.messageType() != .definition)
+//     // var definitions = std.AutoHashMap(u4, fit.Message.Definition).init(alloc);
+//     // var messages = std.ArrayList(fit.Message.Data).init(alloc);
+//     // defer {
+//     //     var it = definitions.valueIterator();
+//     //     while (it.next()) |def| {
+//     //         alloc.free(def.fields);
+//     //         alloc.free(def.dev_fields);
+//     //     }
+//     //     definitions.deinit();
+//     // }
+//     // errdefer messages.deinit();
+//     if (fit_bytes.len < fit_header.size() + fit_header.dataSize()) {
 //         return DecodeError.InvalidFitFile;
-//     const endian: Endian = if (fit_bytes[pos + 2] == 0)
-//         .little
-//     else if (fit_bytes[pos + 2] == 1)
-//         .big
-//     else
-//         return DecodeError.InvalidFitFile;
-//     const id = mem.readVarInt(fit_bytes[pos + 3 .. pos + 5], endian);
-//     if (id != profile.CommonMessage.file_id) return DecodeError.InvalidFitFile;
+//     }
 
+//     var pos: usize = header_size;
+//     var size: usize = undefined;
+//     while (pos < fit_bytes.len - 2) {
+//         const header: fit.Message.Header = .{ .byte = fit_bytes[pos] };
+//         pos += 1;
+//         switch (header.messageType()) {
+//             .definition => {
+//                 size, const def = try decodeDefinitionMessage(alloc, header, fit_bytes[pos..]);
+//                 pos += size;
+//                 definitions.put(def.local_id, def) catch unreachable;
+//             },
+//             .data => {
+//                 const definition = definitions.get(header.localId()) orelse return DecodeError.DefinitionNotFound;
+//                 size, const mesg = try decodeFitDataMessage(alloc, fit_bytes[pos..], definition);
+//                 pos += size;
+//                 messages.append(mesg) catch unreachable;
+//             },
+//         }
+//     }
+//     return .{
+//         .alloc = alloc,
+//         .bytes = fit_bytes,
+//         .header = fit_header,
+//         .messages = messages,
+//     };
 // }
 
 // fixme check array boundaries
@@ -68,7 +95,7 @@ pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
     }
     errdefer messages.deinit();
     if (fit_bytes.len < fit_header.size() + fit_header.dataSize()) {
-        return DecodeError.InvalidFitHeader;
+        return DecodeError.InvalidFitFile;
     }
 
     var pos: usize = header_size;
@@ -83,7 +110,7 @@ pub fn decode(alloc: std.mem.Allocator, fit_bytes: []const u8) DecodeError!Fit {
                 definitions.put(def.local_id, def) catch unreachable;
             },
             .data => {
-                const definition = definitions.get(header.localId()) orelse return DecodeError.DefinitionNotFound;
+                const definition = definitions.get(header.localId()) orelse return DecodeError.DataWithoutDefinition;
                 size, const mesg = try decodeFitDataMessage(alloc, fit_bytes[pos..], definition);
                 pos += size;
                 messages.append(mesg) catch unreachable;

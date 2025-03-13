@@ -8,7 +8,7 @@ const assert = std.debug.assert;
 
 const storage = @import("storage.zig");
 const fit = @import("fit/fit.zig");
-const geo = @import("geo.zig");
+const core = @import("core.zig");
 const file_import = @import("file_import.zig");
 
 const wf_dir_name = ".wild-fields";
@@ -52,10 +52,10 @@ pub fn main() !void {
     try writeAndExit(help, .{}, 0);
 }
 
-fn writeResultAndExit(stats: geo.Route.Stats) !noreturn {
+fn writeResultAndExit(stats: core.Stats) !noreturn {
     try json.stringify(
         stats,
-        .{},
+        .{ .whitespace = .indent_4 },
         std.io.getStdOut().writer(),
     );
     std.process.exit(0);
@@ -101,14 +101,19 @@ const Command = struct {
         const gps_file_path = try std.fs.path.resolve(alloc, &.{ cwd_path, file_path });
         defer alloc.free(gps_file_path);
 
-        const imporoted = file_import.importGpsFile(alloc, gps_file_path) catch |err| switch (err) {
+        const imported = file_import.importGpsFile(alloc, gps_file_path) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
 
-        storage.addEntry(alloc, gps_file_path, imporoted.route) catch |err| switch (err) {
+        storage.addEntry(
+            alloc,
+            gps_file_path,
+            imported.route,
+            imported.stats,
+        ) catch |err| switch (err) {
             else => try writeErrorAndExit("{s}", .{@errorName(err)}),
         };
 
-        try writeResultAndExit(imporoted.stats);
+        try writeResultAndExit(imported.stats);
     }
 };

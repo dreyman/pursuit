@@ -6,7 +6,7 @@ const json = std.json;
 
 const fit = @import("fit/fit.zig");
 const fit_protocol = @import("fit/fit_protocol.zig");
-const geo = @import("geo.zig");
+const core = @import("core.zig");
 
 const wf_dir_name = ".wild-fields";
 
@@ -21,9 +21,10 @@ pub fn create(alloc: mem.Allocator) Error!void {
 pub fn addEntry(
     allocator: mem.Allocator,
     original_file_path: []const u8,
-    route: geo.Route,
+    route: core.Route,
+    stats: core.Stats,
 ) !void {
-    const entry_dir_path = try getEntryDirPath(allocator, route.timestamps[0]);
+    const entry_dir_path = try getEntryDirPath(allocator, route.time[0]);
     defer allocator.free(entry_dir_path);
     try fs.makeDirAbsolute(entry_dir_path);
     errdefer fs.deleteDirAbsolute(entry_dir_path) catch unreachable; // fixme
@@ -41,14 +42,17 @@ pub fn addEntry(
     defer allocator.free(track_file_path);
     const route_file_path = try std.fmt.allocPrint(allocator, "{s}/route", .{entry_dir_path});
     defer allocator.free(route_file_path);
+    const stats_file_path = try std.fmt.allocPrint(allocator, "{s}/stats.json", .{entry_dir_path});
+    defer allocator.free(stats_file_path);
 
     try createRouteFile(track_file_path, route, false);
     try createRouteFile(route_file_path, route, true);
+    try createStatsFile(stats_file_path, stats);
 }
 
 fn createRouteFile(
     file_path: []const u8,
-    route: geo.Route,
+    route: core.Route,
     include_time: bool,
 ) !void {
     const file = try fs.createFileAbsolute(file_path, .{});
@@ -56,16 +60,32 @@ fn createRouteFile(
     errdefer fs.deleteFileAbsolute(file_path) catch unreachable; // fixme
 
     const writer = file.writer();
-    try writer.writeInt(u32, @intCast(route.points.len), .big);
-    for (route.points, 0..) |point, i| {
-        try writer.writeAll(&mem.toBytes(point.lat));
-        try writer.writeAll(&mem.toBytes(point.lon));
+    try writer.writeInt(u32, @intCast(route.len()), .big);
+    for (0..route.len()) |i| {
+        try writer.writeAll(&mem.toBytes(route.lat[i]));
+        try writer.writeAll(&mem.toBytes(route.lon[i]));
         if (include_time) {
-            try writer.writeAll(&mem.toBytes(route.timestamps[i]));
+            try writer.writeAll(&mem.toBytes(route.time[i]));
         }
         // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lat)), .big);
         // try writer.writeInt(u32, @as(u32, @bitCast(latlon.lon)), .big);
     }
+}
+
+fn createStatsFile(
+    file_path: []const u8,
+    stats: core.Stats,
+) !void {
+    const file = try fs.createFileAbsolute(file_path, .{});
+    defer file.close();
+    errdefer fs.deleteFileAbsolute(file_path) catch unreachable; // fixme
+
+    const writer = file.writer();
+    try std.json.stringify(stats, .{ .whitespace = .indent_4 }, writer);
+    // try writer.writeAll(std.json.fmt(
+    //     stats,
+    //     .{ .whitespace = .indent_4 },
+    // ));
 }
 
 pub fn createTempFile(

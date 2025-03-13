@@ -5,23 +5,22 @@ const mem = std.mem;
 const gzip = std.compress.gzip;
 
 const fit_import = @import("import/fit_import.zig");
+// const gpx_import = @import("import/gpx_import.zig");
 const storage = @import("storage.zig");
-// const fit = @import("fit/fit.zig");
-// const calc = @import("calc.zig");
-const geo = @import("geo.zig");
+const core = @import("core.zig");
 
 pub const Error = error{UnsupportedFileFormat};
 
 pub const SupportedExtension = enum {
     fit,
     fitgz,
-    // gpx,
+    gpx,
     // gpxgz,
 };
 
 pub const ImportResult = struct {
-    route: geo.Route,
-    stats: geo.Route.Stats,
+    route: core.Route,
+    stats: core.Stats,
 };
 
 pub fn importGpsFile(
@@ -31,9 +30,9 @@ pub fn importGpsFile(
     const ext = getExtension(file_path);
     if (ext == null) return Error.UnsupportedFileFormat;
     switch (ext.?) {
-        .fit => {
-            return try fit_import.importFitFilePath(a, file_path);
-        },
+        .fit => return try fit_import.importFitFilePath(a, file_path),
+        .gpx => unreachable,
+        // .gpx => return try gpx_import.importGpxFilePath(a, file_path),
         .fitgz => {
             const name = fs.path.basename(file_path);
             assert(mem.endsWith(u8, name, ".gz"));
@@ -58,7 +57,7 @@ pub fn getExtension(file_path: []const u8) ?SupportedExtension {
     const name = fs.path.basename(file_path);
     if (mem.endsWith(u8, name, ".fit")) return .fit;
     if (mem.endsWith(u8, name, ".fit.gz")) return .fitgz;
-    // if (mem.endsWith(u8, name, ".gpx")) return .gpx;
+    if (mem.endsWith(u8, name, ".gpx")) return .gpx;
     // if (mem.endsWith(u8, name, ".gpx.gz")) return .gpxgz;
     return null;
 }
