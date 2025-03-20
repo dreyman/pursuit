@@ -10,11 +10,19 @@ const core = @import("core.zig");
 
 pub const Error = error{UnsupportedFileFormat};
 
-pub const SupportedExtension = enum {
+pub const GpsFileType = enum {
     fit,
     fitgz,
     gpx,
     gpxgz,
+
+    pub fn fromPath(path: []const u8) ?GpsFileType {
+        if (mem.endsWith(u8, path, ".fit")) return .fit;
+        if (mem.endsWith(u8, path, ".fit.gz")) return .fitgz;
+        if (mem.endsWith(u8, path, ".gpx")) return .gpx;
+        if (mem.endsWith(u8, path, ".gpx.gz")) return .gpxgz;
+        return null;
+    }
 };
 
 pub const ImportResult = struct {
@@ -26,30 +34,22 @@ pub fn importGpsFile(
     a: mem.Allocator,
     file_path: []const u8,
 ) !ImportResult {
-    const ext = getExtension(file_path) orelse return Error.UnsupportedFileFormat;
-    switch (ext) {
+    const gpsFileType = GpsFileType.fromPath(file_path) orelse
+        return Error.UnsupportedFileFormat;
+    switch (gpsFileType) {
         .fit => return try fit_import.importFitFilePath(a, file_path),
         .gpx => return try gpx_import.importGpxFilePath(a, file_path),
         .fitgz, .gpxgz => {
-            const ungzipped_file = try storage.ungzip(a, file_path);
+            const ungzipped = try storage.ungzip(a, file_path);
             defer {
-                ungzipped_file.close();
+                ungzipped.close();
                 // storage.deleteTempFile(a, ungzipped_file); // fixme
             }
-            if (ext == .fitgz)
-                return try fit_import.importFitFile(a, ungzipped_file);
-            if (ext == .gpxgz)
-                return try gpx_import.importGpxFile(a, ungzipped_file);
-            unreachable;
+            if (gpsFileType == .fitgz) {
+                return try fit_import.importFitFile(a, ungzipped);
+            } else {
+                return try gpx_import.importGpxFile(a, ungzipped);
+            }
         },
     }
-}
-
-fn getExtension(file_path: []const u8) ?SupportedExtension {
-    const name = fs.path.basename(file_path);
-    if (mem.endsWith(u8, name, ".fit")) return .fit;
-    if (mem.endsWith(u8, name, ".fit.gz")) return .fitgz;
-    if (mem.endsWith(u8, name, ".gpx")) return .gpx;
-    if (mem.endsWith(u8, name, ".gpx.gz")) return .gpxgz;
-    return null;
 }

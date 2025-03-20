@@ -28,6 +28,7 @@ pub fn importGpxFile(
     defer a.free(bytes);
 
     const gpx_data = try gpx.parse(a, bytes);
+    defer gpx_data.deinit();
     const route = routeFromGpx(a, gpx_data);
     var stats = core.calcRouteStats(route, .degrees);
     stats.type = routeTypeFromGpxType(gpx_data.type);

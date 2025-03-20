@@ -15,6 +15,8 @@ pub const Distance = struct {
     pub const Meters = u32;
 };
 
+pub const max_time_gap = 3;
+
 pub const Route = struct {
     allocator: mem.Allocator,
     lat: []f32,
@@ -26,7 +28,6 @@ pub const Route = struct {
     // cadence: []u8
 
     pub fn init(a: mem.Allocator, size: usize) !Route {
-        assert(size > 0);
         return .{
             .allocator = a,
             .lat = try a.alloc(f32, size),
@@ -101,7 +102,7 @@ pub const Stats = struct {
     stops_count: u16,
     stops_duration: u32,
     untracked_distance: Distance.Meters,
-    avg_moving_speed: Speed.MetersPerHour,
+    avg_speed: Speed.MetersPerHour,
     avg_travel_speed: Speed.MetersPerHour,
     // max_speed: Speed.MetersPerHour,
     westernmost: Point,
@@ -123,7 +124,7 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
         .stops_count = 0,
         .stops_duration = 0,
         .untracked_distance = 0,
-        .avg_moving_speed = 0,
+        .avg_speed = 0,
         .avg_travel_speed = 0,
         // .max_speed = 0,
         .westernmost = undefined,
@@ -139,17 +140,17 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
     var southernmost_idx: usize = 0;
     var northernmost_idx: usize = 0;
     for (1..route.len()) |i| {
-        const cur_lat = route.lat[i];
-        const cur_lon = route.lon[i];
-        const prev_lat = route.lat[i - 1];
-        const prev_lon = route.lon[i - 1];
+        const curlat = route.lat[i];
+        const curlon = route.lon[i];
+        const prevlat = route.lat[i - 1];
+        const prevlon = route.lon[i - 1];
         const t1 = route.time[i - 1];
         const t2 = route.time[i];
         const distance = switch (unit) {
-            .radians => calc.distanceRadians(prev_lat, prev_lon, cur_lat, cur_lon),
-            .degrees => calc.distanceDegrees(prev_lat, prev_lon, cur_lat, cur_lon),
+            .radians => calc.distanceRadians(prevlat, prevlon, curlat, curlon),
+            .degrees => calc.distanceDegrees(prevlat, prevlon, curlat, curlon),
         };
-        if (t2 - t1 > 1) {
+        if (t2 - t1 > max_time_gap) {
             stats.stops_count += 1;
             stats.stops_duration += t2 - t1;
             untracked_distance += distance;
@@ -157,10 +158,10 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
             total_distance += distance;
             // if (distance > longest_gap) longest_gap = distance;
         }
-        if (cur_lon < route.lon[westernmost_idx]) westernmost_idx = i;
-        if (cur_lon > route.lon[easternmost_idx]) easternmost_idx = i;
-        if (cur_lat > route.lat[northernmost_idx]) northernmost_idx = i;
-        if (cur_lat < route.lat[southernmost_idx]) southernmost_idx = i;
+        if (curlon < route.lon[westernmost_idx]) westernmost_idx = i;
+        if (curlon > route.lon[easternmost_idx]) easternmost_idx = i;
+        if (curlat > route.lat[northernmost_idx]) northernmost_idx = i;
+        if (curlat < route.lat[southernmost_idx]) southernmost_idx = i;
     }
     stats.westernmost = route.point(westernmost_idx);
     stats.easternmost = route.point(easternmost_idx);
@@ -169,7 +170,7 @@ pub fn calcRouteStats(route: Route, unit: CoordUnit) Stats {
     stats.distance = @intFromFloat(total_distance * 1_000);
     stats.untracked_distance = @intFromFloat(untracked_distance * 1_000);
     stats.moving_time = stats.total_time - stats.stops_duration;
-    stats.avg_moving_speed = calc.avgSpeed(total_distance, stats.moving_time);
+    stats.avg_speed = calc.avgSpeed(total_distance, stats.moving_time);
     stats.avg_travel_speed = calc.avgSpeed(total_distance, stats.total_time);
     // stats.max_speed = calc.avgSpeed(longest_gap, 1);
     return stats;

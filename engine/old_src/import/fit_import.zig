@@ -24,6 +24,7 @@ pub fn importFitFile(
     fit_file: fs.File,
 ) !ImportResult {
     const fit_activity = try fit.decodeActivityFromFile(a, fit_file);
+    defer fit_activity.deinit();
     var route = routeFromFitActivity(a, fit_activity, .radians);
     var stats = core.calcRouteStats(route, .radians);
     stats.type = routeTypeFromFitSport(fit_activity.session.sport);
