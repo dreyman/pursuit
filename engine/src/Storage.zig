@@ -13,7 +13,8 @@ const Pursuit = data.Pursuit;
 
 const storage_dir_name = ".pursuit";
 const db_file_name = "pursuit.db";
-const max_id_len = 10; // u32 to str max len; fixme: should be calculated at comptime
+const temp_dir_name = "temp";
+const max_id_len = maxLen(u32);
 
 dir: fs.Dir,
 db: *Database,
@@ -54,6 +55,9 @@ pub fn setup(alloc: Allocator) !void {
     var home = try fs.cwd().openDir(home_path, .{});
     defer home.close();
     try home.makeDir(storage_dir_name);
+    var storage_dir = try home.openDir(storage_dir_name, .{});
+    defer storage_dir.close();
+    try storage_dir.makeDir(temp_dir_name);
 
     const db_file_path = try fs.path.joinZ(
         alloc,
@@ -69,14 +73,14 @@ pub fn createEntry(
     entry: *Pursuit,
     gps_file: *const GpsFile,
 ) !void {
-    var dir = try storageDir(storage.alloc);
-    defer dir.close();
+    // var dir = try storageDir(storage.alloc);
+    // defer dir.close();
     // create entry dir
     const id = gps_file.stats.start_time;
     var buf: [max_id_len]u8 = undefined;
     const entry_dir_name = try std.fmt.bufPrint(&buf, "{}", .{id});
-    try dir.makeDir(entry_dir_name);
-    const entry_dir = try dir.openDir(entry_dir_name, .{});
+    try storage.dir.makeDir(entry_dir_name);
+    const entry_dir = try storage.dir.openDir(entry_dir_name, .{});
     // copy original file
     const copy_name = try originalFileName(storage.alloc, original_file);
     defer storage.alloc.free(copy_name);
@@ -113,12 +117,16 @@ pub fn createEntry(
     entry.id = id;
 }
 
-fn storageDir(alloc: Allocator) !fs.Dir {
-    const home_path = posix.getenv("HOME") orelse
-        return Error.HomeDirNotFound;
-    const path = try fs.path.join(alloc, &.{ home_path, storage_dir_name });
-    defer alloc.free(path);
-    return try fs.cwd().openDir(path, .{});
+pub fn createTempFile(storage: *const Storage, filename: []const u8) !fs.File {
+    var temp_dir = try storage.dir.openDir(temp_dir_name, .{});
+    defer temp_dir.close();
+    return try temp_dir.createFile(filename, .{ .read = true });
+}
+
+pub fn deleteTempFile(storage: *const Storage, filename: []const u8) !void {
+    var temp_dir = try storage.dir.openDir(temp_dir_name, .{});
+    defer temp_dir.close();
+    return try temp_dir.deleteFile(filename);
 }
 
 fn originalFileName(alloc: Allocator, original_file_path: []const u8) ![]u8 {
@@ -137,4 +145,11 @@ fn dbFilePath(alloc: Allocator) ![:0]const u8 {
         alloc,
         &.{ home_path, storage_dir_name, db_file_name },
     );
+}
+
+fn maxLen(T: type) usize {
+    const max = std.math.maxInt(T);
+    var buf: [100]u8 = undefined;
+    const res = std.fmt.bufPrint(&buf, "{}", .{max}) catch @compileError("asdadas");
+    return res.len;
 }

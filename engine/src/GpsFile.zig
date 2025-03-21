@@ -1,5 +1,17 @@
 const GpsFile = @This();
 
+const std = @import("std");
+const assert = std.debug.assert;
+const mem = std.mem;
+const fs = std.fs;
+const Allocator = mem.Allocator;
+const gzip = std.compress.gzip;
+
+const Storage = @import("Storage.zig");
+const data = @import("data.zig");
+const fitfile = @import("gpsfile/fitfile.zig");
+const gpxfile = @import("gpsfile/gpxfile.zig");
+
 route: data.Route,
 stats: data.Stats,
 kind: data.Pursuit.Kind,
@@ -26,6 +38,7 @@ pub const Error = error{UnsupportedFileFormat};
 
 pub fn create(
     alloc: Allocator,
+    storage: *const Storage,
     file: []const u8,
 ) !*GpsFile {
     const gpsFileType = Type.fromPath(file) orelse
@@ -37,20 +50,39 @@ pub fn create(
                 try readFileContent(alloc, file, gpsFileType),
             );
         },
-        else => unreachable,
-        // .gpx => return try gpx_import.importGpxFilePath(a, file_path),
-        // .fitgz, .gpxgz => {
-        //     const ungzipped = try storage.ungzip(a, file_path);
-        //     defer {
-        //         ungzipped.close();
-        //         // storage.deleteTempFile(a, ungzipped_file); // fixme
-        //     }
-        //     if (gpsFileType == .fitgz) {
-        //         return try fit_import.importFitFile(a, ungzipped);
-        //     } else {
-        //         return try gpx_import.importGpxFile(a, ungzipped);
-        //     }
-        // },
+        .gpx => {
+            return try gpxfile.parse(
+                alloc,
+                try readFileContent(alloc, file, gpsFileType),
+            );
+        },
+        .fitgz, .gpxgz => {
+            const fullname = fs.path.basename(file);
+            assert(mem.endsWith(u8, fullname, ".gz"));
+            const ungzipped_name = fullname[0 .. fullname.len - ".gz".len];
+            var ungzipped = try storage.createTempFile(ungzipped_name);
+            defer {
+                ungzipped.close();
+                storage.deleteTempFile(ungzipped_name) catch
+                    std.log.info("Failed to delete temp file: {s}", .{ungzipped_name});
+            }
+            const gzipped = try fs.cwd().openFile(file, .{});
+            defer gzipped.close();
+            try gzip.decompress(gzipped.reader(), ungzipped.writer());
+            try ungzipped.seekTo(0);
+
+            if (gpsFileType == .fitgz) {
+                return try fitfile.decode(
+                    alloc,
+                    try ungzipped.readToEndAlloc(alloc, maxFileSize(gpsFileType)),
+                );
+            } else {
+                return try gpxfile.parse(
+                    alloc,
+                    try ungzipped.readToEndAlloc(alloc, maxFileSize(gpsFileType)),
+                );
+            }
+        },
     }
 }
 
@@ -66,14 +98,7 @@ fn maxFileSize(file_type: Type) usize {
     return switch (file_type) {
         .fit => fit_file_size_max,
         .gpx => gpx_file_size_max,
-        else => unreachable,
+        .fitgz => fit_file_size_max,
+        .gpxgz => gpx_file_size_max,
     };
 }
-
-const std = @import("std");
-const mem = std.mem;
-const fs = std.fs;
-const Allocator = mem.Allocator;
-
-const data = @import("data.zig");
-const fitfile = @import("gpsfile/fitfile.zig");

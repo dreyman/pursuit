@@ -1,6 +1,7 @@
 const std = @import("std");
 const mem = std.mem;
 const math = std.math;
+const Allocator = mem.Allocator;
 
 const calc = @import("calc.zig");
 
@@ -21,8 +22,31 @@ pub const Pursuit = struct {
     description: []const u8,
     kind: Kind,
     bike_id: u32,
+    alloc: Allocator,
 
-    pub const Kind = enum { cycling, running, walking, hiking, unknown };
+    pub fn destroy(p: *Pursuit) void {
+        p.alloc.free(p.name);
+        p.alloc.free(p.description);
+        p.alloc.destroy(p);
+    }
+
+    pub const Kind = enum {
+        cycling,
+        running,
+        walking,
+        hiking,
+        unknown,
+
+        pub fn verb(kind: Kind) []const u8 {
+            return switch (kind) {
+                .unknown => "unknown activity",
+                .cycling => "ride",
+                .running => "run",
+                .walking => "walk",
+                .hiking => "hike",
+            };
+        }
+    };
 };
 
 pub const Bike = struct {
