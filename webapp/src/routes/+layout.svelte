@@ -22,7 +22,7 @@ let { children } = $props()
         </nav>
     </aside>
 
-    <div class="page-content flex flex-col items-center">
+    <div class="page-content flex flex-col">
         {@render children()}
     </div>
 </div>

@@ -19,7 +19,7 @@ onMount(async () => {
             return
         }
         const points = []
-        for (let i = 1; i < track_points.length; i += 2) {
+        for (let i = 0; i < track_points.length; i += 2) {
             points.push(Leaflet.latLng(track_points[i], track_points[i + 1]))
         }
         draw_track(points)

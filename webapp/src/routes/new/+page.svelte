@@ -21,7 +21,7 @@ async function on_file_upload(e) {
             alert('Something went wrong')
         }
     } catch (e) {
-        alert('Internal server error')
+        alert('Failed to upload file')
         // handle error
         console.error(e)
     }
@@ -29,7 +29,7 @@ async function on_file_upload(e) {
 </script>
 
 <div class="page">
-    <input type="file" id="fileupload" accept=".fit" onchange={on_file_upload} />
+    <input type="file" id="fileupload" accept=".fit, .fit.gz, .gpx" onchange={on_file_upload} />
 </div>
 
 <style>

@@ -14,20 +14,18 @@ function onedit() {
 }
 </script>
 
-<div class="page mt-5 flex flex-col items-center gap-2">
+<div class="page mt-5 ml-10 flex flex-col gap-2">
     <h1 class="flex items-center gap-1">
         <span>{route.name}</span>
         <button onclick={onedit}><Icon Icon={Edit} size="lg" /></button>
     </h1>
-    <div class="testr"></div>
-    <h2 class="date">{util.timestamp_to_string(route.start * 1000)}</h2>
+    <h2 class="date">{util.timestamp_to_string(route.start_time * 1000)}</h2>
     <div class="flex gap-6">
         <Distance val={route.distance} />
         <Time seconds={route.total_time} />
         <Time seconds={route.moving_time} />
         <span class="text-xl"
-            ><span class="bold">{((36 * route.distance) / route.moving_time).toFixed(1)}</span
-            >km/h</span
+            ><span class="bold">{(route.avg_speed / 1000).toFixed(1)}</span>km/h</span
         >
     </div>
     <Track id={route.id} />
@@ -39,7 +37,7 @@ function onedit() {
 }
 
 h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     line-height: 2rem;
 }
 
@@ -48,6 +46,6 @@ h1 {
 }
 
 .date {
-    font-size: 1.25rem;
+    font-size: 1rem;
 }
 </style>

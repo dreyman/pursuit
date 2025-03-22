@@ -48,8 +48,8 @@ export function init_leaflet_map(Leaflet, map_el) {
 export function leftPad(val, char, len) {
     let str = val.toString()
     if (str.length >= len) return str
-    let result = ''
+    let offset = ''
     for (let i = 0; i < len - str.length; ++i)
-        result += char
-    return result + str
+        offset += char
+    return offset + str
 }

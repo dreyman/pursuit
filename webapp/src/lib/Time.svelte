@@ -9,7 +9,9 @@ let s = $derived(seconds % 60)
 </script>
 
 <div class="text-xl">
-    <span class="bold">{util.leftPad(h, '0', 2)}</span>:<span class="bold">{m}</span>:{s}
+    <span class="bold">{util.leftPad(h, '0', 2)}</span>:<span class="bold"
+        >{util.leftPad(m, '0', 2)}</span
+    >:{util.leftPad(s, '0', 2)}
 </div>
 
 <style>
