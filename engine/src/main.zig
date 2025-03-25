@@ -33,7 +33,18 @@ pub fn main() !void {
         const filepath = args.next() orelse {
             try writeAndExit("error: expected file path\nSupported files: .fit, .gpx, .fit.gz, .gpx.gz", .{});
         };
-        app.importGpsFile(allocator, filepath) catch |err| switch (err) {
+        const id = app.importGpsFile(allocator, filepath) catch |err| switch (err) {
+            else => try writeAndExit("error: {s}", .{@errorName(err)}),
+        };
+        try writeAndExit("done. id={d}", .{id});
+    }
+
+    if (mem.eql(u8, command, "strava")) {
+        const strava = @import("strava.zig");
+        const dir = args.next() orelse {
+            try writeAndExit("error: expected strava export dir path", .{});
+        };
+        strava.importStravaArchive(allocator, dir) catch |err| switch (err) {
             else => try writeAndExit("error: {s}", .{@errorName(err)}),
         };
         try writeAndExit("done.", .{});

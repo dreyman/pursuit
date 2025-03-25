@@ -28,7 +28,7 @@ pub const Gpx = struct {
     pub const Trkpt = struct {
         lat: f64,
         lon: f64,
-        ele: i32,
+        ele: ?i32,
         time: u32,
         temp: ?i8,
 
@@ -42,9 +42,9 @@ pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
     var result = Gpx.init(a);
     errdefer result.deinit();
 
-    result.name = try tagContent(gpx, "name"); // fixme should copy bytes from src arr
+    result.name = try tagContent(gpx, "name") orelse return Error.InvalidGpx;
     const type_str = try tagContent(gpx, "type");
-    result.type = std.meta.stringToEnum(Gpx.Type, type_str);
+    result.type = if (type_str) |t| std.meta.stringToEnum(Gpx.Type, t) else null;
 
     var pos: usize = 0;
     while (true) {
@@ -54,13 +54,17 @@ pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
         const lat = try attr(trkpt, "lat");
         const lon = try attr(trkpt, "lon");
         const ele = try tagContent(trkpt, "ele");
-        const time = try tagContent(trkpt, "time");
+        const time = try tagContent(trkpt, "time") orelse return Error.InvalidGpx;
         const temp = tagContent(trkpt, "gpxtpx:atemp") catch null;
-        const elevation = fmt.parseFloat(f32, ele) catch return Error.InvalidGpx;
+        const elevation = if (ele) |e|
+            fmt.parseFloat(f32, e) catch
+                return Error.InvalidGpx
+        else
+            null;
         try result.track.append(.{
             .lat = fmt.parseFloat(f64, lat) catch return Error.InvalidGpx,
             .lon = fmt.parseFloat(f64, lon) catch return Error.InvalidGpx,
-            .ele = @intFromFloat(elevation * 10),
+            .ele = if (elevation) |e| @intFromFloat(e * 10) else null,
             .time = timeStrToTimestamp(time) catch return Error.InvalidGpxTime,
             .temp = if (temp == null) null else fmt.parseInt(i8, temp.?, 10) catch return Error.InvalidGpxTemperature,
         });
@@ -111,7 +115,7 @@ pub fn tagAndIndex(
 }
 
 pub fn tag(gpx: []const u8, comptime tag_name: []const u8) !?[]const u8 {
-    _, const tag_str = try tagAndIndex(gpx, tag_name) orelse return Error.InvalidGpx;
+    _, const tag_str = try tagAndIndex(gpx, tag_name) orelse return null;
     return tag_str;
 }
 
@@ -121,6 +125,7 @@ test tag {
         \\  <ele>126.0</ele>
         \\  <time>2022-01-07T09:19:57Z</time>
         \\  <foo attr1="val">hello</foo>
+        \\  <noclosingtag>hmmmm<noclosingtag>
         \\</trkpt>
     ;
 
@@ -131,11 +136,12 @@ test tag {
     try testing.expect(mem.eql(u8, ele.?, "<ele>126.0</ele>"));
     try testing.expect(mem.eql(u8, time.?, "<time>2022-01-07T09:19:57Z</time>"));
     try testing.expect(mem.eql(u8, foo.?, "<foo attr1=\"val\">hello</foo>"));
-    try testing.expectError(Error.InvalidGpx, tagContent("missingtag", gpx));
+    try testing.expect(try tag("missingtag", gpx) == null);
+    try testing.expectError(Error.InvalidGpx, tag(gpx, "noclosingtag"));
 }
 
-pub fn tagContent(gpx: []const u8, comptime tag_name: []const u8) ![]const u8 {
-    const from = indexOf(u8, gpx, 0, "<" ++ tag_name) orelse return Error.InvalidGpx;
+pub fn tagContent(gpx: []const u8, comptime tag_name: []const u8) !?[]const u8 {
+    const from = indexOf(u8, gpx, 0, "<" ++ tag_name) orelse return null;
     const content_idx = (indexOf(u8, gpx, from, ">") orelse return Error.InvalidGpx) + 1;
     const closing_tag = "</" ++ tag_name ++ ">";
     const to = indexOf(u8, gpx, from + 1, closing_tag) orelse return Error.InvalidGpx;
@@ -149,13 +155,12 @@ test tagContent {
         \\<time>2022-01-07T09:19:57Z</time>
         \\</trkpt>
     ;
-
     const ele = try tagContent(gpx, "ele");
     const time = try tagContent(gpx, "time");
 
-    try testing.expect(mem.eql(u8, ele, "126.0"));
-    try testing.expect(mem.eql(u8, time, "2022-01-07T09:19:57Z"));
-    try testing.expectError(Error.InvalidGpx, tagContent("missingtag", gpx));
+    try testing.expect(mem.eql(u8, ele.?, "126.0"));
+    try testing.expect(mem.eql(u8, time.?, "2022-01-07T09:19:57Z"));
+    try testing.expect(try tagContent("missingtag", gpx) == null);
     try testing.expectError(Error.InvalidGpx, tagContent("<noclosingtag>content", "noclosingtag"));
 }
 

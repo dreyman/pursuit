@@ -18,7 +18,7 @@ pub fn setup(alloc: Allocator) !void {
     try Storage.setup(alloc);
 }
 
-pub fn importGpsFile(alloc: Allocator, file: []const u8) !void {
+pub fn importGpsFile(alloc: Allocator, file: []const u8) !u32 {
     var storage = try Storage.create(alloc);
     defer storage.destroy();
     const gps_file = try GpsFile.create(alloc, storage, file);
@@ -27,7 +27,8 @@ pub fn importGpsFile(alloc: Allocator, file: []const u8) !void {
     var pursuit = try initEntry(alloc, gps_file);
     defer pursuit.destroy();
 
-    try storage.createEntry(file, pursuit, gps_file);
+    try storage.saveEntry(file, pursuit, gps_file);
+    return pursuit.id;
 }
 
 fn initEntry(alloc: Allocator, gps_file: *const GpsFile) !*Pursuit {

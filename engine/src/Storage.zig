@@ -67,16 +67,14 @@ pub fn setup(alloc: Allocator) !void {
     try Database.setup(db_file_path);
 }
 
-pub fn createEntry(
+pub fn saveEntry(
     storage: *Storage,
     original_file: []const u8,
     entry: *Pursuit,
     gps_file: *const GpsFile,
 ) !void {
-    // var dir = try storageDir(storage.alloc);
-    // defer dir.close();
-    // create entry dir
     const id = gps_file.stats.start_time;
+    // create entry dir
     var buf: [max_id_len]u8 = undefined;
     const entry_dir_name = try std.fmt.bufPrint(&buf, "{}", .{id});
     try storage.dir.makeDir(entry_dir_name);

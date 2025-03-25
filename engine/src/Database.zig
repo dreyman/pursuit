@@ -8,6 +8,7 @@ const sqlite = @import("sqlite");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
 const Stats = data.Stats;
+const Bike = data.Bike;
 
 file: [:0]const u8,
 db: sqlite.Db,
@@ -92,20 +93,66 @@ pub fn setup(db_file: [:0]const u8) !void {
     defer db.deinit();
     try db.execDynamic(create_bike_table, .{}, .{});
     try db.execDynamic(create_pursuit_table, .{}, .{});
-    try createBike(&db, &.{ .id = 0, .name = "Unknown" });
+    try createBike(&db, &.{
+        .id = 0,
+        .name = "Unknown",
+        .distance = 0,
+        .time = 0,
+        .created_at = @intCast(std.time.timestamp()),
+        .archived = false,
+    });
 }
 
-pub fn createBike(db: *sqlite.Db, bike: *const data.Bike) !void {
-    try db.execDynamic("insert into bike(id, name) values (?, ?)", .{}, .{
-        bike.id,
-        bike.name,
-    });
+pub fn createBike(db: *sqlite.Db, bike: *const Bike) !void {
+    try db.execDynamic(
+        "insert into bike(name, distance, time, created_at, archived) values (?, ?, ?, ?, ?)",
+        .{},
+        .{ bike.name, bike.distance, bike.time, bike.created_at, bike.archived },
+    );
+}
+
+pub fn updateBike(database: *Database, bike: *const Bike) !void {
+    try database.db.execDynamic(
+        \\ update bike
+        \\ set name = ?, distance = ?, time = ?, archived = ?
+        \\ where id = ?
+    ,
+        .{},
+        .{ bike.name, bike.distance, bike.time, bike.archived, bike.id },
+    );
+}
+
+pub fn createBikeWithName(database: *Database, name: []const u8) !*Bike {
+    const bike = try database.alloc.create(Bike);
+    bike.* = .{
+        .id = 0,
+        .name = name,
+        .distance = 0,
+        .time = 0,
+        .created_at = @intCast(std.time.timestamp()),
+        .archived = false,
+    };
+    try createBike(&database.db, bike);
+    bike.id = @intCast(database.db.getLastInsertRowID());
+    return bike;
+}
+
+pub fn getBikes(database: *Database) ![]Bike {
+    const q = "select * from bike";
+    var stmt = try database.db.prepareDynamic(q);
+    defer stmt.deinit();
+    const bikes = try stmt.all(Bike, database.alloc, .{}, .{});
+    return bikes;
 }
 
 const create_bike_table =
     \\ create table bike(
     \\      id integer primary key,
-    \\      name text not null
+    \\      name text not null,
+    \\      distance integer not null,
+    \\      time integer not null,
+    \\      created_at integer not null,
+    \\      archived integer not null
     \\ ) strict;
 ;
 
