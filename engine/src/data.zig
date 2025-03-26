@@ -18,11 +18,12 @@ pub const Distance = struct {
 
 pub const Pursuit = struct {
     alloc: Allocator,
-    id: u32,
+    id: ID,
     name: []const u8,
     description: []const u8,
     kind: Kind,
-    bike_id: u32,
+
+    pub const ID = u32;
 
     pub fn destroy(p: *Pursuit) void {
         p.alloc.free(p.name);
@@ -49,8 +50,9 @@ pub const Pursuit = struct {
     };
 };
 
-pub const Bike = struct {
+pub const Medium = struct {
     id: ID,
+    kind: []const u8,
     name: []const u8,
     distance: u32,
     time: u32,
@@ -58,6 +60,24 @@ pub const Bike = struct {
     archived: bool,
 
     pub const ID = u32;
+
+    pub fn createEmpty(
+        alloc: Allocator,
+        kind: []const u8,
+        name: []const u8,
+    ) !*Medium {
+        const m = try alloc.create(Medium);
+        m.* = .{
+            .id = undefined,
+            .kind = kind,
+            .name = name,
+            .distance = 0,
+            .time = 0,
+            .created_at = @intCast(std.time.timestamp()),
+            .archived = false,
+        };
+        return m;
+    }
 };
 
 pub const Route = struct {
@@ -228,40 +248,3 @@ pub const Stats = struct {
         stats.southernmost.toDegrees();
     }
 };
-
-// test "trouble" {
-//     const t = std.testing;
-//     // const GpsFile = @import("GpsFile.zig");
-//     const fitfile = @import("gpsfile/fitfile.zig");
-//     // const Storage = @import("Storage.zig");
-//     const file = "/home/ihor/trouble.fit";
-//     // const storage = try Storage.create(t.allocator);
-
-//     // const gpsfile = try GpsFile.create(t.allocator, storage, file);
-//     const gpsfile = try fitfile.decode(
-//         t.allocator,
-//         try (try std.fs.cwd().openFile(file, .{})).readToEndAlloc(t.allocator, 100_000_000),
-//     );
-//     defer {
-//         t.allocator.free(gpsfile.route.lat);
-//         t.allocator.free(gpsfile.route.lon);
-//         t.allocator.free(gpsfile.route.time);
-//         t.allocator.destroy(gpsfile);
-//     }
-
-//     for (100..120) |i| {
-//         std.debug.print("{d} {d} {d}\n", .{
-//             gpsfile.route.time[i],
-//             gpsfile.route.lat[i],
-//             gpsfile.route.lon[i],
-//         });
-//     }
-
-//     try std.json.stringify(
-//         gpsfile.stats,
-//         .{ .whitespace = .indent_4 },
-//         std.io.getStdOut().writer(),
-//     );
-
-//     try t.expect(5 == 5);
-// }

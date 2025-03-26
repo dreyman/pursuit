@@ -5,6 +5,7 @@ const testing = std.testing;
 const fmt = std.fmt;
 
 const indexOf = mem.indexOfPosLinear;
+const stringToEnum = std.meta.stringToEnum;
 
 pub const Error = error{ InvalidGpx, InvalidGpxTime, InvalidGpxTemperature };
 
@@ -44,7 +45,7 @@ pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
 
     result.name = try tagContent(gpx, "name") orelse return Error.InvalidGpx;
     const type_str = try tagContent(gpx, "type");
-    result.type = if (type_str) |t| std.meta.stringToEnum(Gpx.Type, t) else null;
+    result.type = if (type_str) |t| stringToEnum(Gpx.Type, t) else null;
 
     var pos: usize = 0;
     while (true) {

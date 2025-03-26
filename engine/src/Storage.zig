@@ -4,17 +4,20 @@ const std = @import("std");
 const fs = std.fs;
 const mem = std.mem;
 const posix = std.posix;
+const assert = std.debug.assert;
 const Allocator = mem.Allocator;
 
+const default = @import("default_data.zig");
 const Database = @import("Database.zig");
 const GpsFile = @import("GpsFile.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
+const Medium = data.Medium;
 
-const storage_dir_name = ".pursuit";
-const db_file_name = "pursuit.db";
-const temp_dir_name = "temp";
-const max_id_len = maxLen(u32);
+pub const storage_dir_name = ".pursuit";
+pub const db_file_name = "pursuit.db";
+pub const temp_dir_name = "temp";
+const max_id_len = maxLen(Pursuit.ID);
 
 dir: fs.Dir,
 db: *Database,
@@ -49,30 +52,32 @@ pub fn destroy(storage: *Storage) void {
     storage.alloc.destroy(storage);
 }
 
-pub fn setup(alloc: Allocator) !void {
-    const home_path = posix.getenv("HOME") orelse
-        return Error.HomeDirNotFound;
-    var home = try fs.cwd().openDir(home_path, .{});
-    defer home.close();
-    try home.makeDir(storage_dir_name);
-    var storage_dir = try home.openDir(storage_dir_name, .{});
-    defer storage_dir.close();
-    try storage_dir.makeDir(temp_dir_name);
+// pub fn setup(alloc: Allocator) !void {
+//     const home_path = posix.getenv("HOME") orelse
+//         return Error.HomeDirNotFound;
+//     var home = try fs.cwd().openDir(home_path, .{});
+//     defer home.close();
+//     try home.makeDir(storage_dir_name);
+//     var storage_dir = try home.openDir(storage_dir_name, .{});
+//     defer storage_dir.close();
+//     try storage_dir.makeDir(temp_dir_name);
 
-    const db_file_path = try fs.path.joinZ(
-        alloc,
-        &.{ home_path, storage_dir_name, db_file_name },
-    );
-    defer alloc.free(db_file_path);
-    try Database.setup(db_file_path);
-}
+//     const db_file_path = try fs.path.joinZ(
+//         alloc,
+//         &.{ home_path, storage_dir_name, db_file_name },
+//     );
+//     defer alloc.free(db_file_path);
+//     try Database.setup(db_file_path);
+// }
 
 pub fn saveEntry(
     storage: *Storage,
     original_file: []const u8,
     entry: *Pursuit,
     gps_file: *const GpsFile,
+    medium_id: ?Medium.ID,
 ) !void {
+    assert(medium_id != null or entry.kind == .unknown);
     const id = gps_file.stats.start_time;
     // create entry dir
     var buf: [max_id_len]u8 = undefined;
@@ -111,7 +116,13 @@ pub fn saveEntry(
     // save to db
     const db_file = try dbFilePath(storage.alloc);
     defer storage.alloc.free(db_file);
-    try storage.db.saveEntry(id, entry, &gps_file.stats);
+    try storage.db.savePursuit(
+        id,
+        entry,
+        &gps_file.stats,
+        medium_id orelse
+            if (default.Medium.defaultForPursuitKind(entry.kind)) |def| def.id else null,
+    );
     entry.id = id;
 }
 
@@ -147,7 +158,7 @@ fn dbFilePath(alloc: Allocator) ![:0]const u8 {
 
 fn maxLen(T: type) usize {
     const max = std.math.maxInt(T);
-    var buf: [100]u8 = undefined;
-    const res = std.fmt.bufPrint(&buf, "{}", .{max}) catch @compileError("asdadas");
+    var buf: [50]u8 = undefined;
+    const res = std.fmt.bufPrint(&buf, "{}", .{max}) catch @compileError("buffer too small");
     return res.len;
 }

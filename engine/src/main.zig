@@ -3,6 +3,7 @@ const mem = std.mem;
 const assert = std.debug.assert;
 
 const app = @import("app.zig");
+const setup = @import("setup.zig");
 
 const version = "0.0.1-wip";
 
@@ -23,7 +24,7 @@ pub fn main() !void {
     if (mem.eql(u8, command, "version")) try writeAndExit(version, .{});
 
     if (mem.eql(u8, command, "init")) {
-        app.setup(allocator) catch |err| switch (err) {
+        setup.install(allocator) catch |err| switch (err) {
             else => try writeAndExit("error: {s}", .{@errorName(err)}),
         };
         try writeAndExit("done.", .{});
