@@ -4,28 +4,28 @@ import Leaflet from 'leaflet'
 import * as util from '$lib/util.js'
 import * as api from '$lib/api.js'
 
-/** @type {{id: number}} */
-const { id } = $props()
+/** @type {{id: number, cfg: MapCfg}} */
+const { id, cfg } = $props()
 /** @type {any} */
 let map
 /** @type {HTMLElement} */
 let map_el
 let failed_to_load = $state(false)
 
-onMount(async () => {
-    api.get_track(fetch, id).then(track_points => {
-        if (!track_points) {
-            failed_to_load = true
-            return
-        }
-        const points = []
-        for (let i = 0; i < track_points.length; i += 2) {
-            points.push(Leaflet.latLng(track_points[i], track_points[i + 1]))
-        }
-        draw_track(points)
-    })
-    map = util.init_leaflet_map(Leaflet, map_el)
-})
+// onMount(async () => {
+//     api.get_track(fetch, id).then(track_points => {
+//         if (!track_points) {
+//             failed_to_load = true
+//             return
+//         }
+//         const points = []
+//         for (let i = 0; i < track_points.length; i += 2) {
+//             points.push(Leaflet.latLng(track_points[i], track_points[i + 1]))
+//         }
+//         draw_track(points)
+//     })
+//     map = util.initLeafletMap(Leaflet, map_el, cfg)
+// })
 
 /** @param {any[]} points */
 function draw_track(points) {
@@ -42,5 +42,6 @@ function draw_track(points) {
 .map {
     width: 600px;
     height: 600px;
+    background: #a0a0a0;
 }
 </style>

@@ -1,4 +1,20 @@
 /**
+ * @param {any} pursuit
+ * @returns {MapCfg}
+ */
+export function mapCfg(pursuit) {
+    const center = [
+        (pursuit.westernmost_lat + pursuit.easternmost_lat) / 2,
+        (pursuit.northernmost_lon + pursuit.southernmost_lon) / 2,
+    ]
+    const bounds = [
+        [pursuit.northernmost_lat, pursuit.westernmost_lon],
+        [pursuit.southernmost_lat, pursuit.easternmost_lon]
+    ]
+    return { center, bounds }
+}
+
+/**
  * @param {number} timestamp
  * @returns {string}
  */
@@ -29,14 +45,16 @@ function time_unit_str(val) {
 /**
  * @param {any} Leaflet
  * @param {HTMLElement} map_el
+ * @param {MapCfg} cfg
  * @returns {any} leaflet map object
  * */
-export function init_leaflet_map(Leaflet, map_el) {
-    const map = Leaflet.map(map_el, { zoomControl: false }).setView([48.95, 32.2], 11)
+export function initLeafletMap(Leaflet, map_el, cfg) {
+    const map = Leaflet.map(map_el, { zoomControl: false }).setView(cfg.center, 12)
     Leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        maxZoom: 18,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map)
+    map.fitBounds(cfg.bounds)
     return map
 }
 

@@ -10,7 +10,23 @@
     --grey-500: #272727;
 
     --primary-color: var(--light-blue);
-    --link-color: var(--light-blue);
+    --link-color: var(--blue-11);
+
+    /* radix colors   */
+    --purple-9: #8E4EC6;
+    --purple-10: #9A5CD0;
+    --purple-11: #D19DFF;
+
+    --blue-9: #0090FF;
+    --blue-10: #3B9EFF;
+    --blue-11: #70B8FF;
+
+    --sky-8: #197CAE;
+    --sky-9: #7CE2FE;
+    --sky-10: #A8EEFF;
+    --sky-11: #75C7F0;
+    --sky-12: #C2F3FF;
+
 }
 
 html, body {
@@ -18,6 +34,7 @@ html, body {
 }
 
 body {
+    font-family: Roboto, "DejaVu Sans", Arial, sans-serif;
     background: var(--dark-grey);
     color: var(--light-grey);
 }
@@ -35,10 +52,11 @@ a {
     cursor: pointer;
 }
 
-input {
+input, textarea {
     background: var(--grey-500);
     border: 1px solid var(--light-grey);
     border-radius: 0.5rem;
+    padding: 0 0.25rem;
 }
 
 /*svg {

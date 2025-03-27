@@ -8,9 +8,9 @@ export async function load({ fetch, params }) {
     if (last && last.id == params.id) {
         return { route: state.entries.pop() }
     }
-    const route = await api.get_route(fetch, +params.id)
-    if (route != null) {
-        return { route }
+    const pursuit = await api.getPursuit(fetch, +params.id)
+    if (pursuit != null) {
+        return { pursuit }
     } else {
         error(404, 'Not Found')
     }

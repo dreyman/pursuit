@@ -9,14 +9,29 @@ declare global {
         // interface Platform {}
     }
 
+    type MapCfg = {
+        center: [number, number];
+        bounds: [[number, number], [number, number]];
+    }
+
     type Bike = {
-        id: string,
-        name: string,
-        distance: number,
+        id: string;
+        name: string;
+        distance: number;
     }
 
     type NewBike = {
-        name: string,
+        name: string;
+    }
+
+    type PursuitMetadata = {
+        name: string;
+        description: string;
+    }
+
+    enum PursuitKind {
+        cycling,
+        running,
     }
 }
 

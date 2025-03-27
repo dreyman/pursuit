@@ -1,7 +1,7 @@
 <script>
 import { goto } from '$app/navigation'
 import * as cache from '$lib/shared_state.js'
-
+// fixme use bind:files
 /** @param {any} e */
 async function on_file_upload(e) {
     if (!e.target || !e.target.files || !e.target.files[0]) return
@@ -14,7 +14,6 @@ async function on_file_upload(e) {
         })
         if (resp.status == 200) {
             const entry = await resp.json()
-            console.log('UPLOAD 200 json: ', entry)
             cache.entries.push(entry)
             goto('/entry/' + entry.id)
         } else {
@@ -22,7 +21,7 @@ async function on_file_upload(e) {
         }
     } catch (e) {
         alert('Failed to upload file')
-        // handle error
+        // fixme handle error
         console.error(e)
     }
 }

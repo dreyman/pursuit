@@ -29,7 +29,7 @@ function onsave(new_bike) {
 
 {#each bikes as bike}
     <div class="flex gap-6">
-        <span>{bike.name}</span>
+        <span class="text-xl">{bike.name}</span>
         <Distance val={bike.distance} />
         <Time seconds={bike.time} />
     </div>

@@ -4,9 +4,9 @@ const API_URL = 'http://localhost:7070/api';
  * @param {any} fetch
  * @param {number} id
  */
-export async function get_route(fetch, id) {
+export async function getPursuit(fetch, id) {
     try {
-        const resp = await fetch(`${API_URL}/routes/${id}`)
+        const resp = await fetch(`${API_URL}/pursuit/${id}`)
         if (resp.status != 200) return null
         return await resp.json()
     } catch (err) {
@@ -17,13 +17,30 @@ export async function get_route(fetch, id) {
 
 
 /** @param {any} fetch */
-export async function get_routes(fetch) {
+export async function getPursuits(fetch) {
     try {
-        const resp = await fetch(`${API_URL}/routes`)
+        const resp = await fetch(`${API_URL}/pursuit?order_by=start_time&desc=true`)
         if (resp.status != 200) return []
         return await resp.json()
     } catch (err) {
         return []
+    }
+}
+
+/**
+ * @param {any} fetch
+ * @param {any} payload
+ */
+export async function updatePursuit(fetch, payload) {
+    try {
+        const resp = await fetch(`${API_URL}/pursuit`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        })
+        if (resp.status != 200) return false
+        return true
+    } catch (err) {
+        return false
     }
 }
 
