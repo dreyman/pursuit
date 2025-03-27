@@ -1,13 +1,8 @@
-package pursuit;
-
-import pursuit.model.Route;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 public class Cli {
@@ -25,7 +20,7 @@ public class Cli {
                 .create();
     }
 
-    public Route importFromFile(String filePath)
+    public int importFromFile(String filePath)
             throws InterruptedException, IOException, InvalidResult {
         var pb = new ProcessBuilder(cli_path, "add", filePath);
         var process = pb.start();
@@ -33,18 +28,16 @@ public class Cli {
         int exitStatus = process.exitValue();
         if (exitStatus == 0) {
             try (var reader = process.inputReader()) {
-                var json = reader.readLine();
-                try {
-                    var route = gson.fromJson(json, Route.class);
-                    route.id = route.start;
-                    route.name = Instant.ofEpochSecond(route.start).toString();
-                    return route;
-                } catch (JsonSyntaxException x) {
-                    throw new InvalidResult();
+                var result = reader.readLine();
+                var expected = "done. id=";
+                if (result.startsWith("done. id=")) {
+                    var id = Integer.parseInt(result, expected.length(), result.length(), 10);
+                    return id;
                 }
+
             }
         }
-        return null;
+        throw new InvalidResult();
     }
 
 }
