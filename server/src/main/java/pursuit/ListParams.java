@@ -65,8 +65,8 @@ public class ListParams implements ApiRequest {
     }
 
     @Override
-    public String buildQuery(String select_query) {
-        var q = new StringBuilder(select_query);
+    public String buildQuery(String prefix) {
+        var q = new StringBuilder(prefix);
 
         var where = new StringBuilder();
 

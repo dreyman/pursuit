@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ListParamsTest {
 
     @Test
-    void listQuery() {
+    void buildQuery() {
         var listRequest = new ListParams(Map.of("kind", List.of("some")));
         var query = listRequest.buildQuery("SELECT * FROM tbl");
         var expected = "SELECT * FROM tbl WHERE kind = ? and archived = ? " +

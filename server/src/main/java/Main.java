@@ -2,12 +2,17 @@ import app.ErrorResponse;
 import api.InvalidRequest;
 import com.google.gson.*;
 import io.javalin.Javalin;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import org.jetbrains.annotations.NotNull;
+import pursuit.Api;
+import pursuit.Pursuit;
 
 import java.lang.reflect.Type;
 import java.time.Instant;
+
+import static io.javalin.http.HttpStatus.*;
 
 public class Main {
     final static String db_file = "/home/ihor/.pursuit/pursuit.db";
@@ -46,6 +51,31 @@ public class Main {
                     } catch (InvalidRequest x) {
                         ctx.status(422);
                         ctx.json(new ErrorResponse(x.getMessage()));
+                    }
+                })
+                .get("/api/pursuit/{id}", ctx -> {
+                    try {
+                        var id = Integer.parseInt(ctx.pathParam("id"));
+                        var prst = pursuitApi.getById(id);
+                        if (prst == null) {
+                            ctx.status(NOT_FOUND);
+                            return;
+                        }
+                        ctx.json(prst);
+                    } catch (NumberFormatException x) {
+                        ctx.status(NOT_FOUND);
+                    }
+                })
+                .put("/api/pursuit", ctx -> {
+                    var payload = ctx.bodyAsClass(pursuit.UpdatePayload.class);
+                    try {
+                        var updated = pursuitApi.update(payload);
+                        if (!updated)
+                            ctx.status(NOT_FOUND);
+                        else
+                            ctx.status(OK);
+                    } catch (pursuit.Api.InvalidPayload x) {
+                        ctx.status(UNPROCESSABLE_CONTENT);
                     }
                 })
 //                .get("/api/routes", ctx -> {

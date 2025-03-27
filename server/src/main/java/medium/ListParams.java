@@ -31,8 +31,8 @@ public class ListParams implements ApiRequest {
     }
 
     @Override
-    public String buildQuery(String select_query) {
-        var q = new StringBuilder(select_query);
+    public String buildQuery(String select) {
+        var q = new StringBuilder(select);
 
         var where = new StringBuilder();
         if (kind != null) where.append("kind = ?");
