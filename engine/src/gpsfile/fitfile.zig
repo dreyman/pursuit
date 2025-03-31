@@ -22,6 +22,7 @@ pub fn decode(
     route.toDegrees();
     const result = try alloc.create(GpsFile);
     result.* = .{
+        .alloc = alloc,
         .route = route,
         .stats = stats,
         .kind = kindFromFitSport(fit_activity.session.sport),

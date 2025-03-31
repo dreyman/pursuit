@@ -13,6 +13,8 @@ const type_idx = 3;
 const description_idx = 4;
 const gear_idx = 11;
 const filename_idx = 12;
+//
+const distance_idx = 17;
 
 pub const Activity = struct {
     alloc: Allocator,
@@ -22,6 +24,8 @@ pub const Activity = struct {
     description: []u8,
     gear: []u8,
     file: []u8,
+    //
+    distance: f64,
 
     pub const ID = u64;
 
@@ -49,6 +53,8 @@ pub const Activity = struct {
         const filename = try alloc.dupe(u8, rec[filename_idx]);
         errdefer alloc.free(filename);
 
+        const distance = try std.fmt.parseFloat(f64, rec[distance_idx]);
+
         a.* = .{
             .alloc = alloc,
             .id = id,
@@ -57,6 +63,8 @@ pub const Activity = struct {
             .description = descr,
             .gear = gear,
             .file = filename,
+            //
+            .distance = distance,
         };
         return a;
     }
@@ -95,18 +103,4 @@ pub fn processStravaArchive(
         try acs.append(try Activity.createFromList(alloc, rec.items));
     }
     return acs;
-}
-
-test processStravaArchive {
-    const t = std.testing;
-    const archive_dir_path = "/home/ihor/stuff/export_53360041";
-    var acs = try processStravaArchive(t.allocator, archive_dir_path);
-    defer {
-        for (acs.items) |ac| ac.destroy();
-        acs.deinit();
-    }
-    std.debug.print("{d}\n", .{acs.items.len});
-    std.debug.print("{s}\n", .{acs.items[acs.items.len / 2].name});
-
-    try t.expect(4 == 4);
 }

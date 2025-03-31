@@ -17,6 +17,7 @@ pub fn parse(
     const kind = kindFromGpxType(gpx_data.type);
     const result = try alloc.create(GpsFile);
     result.* = .{
+        .alloc = alloc,
         .route = route,
         .stats = stats,
         .kind = kind,

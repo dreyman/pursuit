@@ -5,7 +5,8 @@ const Allocator = mem.Allocator;
 
 const calc = @import("calc.zig");
 
-pub const max_time_gap = 5;
+pub const max_time_gap = 10;
+pub const min_speed = 4;
 
 pub const Speed = struct {
     pub const MetersPerHour = u21;
@@ -213,7 +214,9 @@ pub const Stats = struct {
                 .radians => calc.distanceRadians(prevlat, prevlon, curlat, curlon),
                 .degrees => calc.distanceDegrees(prevlat, prevlon, curlat, curlon),
             };
-            if (t2 - t1 > max_time_gap) {
+            const time_diff_hours: f64 = @as(f64, @floatFromInt(t2 - t1)) / 3600;
+            const speed = distance / time_diff_hours;
+            if (t2 - t1 > max_time_gap or speed < min_speed) {
                 stats.stops_count += 1;
                 stats.stops_duration += t2 - t1;
                 untracked_distance += distance;

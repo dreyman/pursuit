@@ -96,6 +96,8 @@ const create_pursuit_medium_table =
     \\ create table pursuit_medium(
     \\      pursuit_id integer not null,
     \\      medium_id integer not null,
+    //
+    \\      unique(pursuit_id, medium_id),
     \\      foreign key(pursuit_id) references pursuit(id),
     \\      foreign key(medium_id) references medium(id)
     \\ ) strict;

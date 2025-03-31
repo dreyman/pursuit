@@ -12,6 +12,7 @@ const data = @import("data.zig");
 const fitfile = @import("gpsfile/fitfile.zig");
 const gpxfile = @import("gpsfile/gpxfile.zig");
 
+alloc: Allocator,
 route: data.Route,
 stats: data.Stats,
 kind: data.Pursuit.Kind,
@@ -84,6 +85,11 @@ pub fn create(
             }
         },
     }
+}
+
+pub fn destroy(gpsfile: *GpsFile) void {
+    gpsfile.route.deinit();
+    gpsfile.alloc.destroy(gpsfile);
 }
 
 fn readFileContent(

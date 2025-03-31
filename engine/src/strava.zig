@@ -30,7 +30,9 @@ pub fn importStravaArchive(alloc: Allocator, export_dir: []const u8) !void {
         storage.destroy();
     }
 
-    for (activities.items[150..181]) |ac| {
+    const from = 0;
+    const to = activities.items.len;
+    for (activities.items[from..to]) |ac| {
         importActivity(alloc, storage, ac, &mediums, export_dir) catch |err|
             switch (err) {
             else => {
@@ -82,7 +84,6 @@ fn importActivity(
         try mediums.append(new.*);
         break :mdm new.*;
     };
-
     try storage.saveEntry(file, prst, gps_file, medium.id);
 }
 
