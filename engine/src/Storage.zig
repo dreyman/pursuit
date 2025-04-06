@@ -2,21 +2,23 @@ const Storage = @This();
 
 const std = @import("std");
 const fs = std.fs;
+const gzip = std.compress.gzip;
 const mem = std.mem;
 const posix = std.posix;
 const assert = std.debug.assert;
 const Allocator = mem.Allocator;
 
-const default = @import("default_data.zig");
 const Database = @import("Database.zig");
-const GpsFile = @import("GpsFile.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
 const Medium = data.Medium;
+const Route = data.Route;
+const Stats = data.Stats;
 
 pub const storage_dir_name = ".pursuit";
 pub const db_file_name = "pursuit.db";
 pub const temp_dir_name = "temp";
+pub const routes_dir_name = "routes";
 const max_id_len = maxLen(Pursuit.ID);
 
 dir: fs.Dir,
@@ -52,38 +54,22 @@ pub fn destroy(storage: *Storage) void {
     storage.alloc.destroy(storage);
 }
 
-// pub fn setup(alloc: Allocator) !void {
-//     const home_path = posix.getenv("HOME") orelse
-//         return Error.HomeDirNotFound;
-//     var home = try fs.cwd().openDir(home_path, .{});
-//     defer home.close();
-//     try home.makeDir(storage_dir_name);
-//     var storage_dir = try home.openDir(storage_dir_name, .{});
-//     defer storage_dir.close();
-//     try storage_dir.makeDir(temp_dir_name);
-
-//     const db_file_path = try fs.path.joinZ(
-//         alloc,
-//         &.{ home_path, storage_dir_name, db_file_name },
-//     );
-//     defer alloc.free(db_file_path);
-//     try Database.setup(db_file_path);
-// }
-
 pub fn saveEntry(
-    storage: *Storage,
+    storage: *const Storage,
     original_file: []const u8,
-    entry: *Pursuit,
-    gps_file: *const GpsFile,
-    medium_id: ?Medium.ID,
-) !void {
-    assert(medium_id != null or entry.kind == .unknown);
-    const id = gps_file.stats.start_time;
+    entry: Pursuit,
+    route: Route,
+    stats: Stats,
+) !Pursuit.ID {
+    const id = stats.start_time;
     // create entry dir
+    var routes_dir = try storage.dir.openDir(routes_dir_name, .{});
+    defer routes_dir.close();
     var buf: [max_id_len]u8 = undefined;
     const entry_dir_name = try std.fmt.bufPrint(&buf, "{}", .{id});
-    try storage.dir.makeDir(entry_dir_name);
-    const entry_dir = try storage.dir.openDir(entry_dir_name, .{});
+    try routes_dir.makeDir(entry_dir_name);
+    var entry_dir = try routes_dir.openDir(entry_dir_name, .{});
+    defer entry_dir.close();
     // copy original file
     const copy_name = try originalFileName(storage.alloc, original_file);
     defer storage.alloc.free(copy_name);
@@ -92,7 +78,7 @@ pub fn saveEntry(
     var stats_file = try entry_dir.createFile("stats.json", .{});
     defer stats_file.close();
     try std.json.stringify(
-        gps_file.stats,
+        stats,
         .{ .whitespace = .indent_4 },
         stats_file.writer(),
     );
@@ -100,18 +86,18 @@ pub fn saveEntry(
     var track_file = try entry_dir.createFile("track", .{});
     defer track_file.close();
     const trackwriter = track_file.writer();
-    for (0..gps_file.route.len()) |i| {
-        try trackwriter.writeAll(&mem.toBytes(gps_file.route.lat[i]));
-        try trackwriter.writeAll(&mem.toBytes(gps_file.route.lon[i]));
+    for (0..route.len()) |i| {
+        try trackwriter.writeAll(&mem.toBytes(route.lat[i]));
+        try trackwriter.writeAll(&mem.toBytes(route.lon[i]));
     }
     // save route file
     var route_file = try entry_dir.createFile("route", .{});
     defer route_file.close();
     const routewriter = route_file.writer();
-    for (0..gps_file.route.len()) |i| {
-        try routewriter.writeAll(&mem.toBytes(gps_file.route.lat[i]));
-        try routewriter.writeAll(&mem.toBytes(gps_file.route.lon[i]));
-        try routewriter.writeAll(&mem.toBytes(gps_file.route.time[i]));
+    for (0..route.len()) |i| {
+        try routewriter.writeAll(&mem.toBytes(route.lat[i]));
+        try routewriter.writeAll(&mem.toBytes(route.lon[i]));
+        try routewriter.writeAll(&mem.toBytes(route.time[i]));
     }
     // save to db
     const db_file = try dbFilePath(storage.alloc);
@@ -119,11 +105,20 @@ pub fn saveEntry(
     try storage.db.savePursuit(
         id,
         entry,
-        &gps_file.stats,
-        medium_id orelse
-            if (default.Medium.defaultForPursuitKind(entry.kind)) |def| def.id else null,
+        stats,
     );
-    entry.id = id;
+    return id;
+}
+
+pub fn ungzip(storage: *const Storage, gzipped_file_path: []const u8) !fs.File {
+    const fullname = fs.path.basename(gzipped_file_path);
+    const ungzipped_name = fullname[0 .. fullname.len - ".gz".len];
+    var ungzipped = try storage.createTempFile(ungzipped_name);
+    const gzipped = try fs.cwd().openFile(gzipped_file_path, .{});
+    defer gzipped.close();
+    try gzip.decompress(gzipped.reader(), ungzipped.writer());
+    try ungzipped.seekTo(0);
+    return ungzipped;
 }
 
 pub fn createTempFile(storage: *const Storage, filename: []const u8) !fs.File {

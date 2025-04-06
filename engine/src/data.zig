@@ -5,9 +5,6 @@ const Allocator = mem.Allocator;
 
 const calc = @import("calc.zig");
 
-pub const max_time_gap = 10;
-pub const min_speed = 4;
-
 pub const Speed = struct {
     pub const MetersPerHour = u21;
 };
@@ -18,25 +15,24 @@ pub const Distance = struct {
 };
 
 pub const Pursuit = struct {
-    alloc: Allocator,
     id: ID,
     name: []const u8,
     description: []const u8,
     kind: Kind,
+    medium_id: ?Medium.ID,
 
     pub const ID = u32;
 
-    pub fn destroy(p: *Pursuit) void {
-        p.alloc.free(p.name);
-        p.alloc.free(p.description);
-        p.alloc.destroy(p);
+    pub fn destroy(p: *Pursuit, alloc: Allocator) void {
+        alloc.free(p.name);
+        alloc.free(p.description);
+        alloc.destroy(p);
     }
 
     pub const Kind = enum {
         cycling,
         running,
         walking,
-        hiking,
         unknown,
 
         pub fn verb(kind: Kind) []const u8 {
@@ -45,7 +41,6 @@ pub const Pursuit = struct {
                 .cycling => "ride",
                 .running => "run",
                 .walking => "walk",
-                .hiking => "hike",
             };
         }
     };
@@ -55,12 +50,13 @@ pub const Medium = struct {
     id: ID,
     kind: []const u8,
     name: []const u8,
-    distance: u32,
-    time: u32,
     created_at: u32,
-    archived: bool,
 
     pub const ID = u32;
+    pub const Kind = enum {
+        bike,
+        shoes,
+    };
 
     pub fn createEmpty(
         alloc: Allocator,
@@ -69,13 +65,10 @@ pub const Medium = struct {
     ) !*Medium {
         const m = try alloc.create(Medium);
         m.* = .{
-            .id = undefined,
+            .id = 0,
             .kind = kind,
             .name = name,
-            .distance = 0,
-            .time = 0,
             .created_at = @intCast(std.time.timestamp()),
-            .archived = false,
         };
         return m;
     }
@@ -135,6 +128,13 @@ pub const Route = struct {
     }
 };
 
+pub const Tag = struct {
+    id: ID,
+    name: []u8,
+
+    pub const ID = u32;
+};
+
 pub const Point = struct {
     lat: f32,
     lon: f32,
@@ -175,7 +175,14 @@ pub const Stats = struct {
     southernmost: Point,
     size: u32,
 
-    pub fn fromRoute(route: Route, unit: CoordUnit) Stats {
+    pub const Alg = enum {
+        every_second,
+        min_speed,
+
+        pub const min_speed_kmh = 4.5;
+    };
+
+    pub fn fromRoute(route: Route, unit: CoordUnit, alg: Alg) Stats {
         var stats = Stats{
             .start_time = route.time[0],
             .finish_time = route.time[route.time.len - 1],
@@ -216,13 +223,16 @@ pub const Stats = struct {
             };
             const time_diff_hours: f64 = @as(f64, @floatFromInt(t2 - t1)) / 3600;
             const speed = distance / time_diff_hours;
-            if (t2 - t1 > max_time_gap or speed < min_speed) {
+            const moving = switch (alg) {
+                .every_second => t2 - t1 == 1,
+                .min_speed => speed > Alg.min_speed_kmh,
+            };
+            if (moving) {
+                total_distance += distance;
+            } else {
                 stats.stops_count += 1;
                 stats.stops_duration += t2 - t1;
                 untracked_distance += distance;
-            } else {
-                total_distance += distance;
-                // if (distance > longest_gap) longest_gap = distance;
             }
             if (curlon < route.lon[westernmost_idx]) westernmost_idx = i;
             if (curlon > route.lon[easternmost_idx]) easternmost_idx = i;

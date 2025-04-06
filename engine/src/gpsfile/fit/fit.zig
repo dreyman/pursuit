@@ -11,7 +11,6 @@ pub const Record = profile.Record;
 pub const Header = protocol.Header;
 
 pub const decode = @import("decode.zig").decode;
-pub const util = @import("util.zig");
 pub const Sport = profile.Sport;
 
 pub fn decodeActivityFromFile(

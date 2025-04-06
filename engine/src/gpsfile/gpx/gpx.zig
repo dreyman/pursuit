@@ -39,6 +39,22 @@ pub const Gpx = struct {
     pub const Type = enum { cycling, running };
 };
 
+test "bwoken" {
+    const t = std.testing;
+    const alloc = t.allocator;
+    const file = "/home/ihor/code/pursuit/dev/14059479709.gpx";
+    const content = try std.fs.cwd().readFileAlloc(alloc, file, 100_000_000);
+    defer alloc.free(content);
+    var gpx = try parse(alloc, content);
+    defer gpx.deinit();
+
+    std.debug.print("name = {s}\n", .{gpx.name});
+    std.debug.print("type = {s}\n", .{if (gpx.type != null) @tagName(gpx.type.?) else "null"});
+    std.debug.print("track size = {d}\n", .{gpx.track.items.len});
+
+    try t.expect(4 == 4);
+}
+
 pub fn parse(a: mem.Allocator, gpx: []const u8) !Gpx {
     var result = Gpx.init(a);
     errdefer result.deinit();

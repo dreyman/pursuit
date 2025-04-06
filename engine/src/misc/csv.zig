@@ -5,17 +5,15 @@ const ArrayList = std.ArrayList;
 
 pub const Csv = struct {
     alloc: Allocator,
-    content: []const u8,
     header: ArrayList(V),
     records: ArrayList(ArrayList(V)),
 
     pub const V = []const u8;
 
-    pub fn create(alloc: Allocator, csv_content: []const u8) !*Csv {
+    pub fn create(alloc: Allocator) !*Csv {
         const csv = try alloc.create(Csv);
         csv.* = .{
             .alloc = alloc,
-            .content = csv_content,
             .header = ArrayList(V).init(alloc),
             .records = ArrayList(ArrayList(V)).init(alloc),
         };
@@ -26,7 +24,6 @@ pub const Csv = struct {
         for (csv.records.items) |rec| rec.deinit();
         csv.records.deinit();
         csv.header.deinit();
-        csv.alloc.free(csv.content);
         csv.alloc.destroy(csv);
     }
 
@@ -39,7 +36,7 @@ pub const Error = error{InvalidCsv};
 pub const ParseError = Allocator.Error || Error;
 
 pub fn parse(alloc: Allocator, csv: []const u8) ParseError!*Csv {
-    var result = try Csv.create(alloc, csv);
+    var result = try Csv.create(alloc);
     errdefer result.destroy();
     var pos: usize = 0;
     while (true) {
@@ -56,20 +53,12 @@ pub fn parse(alloc: Allocator, csv: []const u8) ParseError!*Csv {
             if (pos >= csv.len)
                 return Error.InvalidCsv;
             const len = valueLen(csv[pos..]);
-            // if (len == 0) {
-            //     try record.append(null);
-            // } else {
             const quotes = csv[pos] == '"' and csv[pos + len - 1] == '"';
             if (quotes) {
-                // if (len == 2) {
-                //     try record.append(null);
-                // } else {
                 try record.append(csv[pos + 1 .. pos + len - 1]);
-                // }
             } else {
                 try record.append(csv[pos .. pos + len]);
             }
-            // }
 
             pos += len + 1;
         }
@@ -95,7 +84,7 @@ fn valueLen(csv: []const u8) usize {
 test parse {
     const t = std.testing;
     {
-        const csv_test =
+        const csv_content =
             \\First,Second,Third
             \\first,second,third
             \\"",,""text in quotes""
@@ -103,8 +92,6 @@ test parse {
             \\value",some text
             \\,"",,
         ;
-        const csv_content = try t.allocator.alloc(u8, csv_test.len);
-        @memcpy(csv_content, csv_test);
         var csv = try parse(t.allocator, csv_content);
         defer csv.destroy();
 
@@ -127,13 +114,11 @@ test parse {
         try t.expect(csv.record(3).items[2].len == 0);
     }
     {
-        const csv_test =
+        const csv_content =
             \\First,Second,Third
             \\first,second,third
             \\no third,value
         ;
-        const csv_content = try t.allocator.alloc(u8, csv_test.len);
-        @memcpy(csv_content, csv_test);
 
         try t.expectError(Error.InvalidCsv, parse(t.allocator, csv_content));
     }

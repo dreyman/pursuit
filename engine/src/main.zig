@@ -4,6 +4,7 @@ const assert = std.debug.assert;
 
 const app = @import("app.zig");
 const setup = @import("setup.zig");
+const Storage = @import("Storage.zig");
 
 const version = "0.0.1-wip";
 
@@ -30,11 +31,14 @@ pub fn main() !void {
         try writeAndExit("done.", .{});
     }
 
+    var storage = try Storage.create(allocator);
+    defer storage.destroy();
+
     if (mem.eql(u8, command, "add")) {
         const filepath = args.next() orelse {
             try writeAndExit("error: expected file path\nSupported files: .fit, .gpx, .fit.gz, .gpx.gz", .{});
         };
-        const id = app.importGpsFile(allocator, filepath) catch |err| switch (err) {
+        const id = app.importGpsFile(allocator, storage, filepath, null) catch |err| switch (err) {
             else => try writeAndExit("error: {s}", .{@errorName(err)}),
         };
         try writeAndExit("done. id={d}", .{id});
@@ -42,10 +46,16 @@ pub fn main() !void {
 
     if (mem.eql(u8, command, "strava")) {
         const strava = @import("strava.zig");
-        const dir = args.next() orelse {
+        const strava_archive_dir = args.next() orelse {
             try writeAndExit("error: expected strava export dir path", .{});
         };
-        strava.importStravaArchive(allocator, dir) catch |err| switch (err) {
+
+        strava.importStravaArchive(
+            allocator,
+            storage,
+            strava_archive_dir,
+            .{ .save_activities_to_db = true },
+        ) catch |err| switch (err) {
             else => try writeAndExit("error: {s}", .{@errorName(err)}),
         };
         try writeAndExit("done.", .{});

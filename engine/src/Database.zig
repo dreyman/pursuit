@@ -4,23 +4,22 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const fs = std.fs;
 
-const sqlite = @import("sqlite");
+const sqlitelib = @import("sqlite");
 
-const default = @import("default_data.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
 const Stats = data.Stats;
 const Medium = data.Medium;
 
 file: [:0]const u8,
-db: sqlite.Db,
+sqlite: sqlitelib.Db,
 alloc: Allocator,
 
 pub fn create(alloc: Allocator, dbfile: [:0]const u8) !*Database {
     const database = try alloc.create(Database);
     database.* = .{
         .file = dbfile,
-        .db = try sqlite.Db.init(.{
+        .sqlite = try sqlitelib.Db.init(.{
             .mode = .{ .File = dbfile },
             .open_flags = .{
                 .write = true,
@@ -34,30 +33,30 @@ pub fn create(alloc: Allocator, dbfile: [:0]const u8) !*Database {
 
 pub fn destroy(database: *Database) void {
     database.alloc.free(database.file);
-    database.db.deinit();
+    database.sqlite.deinit();
     database.alloc.destroy(database);
 }
 
 pub fn savePursuit(
     database: *Database,
     id: u32,
-    p: *const Pursuit,
-    s: *const Stats,
-    medium_id: ?Medium.ID,
+    p: Pursuit,
+    s: Stats,
 ) !void {
-    var db = database.db;
-    try db.execDynamic(
-        \\ insert into pursuit(id, name, description, kind,
+    var sqlite = database.sqlite;
+    try sqlite.execDynamic(
+        \\ insert into pursuit(id, name, description, kind, medium_id,
         \\ start_time, finish_time, start_lat, start_lon, finish_lat, finish_lon,
         \\ distance, total_time, moving_time, stops_count, stops_duration, untracked_distance,
         \\ avg_speed, avg_travel_speed, westernmost_lat, westernmost_lon, northernmost_lat,
         \\ northernmost_lon, easternmost_lat, easternmost_lon, southernmost_lat, southernmost_lon, size)
-        \\ values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        \\ values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     , .{}, .{
         id,
         p.name,
         p.description,
         @intFromEnum(p.kind),
+        p.medium_id,
         s.start_time,
         s.finish_time,
         s.start.lat,
@@ -82,46 +81,41 @@ pub fn savePursuit(
         s.southernmost.lon,
         s.size,
     });
-    if (medium_id) |medium| {
-        try db.execDynamic("insert into pursuit_medium(pursuit_id, medium_id) values(?, ?)", .{}, .{
-            id,
-            medium,
-        });
-        try db.execDynamic(
-            \\ update medium
-            \\ set distance = distance + ?, time = time + ?
-            \\ where id = ?
-        , .{}, .{
-            s.distance,
-            s.moving_time,
-            medium,
-        });
-    }
+}
+
+pub fn setMedium(
+    database: *Database,
+    pursuit_id: Pursuit.ID,
+    medium_id: Medium.ID,
+) !void {
+    try database.sqlite.execDynamic(
+        "update pursuit set medium_id = ? where id = ?",
+        .{},
+        .{ medium_id, pursuit_id },
+    );
 }
 
 pub fn insertMedium(database: *Database, m: *Medium) !void {
-    try database.db.execDynamic(
-        \\insert into medium(kind, name, distance, time, created_at, archived)
-        \\values (?, ?, ?, ?, ?, ?)
-    ,
+    try database.sqlite.execDynamic(
+        "insert into medium(kind, name, created_at) values (?, ?, ?)",
         .{},
-        .{ m.kind, m.name, m.distance, m.time, m.created_at, m.archived },
+        .{ m.kind, m.name, m.created_at },
     );
-    m.id = @intCast(database.db.getLastInsertRowID());
+    m.id = @intCast(database.sqlite.getLastInsertRowID());
 }
 
-pub fn insertMediumWithId(database: *Database, m: *Medium) !void {
-    try database.db.execDynamic(
-        \\insert into medium(id, kind, name, distance, time, created_at, archived)
-        \\values (?, ?, ?, ?, ?, ?, ?)
-    ,
-        .{},
-        .{ m.id, m.kind, m.name, m.distance, m.time, m.created_at, m.archived },
-    );
-}
+// pub fn insertMediumWithId(database: *Database, m: *Medium) !void {
+//     try database.db.execDynamic(
+//         \\insert into medium(id, kind, name, distance, time, created_at, archived)
+//         \\values (?, ?, ?, ?, ?, ?, ?)
+//     ,
+//         .{},
+//         .{ m.id, m.kind, m.name, m.distance, m.time, m.created_at, m.archived },
+//     );
+// }
 
 pub fn updateMedium(database: *Database, m: *const Medium) !void {
-    try database.db.execDynamic(
+    try database.sqlite.execDynamic(
         \\ update medium
         \\ set name = ?, distance = ?, time = ?, archived = ?
         \\ where id = ?
@@ -133,7 +127,7 @@ pub fn updateMedium(database: *Database, m: *const Medium) !void {
 
 pub fn getMediums(database: *Database) ![]Medium {
     const q = "select * from medium";
-    var stmt = try database.db.prepareDynamic(q);
+    var stmt = try database.sqlite.prepareDynamic(q);
     defer stmt.deinit();
     const ms = try stmt.all(Medium, database.alloc, .{}, .{});
     return ms;

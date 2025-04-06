@@ -5,29 +5,19 @@ const Allocator = std.mem.Allocator;
 const fit = @import("fit/fit.zig");
 const data = @import("../data.zig");
 const calc = @import("../calc.zig");
-const GpsFile = @import("../GpsFile.zig");
 
-pub fn decode(
+pub fn decodeRoute(
     alloc: Allocator,
     fit_content: []const u8,
-) !*GpsFile {
+    unit: data.CoordUnit,
+) !data.Route {
     var raw_fit = try fit.decode(alloc, fit_content);
     defer raw_fit.deinit();
     var fit_activity = try fit.Activity.create(alloc, raw_fit);
     defer fit_activity.deinit();
 
-    var route = routeFromFitActivity(alloc, fit_activity, .radians);
-    var stats = data.Stats.fromRoute(route, .radians);
-    stats.toDegrees();
-    route.toDegrees();
-    const result = try alloc.create(GpsFile);
-    result.* = .{
-        .alloc = alloc,
-        .route = route,
-        .stats = stats,
-        .kind = kindFromFitSport(fit_activity.session.sport),
-    };
-    return result;
+    const route = routeFromFitActivity(alloc, fit_activity, unit);
+    return route;
 }
 
 fn routeFromFitActivity(
@@ -52,6 +42,5 @@ fn kindFromFitSport(fit_sport_val: ?u8) data.Pursuit.Kind {
         .running => .running,
         .cycling => .cycling,
         .walking => .walking,
-        .hiking => .hiking,
     };
 }

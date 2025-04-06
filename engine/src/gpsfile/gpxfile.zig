@@ -3,26 +3,16 @@ const mem = std.mem;
 const Allocator = mem.Allocator;
 
 const data = @import("../data.zig");
-const GpsFile = @import("../GpsFile.zig");
 const gpx = @import("gpx/gpx.zig");
 
-pub fn parse(
+pub fn parseRoute(
     alloc: Allocator,
     gpx_content: []const u8,
-) !*GpsFile {
+) !data.Route {
     const gpx_data = try gpx.parse(alloc, gpx_content);
     defer gpx_data.deinit();
     const route = routeFromGpx(alloc, gpx_data);
-    const stats = data.Stats.fromRoute(route, .degrees);
-    const kind = kindFromGpxType(gpx_data.type);
-    const result = try alloc.create(GpsFile);
-    result.* = .{
-        .alloc = alloc,
-        .route = route,
-        .stats = stats,
-        .kind = kind,
-    };
-    return result;
+    return route;
 }
 
 pub fn routeFromGpx(alloc: Allocator, gpx_data: gpx.Gpx) data.Route {
