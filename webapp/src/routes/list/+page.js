@@ -1,6 +1,6 @@
 import * as api from '$lib/api.js';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ fetch }) {
-    return { entries: await api.getPursuits(fetch) }
+export async function load({ fetch, url }) {
+    return { pursuits: await api.Pursuit.list(fetch, url.search) }
 }

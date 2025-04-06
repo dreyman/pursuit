@@ -18,7 +18,7 @@ export function mapCfg(pursuit) {
  * @param {number} timestamp
  * @returns {string}
  */
-export function timestamp_to_string(timestamp) {
+export function timestampToString(timestamp) {
     const d = new Date(timestamp)
     return d.toDateString() + ' ' + d.toLocaleTimeString();
 }
@@ -27,18 +27,18 @@ export function timestamp_to_string(timestamp) {
  * @param {number} seconds
  * @returns {string}
  */
-export function seconds_to_string(seconds) {
+export function secondsToString(seconds) {
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds - h * 3600) / 60)
     const s = seconds % 60
-    return `${time_unit_str(h)}:${time_unit_str(m)}:${time_unit_str(s)}`
+    return `${timeUnitStr(h)}:${timeUnitStr(m)}:${timeUnitStr(s)}`
 }
 
 /**
  * @param {number} val
  * @returns {string}
  */
-function time_unit_str(val) {
+function timeUnitStr(val) {
     return val < 10 ? '0' + val : '' + val
 }
 

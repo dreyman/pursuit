@@ -2,13 +2,13 @@
 import { goto } from '$app/navigation'
 import * as cache from '$lib/shared_state.js'
 // fixme use bind:files
-/** @param {any} e */
+
 async function on_file_upload(e) {
     if (!e.target || !e.target.files || !e.target.files[0]) return
     const fd = new FormData()
     fd.append('file', e.target.files[0])
     try {
-        const resp = await fetch('http://localhost:7070/api/upload', {
+        const resp = await fetch('http://localhost:7070/api/gpsfile', {
             method: 'POST',
             body: fd,
         })
@@ -28,7 +28,10 @@ async function on_file_upload(e) {
 </script>
 
 <div class="page">
-    <input type="file" id="fileupload" accept=".fit, .fit.gz, .gpx" onchange={on_file_upload} />
+    <input type="file"
+           id="fileupload"
+           accept=".fit, .fit.gz, .gpx, .gpx.gz"
+           onchange={on_file_upload} />
 </div>
 
 <style>

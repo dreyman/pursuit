@@ -27,6 +27,7 @@ declare global {
     type PursuitMetadata = {
         name: string;
         description: string;
+        kind: PursuitKind;
     }
 
     enum PursuitKind {

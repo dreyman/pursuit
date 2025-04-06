@@ -36,11 +36,17 @@ html, body {
 body {
     font-family: Roboto, "DejaVu Sans", Arial, sans-serif;
     background: var(--dark-grey);
-    color: var(--light-grey);
+    color: #fff;
 }
 
 a {
     color: var(--link-color);
+}
+
+button {
+    border-radius: 0.5rem;
+    padding: 0 1rem;
+    background: var(--grey-500);
 }
 
 .submit-btn {
@@ -49,7 +55,15 @@ a {
     font-weight: bold;
     border-radius: 0.5rem;
     padding: 0 1rem;
-    cursor: pointer;
+}
+
+.icon-btn {
+    padding: 0.25rem;
+    border-radius: 50%;
+}
+
+.icon-btn:hover {
+    background: color-mix(in srgb, #fff 20%, transparent);
 }
 
 input, textarea {
@@ -58,13 +72,3 @@ input, textarea {
     border-radius: 0.5rem;
     padding: 0 0.25rem;
 }
-
-/*svg {
-    opacity: 0.25;
-    stroke: var(--light-grey);
-}
-
-svg:hover {
-    opacity: 1;
-    stroke: var(--primary-color);
-}*/

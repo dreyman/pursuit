@@ -1,51 +1,64 @@
 <script>
+import { getContext } from 'svelte'
 import Dialog from '$lib/Dialog.svelte'
 import PursuitForm from '$lib/PursuitForm.svelte'
 import Track from '$lib/Track.svelte'
 import Time from '$lib/Time.svelte'
 import Distance from '$lib/Distance.svelte'
-import Icon from '$lib/icons/Icon.svelte'
-import Edit from '$lib/icons/edit.svg.svelte'
+import Icon from '$lib/Icon.svelte'
 import * as util from '$lib/util.js'
+import * as app from '$lib/app.js'
 
 const { data } = $props()
-const prst = $state(data.pursuit)
-let metadata = $derived({
-    name: prst.name,
-    description: prst.description,
-})
+
+const pursuit = $state(data.pursuit)
+const mediums = getContext('mediums')
+let medium = findMedium(pursuit.medium_id)
+let medium_name = $state(medium.name)
 let edit_form_dialog_visible = $state(false)
 
-/** @param {any} updated_fields */
 function onsave(updated_fields) {
-    Object.assign(prst, updated_fields)
+    Object.assign(pursuit, updated_fields)
+    if (updated_fields.medium_id !== undefined) {
+        medium = findMedium(pursuit.medium_id)
+        medium_name = medium.name
+    }
     edit_form_dialog_visible = false
+}
+
+function findMedium(id) {
+    for (let i = 0; i < mediums.length; i++)
+        if (mediums[i].id == pursuit.medium_id)
+            return mediums[i]
+    return app.unknown_medium
 }
 </script>
 
 {#if edit_form_dialog_visible}
     <Dialog title="Edit" onclose={() => (edit_form_dialog_visible = false)}>
-        <PursuitForm id={prst.id} pursuit={metadata} {onsave} />
+        <PursuitForm id={pursuit.id} pursuit={pursuit} {onsave} />
     </Dialog>
 {/if}
 
-<div class="page mt-5 ml-10 flex flex-col gap-2">
+<div class="page mt-5 ml-10 flex flex-col items-center gap-1">
     <h1 class="flex items-center gap-1">
-        <span>{prst.name}</span>
-        <button onclick={() => (edit_form_dialog_visible = true)} class="edit-btn"
-            ><Icon Icon={Edit} size="lg" /></button
+        <span>{pursuit.name}</span>
+        <button onclick={() => (edit_form_dialog_visible = true)} class="icon-btn"
+            ><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="date">{util.timestamp_to_string(prst.start_time * 1000)}</h2>
+    <h2 class="date">{util.timestampToString(pursuit.start_time * 1000)}</h2>
+    <h3>{medium_name}</h3>
+    <p>{pursuit.description}</p>
     <div class="flex gap-6">
-        <Distance val={prst.distance} />
-        <Time seconds={prst.moving_time} />
-        <Time seconds={prst.total_time} />
+        <Distance val={pursuit.distance} />
+        <Time seconds={pursuit.moving_time} />
+        <Time seconds={pursuit.total_time} />
         <span class="text-xl"
-            ><span class="bold">{(prst.avg_speed / 1000).toFixed(1)}</span>km/h</span
+            ><span class="bold">{(pursuit.avg_speed / 1000).toFixed(1)}</span>km/h</span
         >
     </div>
-    <Track id={prst.id} cfg={util.mapCfg(prst)} />
+    <Track id={pursuit.id} cfg={util.mapCfg(pursuit)} />
 </div>
 
 <style>
@@ -64,9 +77,5 @@ h1 {
 
 .date {
     font-size: 1rem;
-}
-
-.edit-btn {
-    color: var(--light-grey);
 }
 </style>

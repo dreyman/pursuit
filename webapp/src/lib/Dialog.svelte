@@ -1,6 +1,5 @@
 <script>
-import Icon from '$lib/icons/Icon.svelte'
-import Cross from '$lib/icons/cross.svg.svelte'
+import Icon from '$lib/Icon.svelte'
 
 /** @type {{
      * children: any,
@@ -13,8 +12,8 @@ let { children, title, onclose } = $props()
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="dialog-bg" onclick={onclose}></div>
 <div class="dialog">
-    <button class="absolute top-0 right-0" onclick={onclose}>
-        <Icon Icon={Cross} size="xl" />
+    <button class="icon-btn absolute top-0 right-0" onclick={onclose}>
+        <Icon name="x" />
     </button>
     <header class="mb-4">
         <h1 class="text-center">{title}</h1>
@@ -24,13 +23,15 @@ let { children, title, onclose } = $props()
 
 <style>
 .dialog-bg {
+    z-index: 1000;
     position: absolute;
     inset: 0;
-    background: #000;
-    opacity: 0.5;
+    background: #28292d;
+    opacity: 0.75;
 }
 
 .dialog {
+    z-index: 1001;
     background: #28292d;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
