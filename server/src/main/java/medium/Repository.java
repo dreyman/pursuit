@@ -2,31 +2,22 @@ package medium;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Repository {
     static final String table = "medium";
-    String dbUrl;
+    String db_url;
 
-    public Repository(String dbFilePath) {
-        this.dbUrl = "jdbc:sqlite:" + dbFilePath;
+    public Repository(String db_file_path) {
+        this.db_url = "jdbc:sqlite:" + db_file_path;
     }
 
-    public List<Medium> list(ListParams params) throws SQLException {
-        try (var c = DriverManager.getConnection(dbUrl);
-             var s = c.prepareStatement(params.buildQuery(select()))) {
-            params.setArgs(s);
+    public List<Medium> list() throws SQLException {
+        var q = "SELECT * FROM " + table;
+        try (var c = DriverManager.getConnection(db_url);
+             var s = c.prepareStatement(q)) {
             var rs = s.executeQuery();
-            var list = new ArrayList<Medium>();
-            while (rs.next()) {
-                list.add(Medium.fromResultSet(rs));
-            }
-            return list;
+            return Medium.listFromResultSet(rs);
         }
-    }
-
-    public String select() {
-        return "SELECT * FROM " + table;
     }
 }

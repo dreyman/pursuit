@@ -1,21 +1,22 @@
 package pursuit;
 
 import org.junit.jupiter.api.Test;
+import pursuit.sqlite.UpdateQuery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UpdatePayloadTest {
 
     @Test
     void buildQuery() {
         var payload = new UpdatePayload();
-        payload.id = 42;
+        int id = 42;
+        String table = "some_table";
+
         payload.name = "New name";
+        var q = new UpdateQuery(id, payload);
 
-        var q = payload.buildQuery("UPDATE tbl");
-
-        assertTrue(payload.isValid());
-        assertEquals("UPDATE tbl SET name = ? WHERE id = ?", q);
+        var sql = q.buildSql(table);
+        assertEquals("UPDATE some_table SET name = ? WHERE id = ?", sql);
     }
 }

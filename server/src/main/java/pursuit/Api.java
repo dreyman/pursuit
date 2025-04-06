@@ -4,23 +4,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Api {
-    public class InvalidPayload extends RuntimeException {
-        public InvalidPayload(String msg) {
-            super(msg);
-        }
-    }
-
     Repository repo;
 
-    public Api(Repository repository) {
-        this.repo = repository;
+    public Api(String sqlite_db_file) {
+        repo = new Repository(sqlite_db_file);
     }
 
-    public List<ListItem> list(ListParams params) {
+    public List<ListItem> query(QueryParams params) {
         try {
             return repo.list(params);
         } catch (SQLException x) {
-            throw new RuntimeException(x);
+            x.printStackTrace();
+            return List.of();
         }
     }
 
@@ -32,15 +27,15 @@ public class Api {
         }
     }
 
-    public boolean update(UpdatePayload payload) {
-        if (!payload.isValid())
-            throw new InvalidPayload("invalid payload.");
+    public boolean update(int id, UpdatePayload payload) {
         try {
-            var count = repo.update(payload);
-            return count > 0;
+            if (payload.isEmpty()) return true;
+            var updated_count = repo.update(id, payload);
+            assert updated_count == 1;
+            return updated_count > 0;
         } catch (SQLException x) {
-            throw new RuntimeException(x);
+            x.printStackTrace();
+            return false;
         }
     }
-
 }

@@ -1,7 +1,5 @@
 package pursuit;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,17 +7,18 @@ import java.util.List;
 
 public class Pursuit {
     public enum Kind {
-         cycling,
-         running,
-         walking,
-         hiking,
-         unknown
+        cycling,
+        running,
+        walking,
+        hiking,
+        unknown
     }
 
     public int id;
     public String name;
     public String description;
     public Kind kind;
+    public Integer medium_id;
 
     public int start_time;
     public int finish_time;
@@ -51,6 +50,9 @@ public class Pursuit {
         p.name = rs.getString("name");
         p.description = rs.getString("description");
         p.kind = Pursuit.Kind.values()[rs.getInt("kind")];
+        p.medium_id = rs.getInt("medium_id");
+        if (rs.wasNull()) p.medium_id = null;
+
         p.start_time = rs.getInt("start_time");
         p.finish_time = rs.getInt("finish_time");
         p.start_lat = rs.getFloat("start_lat");

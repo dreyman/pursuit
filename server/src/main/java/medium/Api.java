@@ -6,15 +6,15 @@ import java.util.List;
 public class Api {
     Repository repo;
 
-    public Api(Repository repository) {
-        this.repo = repository;
+    public Api(String sqlite_db_file) {
+        repo = new Repository(sqlite_db_file);
     }
 
-    public List<Medium> list(ListParams req) {
+    public List<Medium> query() {
         try {
-            return repo.list(req);
+            return repo.list();
         } catch (SQLException x) {
-            throw new RuntimeException(x);
+            return List.of();
         }
     }
 }

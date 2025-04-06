@@ -1,4 +1,4 @@
-package app;
+package api;
 
 public class ErrorResponse {
     public String error;
