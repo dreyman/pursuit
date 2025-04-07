@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class Repository {
 
-    static final String table = "pursuit";
+    public static final String table = "pursuit";
     String db_url;
     String list_item_fields;
 
@@ -56,12 +56,22 @@ public class Repository {
 
     String buildSql(QueryParams params) {
         var sql = new StringBuilder();
-        sql.append("SELECT ").append(list_item_fields).append(" FROM ").append(table);
+        sql.append("SELECT ")
+                .append(list_item_fields)
+                .append(" FROM ")
+                .append(table);
 
+        var where = new StringBuilder();
         if (params.kind != null) {
-            sql.append(" WHERE kind = ").append(params.kind.ordinal());
+            where.append("kind = ").append(params.kind.ordinal());
+        }
+        if (params.medium != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("medium_id = ").append(params.medium);
         }
 
+        if (!where.isEmpty())
+            sql.append(" WHERE ").append(where);
         sql.append(" ORDER BY ")
                 .append(params.order_by_field)
                 .append(" ")

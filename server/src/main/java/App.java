@@ -29,7 +29,7 @@ public class App {
         this.cli_path = app_dir_path.resolve("prst").toString();
 
         pursuitApi = new pursuit.Api(sqlite_db_file);
-        mediumApi = new medium.Api(sqlite_db_file);
+        mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
         engine = new Engine(cli_path);
     }
 
@@ -50,7 +50,7 @@ public class App {
         }
     }
 
-    File getTrackFile(int pursuit_id) {
+    public File getTrackFile(int pursuit_id) {
         return new File(Path.of(routes_dir, String.valueOf(pursuit_id), "track").toString());
     }
 }

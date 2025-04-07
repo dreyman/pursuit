@@ -6,7 +6,7 @@ public class InvalidRequest extends RuntimeException {
     }
 
     public static InvalidRequest invalidUintParam(String name) {
-        return new api.InvalidRequest(
+        return new InvalidRequest(
                 String.format("Invalid '%s' param value. Must be an integer number > 0.", name)
         );
     }

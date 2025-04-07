@@ -14,10 +14,13 @@ public class QueryParams {
     public static final String default_order = "DESC";
 
     public Pursuit.Kind kind;
+    public Integer medium;
 
     public String order_by_field = default_order_by_field;
     public String order = default_order;
     public int limit = default_limit;
+
+    public QueryParams() {}
 
     public QueryParams(Map<String, List<String>> params) {
         var kind_param = firstOrNull(params.get("kind"));
@@ -29,6 +32,18 @@ public class QueryParams {
                         .map(Enum::toString)
                         .collect(Collectors.joining(", "));
                 throw new api.InvalidRequest("Invalid 'kind' param value. Valid values: " + valid_vals);
+            }
+        }
+
+        var medium_param = firstOrNull(params.get("medium"));
+        if (medium_param != null) {
+            try {
+                var medium_id = Integer.parseInt(medium_param);
+                if (medium_id <= 0)
+                    throw InvalidRequest.invalidUintParam("medium");
+                this.medium = medium_id;
+            } catch (NumberFormatException x) {
+                throw InvalidRequest.invalidUintParam("medium");
             }
         }
 

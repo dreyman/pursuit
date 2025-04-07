@@ -1,3 +1,5 @@
+import api.ErrorResponse;
+import api.InvalidRequest;
 import com.google.gson.*;
 import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
@@ -17,6 +19,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 
 import static io.javalin.http.HttpStatus.NOT_FOUND;
+import static io.javalin.http.HttpStatus.UNPROCESSABLE_CONTENT;
 
 public class Main {
 
@@ -38,6 +41,32 @@ public class Main {
             var list = app.mediumApi.query();
             ctx.json(list);
         });
+        api.post("/api/medium/new", ctx -> {
+            try {
+                var payload = ctx.bodyAsClass(medium.CreatePayload.class);
+                var new_medium = app.mediumApi.create(payload);
+                ctx.json(new_medium);
+            } catch (IllegalArgumentException x) {
+                ctx.status(UNPROCESSABLE_CONTENT);
+                ctx.json(new ErrorResponse("Invalid 'kind' value"));
+            } catch (InvalidRequest x) {
+                ctx.status(UNPROCESSABLE_CONTENT);
+                ctx.json(new ErrorResponse(x.getMessage()));
+            }
+        });
+        api.get("/api/medium/{id}", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var medium = app.mediumApi.getStats(id);
+                if (medium == null) {
+                    ctx.status(NOT_FOUND);
+                    return;
+                }
+                ctx.json(medium);
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
+        });
 
         api.get("/api/pursuit", ctx -> {
             try {
@@ -45,7 +74,7 @@ public class Main {
                 var list = app.pursuitApi.query(params);
                 ctx.json(list);
             } catch (api.InvalidRequest x) {
-                ctx.status(422);
+                ctx.status(UNPROCESSABLE_CONTENT);
                 ctx.json(new api.ErrorResponse(x.getMessage()));
             }
         });
@@ -65,6 +94,7 @@ public class Main {
         api.put("/api/pursuit/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
+                // fixme unhandled IllegalArgumentException exception in case of invalid kind enum value
                 var payload = ctx.bodyAsClass(UpdatePayload.class);
                 var updated = app.pursuitApi.update(id, payload);
                 if (!updated) {
@@ -108,8 +138,9 @@ public class Main {
 
     static JsonMapper gsonMapper() {
         Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Instant.class, (JsonSerializer<Instant>) (src, _, _)
-                        -> new JsonPrimitive(Long.toString(src.getEpochSecond())))
+                .registerTypeAdapter(Instant.class,
+                        (JsonSerializer<Instant>) (src, _, _)
+                                -> new JsonPrimitive(Long.toString(src.getEpochSecond())))
                 .create();
         return new JsonMapper() {
             @NotNull
