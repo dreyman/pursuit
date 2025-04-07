@@ -13,6 +13,7 @@ const { data } = $props()
 
 const pursuit = $state(data.pursuit)
 const mediums = getContext('mediums')
+
 let medium = findMedium(pursuit.medium_id)
 let medium_name = $state(medium.name)
 let edit_form_dialog_visible = $state(false)
@@ -48,7 +49,7 @@ function findMedium(id) {
         >
     </h1>
     <h2 class="date">{util.timestampToString(pursuit.start_time * 1000)}</h2>
-    <h3>{medium_name}</h3>
+    <h3>{app.mediumLabel(pursuit.kind)}: {medium_name}</h3>
     <p>{pursuit.description}</p>
     <div class="flex gap-6">
         <Distance val={pursuit.distance} />

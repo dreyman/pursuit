@@ -20,7 +20,7 @@ export function mapCfg(pursuit) {
  */
 export function timestampToString(timestamp) {
     const d = new Date(timestamp)
-    return d.toDateString() + ' ' + d.toLocaleTimeString();
+    return d.toDateString();
 }
 
 /**
