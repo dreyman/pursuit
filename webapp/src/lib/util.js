@@ -35,6 +35,14 @@ export function secondsToString(seconds) {
 }
 
 /**
+ * @param {number} meters
+ * @returns {number}
+ */
+export function metersToKm(meters) {
+    return Math.floor(meters / 1000);
+}
+
+/**
  * @param {number} val
  * @returns {string}
  */

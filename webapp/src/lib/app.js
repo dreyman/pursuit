@@ -1,4 +1,5 @@
 export const kinds = ['cycling', 'running', 'walking', 'other']
+export const medium_kinds = ['bike', 'shoes']
 
 export const Kind = {
     cycling: 'cycling',

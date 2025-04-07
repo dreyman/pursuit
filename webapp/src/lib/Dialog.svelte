@@ -26,13 +26,12 @@ let { children, title, onclose } = $props()
     z-index: 1000;
     position: absolute;
     inset: 0;
-    background: #28292d;
-    opacity: 0.75;
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .dialog {
     z-index: 1001;
-    background: #28292d;
+    background: #27282c;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     position: absolute;
@@ -45,5 +44,6 @@ h1 {
     font-weight: bold;
     font-size: 1.25rem;
     line-height: 1.25rem;
+    margin: 0 2rem;
 }
 </style>

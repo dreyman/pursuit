@@ -9,6 +9,27 @@ export const Medium = {
         } catch (err) {
             return []
         }
+    },
+    getById: async (fetch, id) => {
+        try {
+            const resp = await fetch(`${API_URL}/medium/${id}`)
+            if (resp.status != 200) return null
+            return await resp.json()
+        } catch (err) {
+            return null
+        }
+    },
+    create: async (payload) => {
+        try {
+            const resp = await fetch(`${API_URL}/medium/new`, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            })
+            if (resp.status != 200) return null
+            return await resp.json()
+        } catch (err) {
+            return null
+        }
     }
 }
 

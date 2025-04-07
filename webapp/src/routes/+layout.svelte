@@ -7,7 +7,7 @@ import Icon from '$lib/Icon.svelte'
 
 let { data, children } = $props()
 const icon_size = 1.75
-const mediums = data.mediums
+const mediums = $state(data.mediums)
 setContext('mediums', mediums)
 </script>
 
@@ -19,7 +19,7 @@ setContext('mediums', mediums)
         <a href="/new" class:active={page.route.id?.startsWith('/new')}>
             <Icon name="circle-plus" size={icon_size} />
         </a>
-        <a href="/garage" class:active={page.route.id?.startsWith('/garage')}>
+        <a href="/mediums" class:active={page.route.id?.startsWith('/mediums')}>
             <Icon name="tool" size={icon_size} />
         </a>
         <a href="/settings" class:active={page.route.id?.startsWith('/settings')}>
