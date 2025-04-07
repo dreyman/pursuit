@@ -2,19 +2,32 @@ import pursuit.Pursuit;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class App {
-    public static final String sqlite_db_file = "/home/ihor/.pursuit/pursuit.db";
-    public static final String storage_dir = "/home/ihor/.pursuit/";
-    public static final String routes_dir = storage_dir + "routes/";
-    public static final String temp_dir = storage_dir + "temp/";
-    public static final String cli_path = "/home/ihor/code/pursuit/engine/zig-out/bin/prst";
+    String app_dir;
+    String sqlite_db_file;
+    String routes_dir;
+    String temp_dir;
+    String cli_path;
 
     public pursuit.Api pursuitApi;
     public medium.Api mediumApi;
     public Engine engine;
 
     public App() {
+        String home_env = System.getenv("HOME");
+        if (home_env == null) {
+            throw new RuntimeException("HOME not found");
+        }
+        var app_dir_path = Path.of(home_env, ".pursuit");
+
+        this.app_dir = app_dir_path.toString();
+        this.sqlite_db_file = app_dir_path.resolve("pursuit.db").toString();
+        this.routes_dir = app_dir_path.resolve("routes").toString();
+        this.temp_dir = app_dir_path.resolve("temp").toString();
+        this.cli_path = app_dir_path.resolve("prst").toString();
+
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file);
         engine = new Engine(cli_path);
@@ -38,6 +51,6 @@ public class App {
     }
 
     File getTrackFile(int pursuit_id) {
-        return new File(routes_dir + "/" + pursuit_id + "/track");
+        return new File(Path.of(routes_dir, String.valueOf(pursuit_id), "track").toString());
     }
 }

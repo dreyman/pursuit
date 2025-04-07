@@ -13,6 +13,7 @@ import pursuit.UpdatePayload;
 
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
+import java.nio.file.Path;
 import java.time.Instant;
 
 import static io.javalin.http.HttpStatus.NOT_FOUND;
@@ -78,7 +79,7 @@ public class Main {
             var file = ctx.uploadedFile("file");
             if (file == null)
                 throw new UnprocessableContentResponse();
-            var path = App.temp_dir + file.filename();
+            var path = Path.of(app.temp_dir, file.filename()).toString();
             FileUtil.streamToFile(file.content(), path);
 
             var pursuit = app.importFile(path);
