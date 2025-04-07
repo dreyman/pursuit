@@ -5,6 +5,7 @@ const mem = std.mem;
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 
+const constants = @import("constants.zig");
 const Storage = @import("Storage.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
@@ -17,9 +18,6 @@ pub const GpsFileType = enum {
     fit,
     gpx,
 
-    pub const fit_file_size_max = 50_000_000;
-    pub const gpx_file_size_max = 80_000_000;
-
     pub fn fromPath(path: []const u8) ?GpsFileType {
         if (mem.endsWith(u8, path, ".fit")) return .fit;
         if (mem.endsWith(u8, path, ".gpx")) return .gpx;
@@ -28,13 +26,13 @@ pub const GpsFileType = enum {
 
     pub fn maxFileSize(filetype: GpsFileType) u32 {
         return switch (filetype) {
-            .fit => fit_file_size_max,
-            .gpx => gpx_file_size_max,
+            .fit => constants.fit_file_size_max,
+            .gpx => constants.gpx_file_size_max,
         };
     }
 };
 
-const ImportError = error{UnsupportedFileType};
+const ImportError = error{ UnsupportedFileType, RouteTooShort };
 
 pub fn importGpsFile(
     alloc: Allocator,
@@ -76,6 +74,8 @@ pub fn importGpsFile(
         .gpx => try gpxfile.parseRoute(alloc, file_content),
     };
     defer route.deinit();
+    if (route.len() < constants.route_len_min)
+        return ImportError.RouteTooShort;
     const alg: data.Stats.Alg = if (filetype == .fit) detectAlg(route) else .min_speed;
     var stats = data.Stats.fromRoute(route, coords_unit, alg);
     if (filetype == .fit) {
