@@ -26,7 +26,6 @@ public class Repository {
         var sql = "SELECT * FROM " + table + " WHERE id = " + id;
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
-
             var rs = s.executeQuery();
             if (!rs.next()) return null;
             return Medium.fromResultSet(rs);
@@ -34,15 +33,13 @@ public class Repository {
     }
 
     public MediumStats getStats(int id) throws SQLException {
-        var q = "SELECT " +  "m.id AS id, m.name AS name, m.kind AS kind, " +
+        var q = "SELECT m.id AS id, m.name AS name, m.kind AS kind, " +
                 "sum(p.distance) AS distance, sum(p.moving_time) AS time FROM " +
-                table +
-                " m JOIN " + pursuit.Repository.table +
-                " p ON p.medium_id = m.id where m.id = ?";
+                table + " m JOIN " + pursuit.Repository.table +
+                " p ON p.medium_id = m.id where m.id = " + id;
 
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(q)) {
-            s.setInt(1, id);
             var rs = s.executeQuery();
             if (!rs.next()) return null;
             return MediumStats.fromResultSet(rs);
@@ -64,7 +61,6 @@ public class Repository {
             if (generatedKeys.next()) {
                 return generatedKeys.getInt(1);
             }
-
             return 0;
         }
     }

@@ -69,6 +69,14 @@ public class Repository {
             if (!where.isEmpty()) where.append(" AND ");
             where.append("medium_id = ").append(params.medium);
         }
+        if (params.distance_min != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("distance >= ").append(params.distance_min * 1000);
+        }
+        if (params.distance_max != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("distance <= ").append(params.distance_max * 1000);
+        }
 
         if (!where.isEmpty())
             sql.append(" WHERE ").append(where);

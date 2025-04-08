@@ -9,12 +9,14 @@ import java.util.stream.Collectors;
 
 public class QueryParams {
     public static final int max_limit = 50;
-    public static final int default_limit = 15;
+    public static final int default_limit = 25;
     public static final String default_order_by_field = "start_time";
     public static final String default_order = "DESC";
 
     public Pursuit.Kind kind;
     public Integer medium;
+    public Integer distance_min;
+    public Integer distance_max;
 
     public String order_by_field = default_order_by_field;
     public String order = default_order;
@@ -23,6 +25,9 @@ public class QueryParams {
     public QueryParams() {}
 
     public QueryParams(Map<String, List<String>> params) {
+        var limit = getUintParam(params, "limit");
+        this.limit = limit == null ? default_limit : Math.min(limit, max_limit);
+
         var kind_param = firstOrNull(params.get("kind"));
         if (kind_param != null) {
             try {
@@ -35,29 +40,25 @@ public class QueryParams {
             }
         }
 
-        var medium_param = firstOrNull(params.get("medium"));
-        if (medium_param != null) {
-            try {
-                var medium_id = Integer.parseInt(medium_param);
-                if (medium_id <= 0)
-                    throw InvalidRequest.invalidUintParam("medium");
-                this.medium = medium_id;
-            } catch (NumberFormatException x) {
-                throw InvalidRequest.invalidUintParam("medium");
-            }
-        }
+        this.medium = getUintParam(params, "medium");
+        this.distance_min = getUintParam(params, "distance_min");
+        this.distance_max = getUintParam(params, "distance_max");
+    }
 
-        var limit_param = firstOrNull(params.get("limit"));
-        if (limit_param != null) {
-            try {
-                this.limit = Math.min(Integer.parseInt(limit_param), max_limit);
-            } catch (NumberFormatException x) {
-                throw InvalidRequest.invalidUintParam("limit");
-            }
+    static Integer getUintParam(Map<String, List<String>> params, String param_name) {
+        var param_str = firstOrNull(params.get(param_name));
+        if (param_str == null) return null;
+        try {
+            var param_val = Integer.parseInt(param_str);
+            if (param_val <= 0)
+                throw InvalidRequest.invalidUintParam(param_name);
+            return param_val;
+        } catch (NumberFormatException x) {
+            throw InvalidRequest.invalidUintParam(param_name);
         }
     }
 
-    String firstOrNull(List<String> values) {
+    static String firstOrNull(List<String> values) {
         if (values == null || values.isEmpty())
             return null;
         return values.get(0);

@@ -36,7 +36,7 @@ public class Api {
             if (medium == null) return null;
             var params = new pursuit.QueryParams();
             params.medium = medium.id;
-            params.limit = 15;
+            params.limit = 25;
             medium.last_pursuits = pursuitApi.query(params);
             return medium;
         } catch (SQLException x) {
