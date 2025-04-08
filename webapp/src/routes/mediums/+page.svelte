@@ -24,8 +24,8 @@ function onsave(new_medium) {
     </Dialog>
 {/if}
 
-<button onclick={() => form_dialog_visible = true} class="icon-btn">
-    <Icon name="circle-plus" size={1.75} />
+<button onclick={() => (form_dialog_visible = true)} class="icon-btn create-btn">
+    <Icon name="circle-plus" size={2} />
 </button>
 
 <div class="mt-4 flex flex-col gap-2">
@@ -35,7 +35,7 @@ function onsave(new_medium) {
 </div>
 
 <style>
-button {
-/*    padding: 4rem;*/
+.create-btn {
+    padding: 0;
 }
 </style>

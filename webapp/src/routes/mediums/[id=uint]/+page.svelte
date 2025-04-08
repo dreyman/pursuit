@@ -1,6 +1,5 @@
 <script>
-import { getContext } from 'svelte'
-import * as util from '$lib/util.js';
+import * as util from '$lib/util.js'
 import PursuitList from '$lib/PursuitList.svelte'
 
 const { data } = $props()
@@ -21,8 +20,7 @@ function timeAsString(seconds) {
         }
         return result
     }
-    return '' + Math.floor(seconds / seconds_in_hour)
-
+    return '' + Math.floor(seconds / seconds_in_hour) + ' hours'
 }
 </script>
 

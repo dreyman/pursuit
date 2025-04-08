@@ -6,7 +6,7 @@ import * as api from '$lib/api.js'
 const { pursuit, onsave } = $props()
 
 let loading = $state(false)
-const null_medium_id = 0;
+const null_medium_id = 0
 const mediums = getContext('mediums')
 const bikes = mediums.filter(m => m.kind == 'bike')
 const shoes = mediums.filter(m => m.kind == 'shoes')
@@ -62,11 +62,10 @@ function changeKind(kind) {
         <div class="flex items-center gap-2 self-start">
             <span>Bike:</span>
             <button
-                    onclick={() => (form.medium_id = null_medium_id)}
-                    class="option-btn"
-                    class:selected={form.medium_id == null_medium_id}
-                    >None</button
-                >
+                onclick={() => (form.medium_id = null_medium_id)}
+                class="option-btn"
+                class:selected={form.medium_id == null_medium_id}>None</button
+            >
             {#each bikes as bike}
                 <button
                     onclick={() => (form.medium_id = bike.id)}
@@ -81,11 +80,10 @@ function changeKind(kind) {
         <div class="flex items-center gap-2 self-start">
             <span>Shoes:</span>
             <button
-                    onclick={() => (form.medium_id = null_medium_id)}
-                    class="option-btn"
-                    class:selected={form.medium_id == null_medium_id}
-                    >None</button
-                >
+                onclick={() => (form.medium_id = null_medium_id)}
+                class="option-btn"
+                class:selected={form.medium_id == null_medium_id}>None</button
+            >
             {#if shoes.length == 0}Create{/if}
             {#each shoes as item}
                 <button
@@ -118,7 +116,7 @@ label {
 }
 
 .option-btn.selected {
-    color: var(--primary-color);
+    color: var(--pc);
     font-weight: bold;
 }
 

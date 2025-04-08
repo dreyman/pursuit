@@ -5,6 +5,7 @@ import PursuitForm from '$lib/PursuitForm.svelte'
 import Track from '$lib/Track.svelte'
 import Time from '$lib/Time.svelte'
 import Distance from '$lib/Distance.svelte'
+import Pace from '$lib/Pace.svelte'
 import Icon from '$lib/Icon.svelte'
 import * as util from '$lib/util.js'
 import * as app from '$lib/app.js'
@@ -28,16 +29,16 @@ function onsave(updated_fields) {
 }
 
 function findMedium(id) {
-    for (let i = 0; i < mediums.length; i++)
-        if (mediums[i].id == pursuit.medium_id)
-            return mediums[i]
+    for (let i = 0; i < mediums.length; i++) {
+        if (mediums[i].id == id) return mediums[i]
+    }
     return app.unknown_medium
 }
 </script>
 
 {#if edit_form_dialog_visible}
     <Dialog title="Edit" onclose={() => (edit_form_dialog_visible = false)}>
-        <PursuitForm id={pursuit.id} pursuit={pursuit} {onsave} />
+        <PursuitForm id={pursuit.id} {pursuit} {onsave} />
     </Dialog>
 {/if}
 
@@ -48,16 +49,20 @@ function findMedium(id) {
             ><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="date">{util.timestampToString(pursuit.start_time * 1000)}</h2>
+    <h2 class="date">{util.timestampToFullDate(pursuit.start_time * 1000)}</h2>
     <h3>{app.mediumLabel(pursuit.kind)}: {medium_name}</h3>
     <p>{pursuit.description}</p>
     <div class="flex gap-6">
         <Distance val={pursuit.distance} />
         <Time seconds={pursuit.moving_time} />
         <Time seconds={pursuit.total_time} />
-        <span class="text-xl"
-            ><span class="bold">{(pursuit.avg_speed / 1000).toFixed(1)}</span>km/h</span
-        >
+        {#if pursuit.kind == app.Kind.cycling}
+            <span class="text-xl"
+                ><span class="bold">{(pursuit.avg_speed / 1000).toFixed(1)}</span>km/h</span
+            >
+        {:else if pursuit.kind == app.Kind.running}
+            <Pace distance={pursuit.distance} time={pursuit.moving_time} />
+        {/if}
     </div>
     <Track id={pursuit.id} cfg={util.mapCfg(pursuit)} />
 </div>

@@ -36,7 +36,7 @@ let { children, title, onclose } = $props()
     border-radius: 0.5rem;
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 30%;
     transform: translate(-50%, -50%);
 }
 

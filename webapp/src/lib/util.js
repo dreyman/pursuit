@@ -20,7 +20,16 @@ export function mapCfg(pursuit) {
  */
 export function timestampToString(timestamp) {
     const d = new Date(timestamp)
-    return d.toDateString();
+    return d.toDateString()
+}
+
+/**
+ * @param {number} timestamp
+ * @returns {string}
+ */
+export function timestampToFullDate(timestamp) {
+    const d = new Date(timestamp)
+    return d.toLocaleTimeString() + ' ' + d.toDateString()
 }
 
 /**
@@ -32,6 +41,14 @@ export function secondsToString(seconds) {
     const m = Math.floor((seconds - h * 3600) / 60)
     const s = seconds % 60
     return `${timeUnitStr(h)}:${timeUnitStr(m)}:${timeUnitStr(s)}`
+}
+
+/**
+ * @param {number} distance in meters
+ * @param {number} time in seconds
+ */
+export function minutesPerKm(distance, time) {
+    return time / distance * 1000 / 60
 }
 
 /**

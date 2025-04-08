@@ -45,11 +45,11 @@ nav a {
 }
 
 nav a:hover {
-    color: var(--primary-color);
+    color: var(--pc);
 }
 
 nav a.active {
-    background: var(--primary-color);
+    background: var(--pc);
     color: #000;
 }
 

@@ -9,9 +9,13 @@ let payload = $state({
     kind: null,
 })
 let err = $state(null)
+let loading = $state(false)
 
 async function submit() {
+    if (loading) return
+    loading = true
     const new_medium = await api.Medium.create(payload)
+    loading = false
     if (!new_medium) {
         err = 'Error'
         return
@@ -32,7 +36,7 @@ async function submit() {
         <span>Type:</span>
         {#each app.medium_kinds as kind}
             <button
-                onclick={() => payload.kind = kind}
+                onclick={() => (payload.kind = kind)}
                 class="option-btn"
                 class:selected={payload.kind == kind}>{kind}</button
             >
@@ -55,7 +59,7 @@ label {
 }
 
 .option-btn.selected {
-    color: var(--primary-color);
+    color: var(--pc);
     font-weight: bold;
 }
 

@@ -2,6 +2,7 @@
 import * as app from '$lib/app.js'
 import Icon from '$lib/Icon.svelte'
 import * as util from '$lib/util.js'
+import Distance from '$lib/Distance.svelte'
 
 const { items } = $props()
 </script>
@@ -19,7 +20,10 @@ const { items } = $props()
             <a href="/entry/{pursuit.id}" class="text-lg">
                 {pursuit.name}
             </a>
-            <span class="text-sm text-gray-400">{util.timestampToString(pursuit.start_time * 1000)}</span>
+            <Distance val={pursuit.distance} size="sm" />
+            <span class="text-sm text-gray-400"
+                >{util.timestampToString(pursuit.start_time * 1000)}</span
+            >
         </li>
     {/each}
 </ul>
