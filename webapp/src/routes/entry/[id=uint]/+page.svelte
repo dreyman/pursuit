@@ -42,22 +42,22 @@ function findMedium(id) {
     </Dialog>
 {/if}
 
-<div class="page mt-5 ml-10 flex flex-col items-center gap-1">
+<div class="flex flex-col items-center gap-1">
     <h1 class="flex items-center gap-1">
         <span>{pursuit.name}</span>
         <button onclick={() => (edit_form_dialog_visible = true)} class="icon-btn"
             ><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="date">{util.timestampToFullDate(pursuit.start_time * 1000)}</h2>
-    <h3>{app.mediumLabel(pursuit.kind)}: {medium_name}</h3>
+    <h2 class="text-gray-400">{util.timestampToFullDate(pursuit.start_time * 1000)}</h2>
+    <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium_name}</a></h3>
     <p>{pursuit.description}</p>
     <div class="flex gap-6">
         <Distance val={pursuit.distance} />
         <Time seconds={pursuit.moving_time} />
         <Time seconds={pursuit.total_time} />
         {#if pursuit.kind == app.Kind.cycling}
-            <span class="text-xl"
+            <span class="font-mono text-xl"
                 ><span class="bold">{(pursuit.avg_speed / 1000).toFixed(1)}</span>km/h</span
             >
         {:else if pursuit.kind == app.Kind.running}
@@ -68,20 +68,12 @@ function findMedium(id) {
 </div>
 
 <style>
-.page {
-    margin-top: 1rem;
-}
-
 h1 {
     font-size: 1.5rem;
-    line-height: 2rem;
+    line-height: 1.5rem;
 }
 
 .bold {
     font-weight: bold;
-}
-
-.date {
-    font-size: 1rem;
 }
 </style>

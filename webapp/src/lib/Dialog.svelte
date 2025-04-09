@@ -1,11 +1,6 @@
 <script>
 import Icon from '$lib/Icon.svelte'
 
-/** @type {{
-     * children: any,
-     * title: string,
-     * onclose: function():void
-     }}*/
 let { children, title, onclose } = $props()
 </script>
 
@@ -36,8 +31,8 @@ let { children, title, onclose } = $props()
     border-radius: 0.5rem;
     position: absolute;
     left: 50%;
-    top: 30%;
-    transform: translate(-50%, -50%);
+    top: 20%;
+    transform: translateX(-50%);
 }
 
 h1 {

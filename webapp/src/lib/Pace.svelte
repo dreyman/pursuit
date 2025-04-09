@@ -7,7 +7,7 @@ let minutes = Math.floor(pace)
 let seconds = Math.floor((pace - minutes) * 60)
 </script>
 
-<div class="text-{size}">
+<div class="text-{size} font-mono">
     <span>{util.leftPad(minutes, '0', 2)}:{util.leftPad(seconds, '0', 2)}</span>
 </div>
 

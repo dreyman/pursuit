@@ -52,6 +52,14 @@ export function minutesPerKm(distance, time) {
 }
 
 /**
+ * @param {number} distance in meters
+ * @param {number} time in seconds
+ */
+export function avgSpeedKmh(distance, time) {
+    return distance / time * 3.6
+}
+
+/**
  * @param {number} meters
  * @returns {number}
  */

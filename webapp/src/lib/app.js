@@ -6,7 +6,12 @@ export const Kind = {
     running: 'running',
     walking: 'walking',
     unknown: 'unknown',
-};
+}
+
+export const MediumKind = {
+    bike: 'bike',
+    shoes: 'shoes',
+}
 
 export const unknown_medium = {
     id: 0,

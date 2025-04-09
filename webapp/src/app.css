@@ -3,17 +3,18 @@
 :root {
     --light-blue: rgb(138, 180, 248);
     --purple: #a186f1;
-/*    bg color*/
+
     --dark-grey: rgb(32, 33, 36);
-/*    headering color*/
+
     --light-grey: rgb(154, 160, 166);
 
     --grey-200: #4f4f4f;
     --grey-300: #3c3c3c;
     --grey-500: #272727;
 
-    --pc: var(--light-blue);
-    --link-color: var(--blue-11);
+/*    --pc: var(--blue-11);*/
+    --pc: #a186f1;
+    --link-color: var(--pc);
 
     /* radix colors   */
     --purple-9: #8E4EC6;

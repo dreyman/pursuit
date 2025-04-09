@@ -24,7 +24,7 @@ function onsave(new_medium) {
     </Dialog>
 {/if}
 
-<button onclick={() => (form_dialog_visible = true)} class="icon-btn create-btn">
+<button onmousedown={() => (form_dialog_visible = true)} class="icon-btn create-btn">
     <Icon name="circle-plus" size={2} />
 </button>
 

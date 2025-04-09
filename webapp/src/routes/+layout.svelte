@@ -34,7 +34,7 @@ setContext('mediums', mediums)
 
 <style>
 nav {
-    background: #1c1c1c;
+    background: #1e1f1f;
 }
 
 nav a {
