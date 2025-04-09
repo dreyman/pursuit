@@ -45,6 +45,37 @@ public class QueryParams {
         this.distance_max = getUintParam(params, "distance_max");
     }
 
+    public String buildSql() {
+        var sql = new StringBuilder();
+
+        var where = new StringBuilder();
+        if (this.kind != null) {
+            where.append("kind = ").append(this.kind.ordinal());
+        }
+        if (this.medium != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("medium_id = ").append(this.medium);
+        }
+        if (this.distance_min != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("distance >= ").append(this.distance_min * 1000);
+        }
+        if (this.distance_max != null) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("distance <= ").append(this.distance_max * 1000);
+        }
+
+        if (!where.isEmpty())
+            sql.append(" WHERE ").append(where);
+        sql.append(" ORDER BY ")
+                .append(this.order_by_field)
+                .append(" ")
+                .append(this.order);
+        sql.append(" LIMIT ").append(this.limit);
+
+        return sql.toString();
+    }
+
     static Integer getUintParam(Map<String, List<String>> params, String param_name) {
         var param_str = firstOrNull(params.get(param_name));
         if (param_str == null) return null;

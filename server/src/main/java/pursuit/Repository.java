@@ -23,7 +23,8 @@ public class Repository {
     }
 
     public List<ListItem> list(QueryParams params) throws SQLException {
-        var sql = buildSql(params);
+        String sql = "SELECT " + list_item_fields + " FROM " + table +
+                " " + params.buildSql();
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
             var rs = s.executeQuery();
@@ -52,40 +53,5 @@ public class Repository {
             update.setArgs(s);
             return s.executeUpdate();
         }
-    }
-
-    String buildSql(QueryParams params) {
-        var sql = new StringBuilder();
-        sql.append("SELECT ")
-                .append(list_item_fields)
-                .append(" FROM ")
-                .append(table);
-
-        var where = new StringBuilder();
-        if (params.kind != null) {
-            where.append("kind = ").append(params.kind.ordinal());
-        }
-        if (params.medium != null) {
-            if (!where.isEmpty()) where.append(" AND ");
-            where.append("medium_id = ").append(params.medium);
-        }
-        if (params.distance_min != null) {
-            if (!where.isEmpty()) where.append(" AND ");
-            where.append("distance >= ").append(params.distance_min * 1000);
-        }
-        if (params.distance_max != null) {
-            if (!where.isEmpty()) where.append(" AND ");
-            where.append("distance <= ").append(params.distance_max * 1000);
-        }
-
-        if (!where.isEmpty())
-            sql.append(" WHERE ").append(where);
-        sql.append(" ORDER BY ")
-                .append(params.order_by_field)
-                .append(" ")
-                .append(params.order);
-        sql.append(" LIMIT ").append(params.limit);
-
-        return sql.toString();
     }
 }
