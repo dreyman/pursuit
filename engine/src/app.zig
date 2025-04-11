@@ -14,6 +14,16 @@ const fitfile = @import("gpsfile/fitfile.zig");
 const gpxfile = @import("gpsfile/gpxfile.zig");
 const util = @import("util.zig");
 
+pub const version = "0.0.1-wip";
+pub const supported_files = files: {
+    var str: []const u8 = "";
+    for (std.meta.fields(GpsFileType), 0..) |ext, i| {
+        if (i > 0) str = str ++ ", ";
+        str = str ++ "." ++ ext.name ++ ", ." ++ ext.name ++ ".gz";
+    }
+    break :files str;
+};
+
 pub const GpsFileType = enum {
     fit,
     gpx,
@@ -31,6 +41,16 @@ pub const GpsFileType = enum {
         };
     }
 };
+
+pub fn defaultStorageDirPath(gpa: Allocator) ![]const u8 {
+    const home_path = posix.getenv("HOME") orelse
+        return Storage.Error.HomeDirNotFound;
+    const storage_dir_path = try fs.path.join(
+        gpa,
+        &.{ home_path, Storage.storage_dir_name },
+    );
+    return storage_dir_path;
+}
 
 const ImportError = error{ UnsupportedFileType, RouteTooShort };
 

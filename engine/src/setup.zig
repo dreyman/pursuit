@@ -6,13 +6,15 @@ const Allocator = mem.Allocator;
 
 const sqlitelib = @import("sqlite");
 
+const app = @import("app.zig");
 const Storage = @import("Storage.zig");
 const Database = @import("Database.zig");
 const data = @import("data.zig");
 const Medium = data.Medium;
 
-pub fn install(alloc: Allocator) !void {
-    const db_file_path = try setupStorage(alloc);
+pub fn install(alloc: Allocator, storage_dir_path: []const u8) !void {
+    const db_file_path = try setupStorage(alloc, storage_dir_path);
+    defer alloc.free(db_file_path);
     const sqlite = try setupDatabase(db_file_path);
     var database = Database{
         .alloc = alloc,
@@ -23,20 +25,16 @@ pub fn install(alloc: Allocator) !void {
     // try setupInitialData(&database);
 }
 
-fn setupStorage(alloc: Allocator) ![:0]const u8 {
-    const home_path = posix.getenv("HOME") orelse
-        return Storage.Error.HomeDirNotFound;
-    var home = try fs.cwd().openDir(home_path, .{});
-    defer home.close();
-    try home.makeDir(Storage.storage_dir_name);
-    var storage_dir = try home.openDir(Storage.storage_dir_name, .{});
+fn setupStorage(alloc: Allocator, storage_dir_path: []const u8) ![:0]const u8 {
+    try std.fs.cwd().makeDir(storage_dir_path);
+    var storage_dir = try std.fs.cwd().openDir(storage_dir_path, .{});
     defer storage_dir.close();
     try storage_dir.makeDir(Storage.temp_dir_name);
     try storage_dir.makeDir(Storage.routes_dir_name);
 
     const db_file_path = try fs.path.joinZ(
         alloc,
-        &.{ home_path, Storage.storage_dir_name, Storage.db_file_name },
+        &.{ storage_dir_path, Storage.db_file_name },
     );
     return db_file_path;
 }

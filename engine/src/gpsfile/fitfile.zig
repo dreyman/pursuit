@@ -16,16 +16,15 @@ pub fn decodeRoute(
     var fit_activity = try fit.Activity.create(alloc, raw_fit);
     defer fit_activity.deinit();
 
-    const route = routeFromFitActivity(alloc, fit_activity, unit);
-    return route;
+    return try routeFromFitActivity(alloc, fit_activity, unit);
 }
 
 fn routeFromFitActivity(
     alloc: Allocator,
     activity: fit.Activity,
     unit: data.CoordUnit,
-) data.Route {
-    var route = data.Route.init(alloc, activity.records.items.len) catch unreachable;
+) !data.Route {
+    var route = try data.Route.init(alloc, activity.records.items.len);
     for (activity.records.items, 0..) |rec, i| {
         route.lat[i] = calc.convertSemicircles(rec.lat.?, unit);
         route.lon[i] = calc.convertSemicircles(rec.lon.?, unit);

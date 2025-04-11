@@ -168,7 +168,6 @@ pub const Stats = struct {
     untracked_distance: Distance.Meters,
     avg_speed: Speed.MetersPerHour,
     avg_travel_speed: Speed.MetersPerHour,
-    // max_speed: Speed.MetersPerHour,
     westernmost: Point,
     northernmost: Point,
     easternmost: Point,
@@ -178,8 +177,10 @@ pub const Stats = struct {
     pub const Alg = enum {
         every_second,
         min_speed,
+        min_speed_max_time_gap,
 
         pub const min_speed_kmh = 4.5;
+        pub const max_time_gap = 10;
     };
 
     pub fn fromRoute(route: Route, unit: CoordUnit, alg: Alg) Stats {
@@ -196,7 +197,6 @@ pub const Stats = struct {
             .untracked_distance = 0,
             .avg_speed = 0,
             .avg_travel_speed = 0,
-            // .max_speed = 0,
             .westernmost = undefined,
             .northernmost = undefined,
             .easternmost = undefined,
@@ -205,7 +205,6 @@ pub const Stats = struct {
         };
         var total_distance: Distance.Km = 0;
         var untracked_distance: Distance.Km = 0;
-        // var longest_gap: f64 = 0;
         var westernmost_idx: usize = 0;
         var easternmost_idx: usize = 0;
         var southernmost_idx: usize = 0;
@@ -226,6 +225,7 @@ pub const Stats = struct {
             const moving = switch (alg) {
                 .every_second => t2 - t1 == 1,
                 .min_speed => speed > Alg.min_speed_kmh,
+                .min_speed_max_time_gap => speed > Alg.min_speed_kmh and t2 - t1 < Alg.max_time_gap,
             };
             if (moving) {
                 total_distance += distance;
@@ -248,7 +248,6 @@ pub const Stats = struct {
         stats.moving_time = stats.total_time - stats.stops_duration;
         stats.avg_speed = calc.avgSpeed(total_distance, stats.moving_time);
         stats.avg_travel_speed = calc.avgSpeed(total_distance, stats.total_time);
-        // stats.max_speed = calc.avgSpeed(longest_gap, 1);
         return stats;
     }
 

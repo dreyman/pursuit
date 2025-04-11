@@ -27,24 +27,22 @@ alloc: Allocator,
 
 pub const Error = error{HomeDirNotFound};
 
-pub fn create(
-    alloc: Allocator,
-) !*Storage {
-    const home_path = posix.getenv("HOME") orelse
-        return Error.HomeDirNotFound;
-    const path = try fs.path.join(alloc, &.{ home_path, storage_dir_name });
-    defer alloc.free(path);
-    const storage = try alloc.create(Storage);
-    var dir = try fs.cwd().openDir(path, .{});
+pub fn create(gpa: Allocator, storage_dir: []const u8) !*Storage {
+    var dir = try fs.cwd().openDir(storage_dir, .{});
     errdefer dir.close();
-    var db = try Database.create(alloc, try dbFilePath(alloc));
+    const db_file_path = try fs.path.joinZ(
+        gpa,
+        &.{ storage_dir, db_file_name },
+    );
+    var db = try Database.create(gpa, db_file_path);
     errdefer db.destroy();
+    const storage = try gpa.create(Storage);
+    errdefer storage.destroy();
     storage.* = .{
-        .alloc = alloc,
+        .alloc = gpa,
         .db = db,
         .dir = dir,
     };
-    errdefer storage.destroy();
     return storage;
 }
 
@@ -100,8 +98,6 @@ pub fn saveEntry(
         try routewriter.writeAll(&mem.toBytes(route.time[i]));
     }
     // save to db
-    const db_file = try dbFilePath(storage.alloc);
-    defer storage.alloc.free(db_file);
     try storage.db.savePursuit(
         id,
         entry,
@@ -140,15 +136,6 @@ fn originalFileName(alloc: Allocator, original_file_path: []const u8) ![]u8 {
     @memcpy(result[0..prefix.len], prefix);
     @memcpy(result[prefix.len..], original_name);
     return result;
-}
-
-fn dbFilePath(alloc: Allocator) ![:0]const u8 {
-    const home_path = posix.getenv("HOME") orelse
-        return Error.HomeDirNotFound;
-    return try fs.path.joinZ(
-        alloc,
-        &.{ home_path, storage_dir_name, db_file_name },
-    );
 }
 
 fn maxLen(T: type) usize {
