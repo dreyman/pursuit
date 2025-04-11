@@ -18,8 +18,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.time.Instant;
 
-import static io.javalin.http.HttpStatus.NOT_FOUND;
-import static io.javalin.http.HttpStatus.UNPROCESSABLE_CONTENT;
+import static io.javalin.http.HttpStatus.*;
 
 public class Main {
 
@@ -27,6 +26,7 @@ public class Main {
         var app = new App();
         var javalin = Javalin.create(Main::config);
         initApiEndpoints(javalin, app);
+        initExceptionMapping(javalin);
         javalin.start(7070);
     }
 
@@ -48,7 +48,7 @@ public class Main {
                 ctx.json(new_medium);
             } catch (IllegalArgumentException x) {
                 ctx.status(UNPROCESSABLE_CONTENT);
-                ctx.json(new ErrorResponse("Invalid 'kind' value"));
+                ctx.json(new ErrorResponse("Invalid 'kind' value."));
             } catch (InvalidRequest x) {
                 ctx.status(UNPROCESSABLE_CONTENT);
                 ctx.json(new ErrorResponse(x.getMessage()));
@@ -94,7 +94,6 @@ public class Main {
         api.put("/api/pursuit/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                // fixme unhandled IllegalArgumentException exception in case of invalid kind enum value
                 var payload = ctx.bodyAsClass(UpdatePayload.class);
                 var updated = app.pursuitApi.update(id, payload);
                 if (!updated) {
@@ -102,6 +101,9 @@ public class Main {
                 }
             } catch (NumberFormatException x) {
                 ctx.status(NOT_FOUND);
+            } catch (IllegalArgumentException x) {
+                ctx.status(UNPROCESSABLE_CONTENT);
+                ctx.json(new ErrorResponse("Invalid 'kind' value."));
             }
         });
 
@@ -127,6 +129,18 @@ public class Main {
             } catch (NumberFormatException x) {
                 ctx.status(NOT_FOUND);
             }
+        });
+    }
+
+    static void initExceptionMapping(JavalinDefaultRoutingApi<Javalin> javalin) {
+        javalin.exception(api.InternalError.class, (e, ctx) -> {
+            // fixme properly log error
+            System.out.println(e.getMessage());
+            ctx.status(INTERNAL_SERVER_ERROR);
+        });
+        javalin.exception(api.InvalidRequest.class, (e, ctx) -> {
+            ctx.status(UNPROCESSABLE_CONTENT);
+            ctx.json(new ErrorResponse(e.getMessage()));
         });
     }
 

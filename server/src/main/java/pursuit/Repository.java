@@ -1,7 +1,5 @@
 package pursuit;
 
-import pursuit.sqlite.UpdateQuery;
-
 import java.lang.reflect.Field;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -44,13 +42,12 @@ public class Repository {
     }
 
     public int update(int id, UpdatePayload payload) throws SQLException {
-        var update = new UpdateQuery(id, payload);
-        var sql = update.buildSql(table);
-        assert sql != null;
+        var sql = payload.buildSql(table);
+        if (sql == null) throw new InternalError();
 
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
-            update.setArgs(s);
+            payload.setArgs(id, s);
             return s.executeUpdate();
         }
     }
