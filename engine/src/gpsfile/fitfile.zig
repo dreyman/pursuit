@@ -4,13 +4,15 @@ const Allocator = std.mem.Allocator;
 
 const fit = @import("fit/fit.zig");
 const data = @import("../data.zig");
+const geo = @import("../geo.zig");
 const calc = @import("../calc.zig");
+const Route = @import("../Route.zig");
 
 pub fn decodeRoute(
     alloc: Allocator,
     fit_content: []const u8,
-    unit: data.CoordUnit,
-) !data.Route {
+    unit: geo.Point.Unit,
+) !Route {
     var raw_fit = try fit.decode(alloc, fit_content);
     defer raw_fit.deinit();
     var fit_activity = try fit.Activity.create(alloc, raw_fit);
@@ -22,9 +24,9 @@ pub fn decodeRoute(
 fn routeFromFitActivity(
     alloc: Allocator,
     activity: fit.Activity,
-    unit: data.CoordUnit,
-) !data.Route {
-    var route = try data.Route.init(alloc, activity.records.items.len);
+    unit: geo.Point.Unit,
+) !Route {
+    var route = try Route.init(alloc, activity.records.items.len);
     for (activity.records.items, 0..) |rec, i| {
         route.lat[i] = calc.convertSemicircles(rec.lat.?, unit);
         route.lon[i] = calc.convertSemicircles(rec.lon.?, unit);

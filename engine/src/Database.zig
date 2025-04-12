@@ -6,9 +6,9 @@ const fs = std.fs;
 
 const sqlitelib = @import("sqlite");
 
+const Stats = @import("Stats.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
-const Stats = data.Stats;
 const Medium = data.Medium;
 
 file: [:0]const u8,
@@ -39,12 +39,11 @@ pub fn destroy(database: *Database) void {
 
 pub fn savePursuit(
     database: *Database,
-    id: u32,
+    id: Pursuit.ID,
     p: Pursuit,
     s: Stats,
 ) !void {
-    var sqlite = database.sqlite;
-    try sqlite.execDynamic(
+    try database.sqlite.execDynamic(
         \\ insert into pursuit(id, name, description, kind, medium_id,
         \\ start_time, finish_time, start_lat, start_lon, finish_lat, finish_lon,
         \\ distance, total_time, moving_time, stops_count, stops_duration, untracked_distance,
@@ -80,6 +79,65 @@ pub fn savePursuit(
         s.southernmost.lat,
         s.southernmost.lon,
         s.size,
+    });
+}
+
+pub fn updateStats(
+    database: *Database,
+    id: Pursuit.ID,
+    s: Stats,
+) !void {
+    try database.sqlite.execDynamic(
+        \\ UPDATE pursuit SET
+        \\ start_time = ?,
+        \\ finish_time = ?,
+        \\ start_lat = ?,
+        \\ start_lon = ?,
+        \\ finish_lat = ?,
+        \\ finish_lon = ?,
+        \\ distance = ?,
+        \\ total_time = ?,
+        \\ moving_time = ?,
+        \\ stops_count = ?,
+        \\ stops_duration = ?,
+        \\ untracked_distance = ?,
+        \\ avg_speed = ?,
+        \\ avg_travel_speed = ?,
+        \\ westernmost_lat = ?,
+        \\ westernmost_lon = ?,
+        \\ northernmost_lat = ?,
+        \\ northernmost_lon = ?,
+        \\ easternmost_lat = ?,
+        \\ easternmost_lon = ?,
+        \\ southernmost_lat = ?,
+        \\ southernmost_lon = ?,
+        \\ size = ?
+        \\ WHERE id = ?
+    , .{}, .{
+        s.start_time,
+        s.finish_time,
+        s.start.lat,
+        s.start.lon,
+        s.finish.lat,
+        s.finish.lon,
+        s.distance,
+        s.total_time,
+        s.moving_time,
+        s.stops_count,
+        s.stops_duration,
+        s.untracked_distance,
+        s.avg_speed,
+        s.avg_travel_speed,
+        s.westernmost.lat,
+        s.westernmost.lon,
+        s.northernmost.lat,
+        s.northernmost.lon,
+        s.easternmost.lat,
+        s.easternmost.lon,
+        s.southernmost.lat,
+        s.southernmost.lon,
+        s.size,
+        id,
     });
 }
 

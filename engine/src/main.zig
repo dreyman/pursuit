@@ -5,7 +5,9 @@ const assert = std.debug.assert;
 
 const app = @import("app.zig");
 const setup = @import("setup.zig");
+const data = @import("data.zig");
 const Storage = @import("Storage.zig");
+const Stats = @import("Stats.zig");
 
 const version = "0.0.1-wip";
 
@@ -41,28 +43,63 @@ pub fn main() !void {
     }
 
     if (mem.eql(u8, command, "add")) {
-        const filepath = args.next() orelse {
+        const filepath = args.next() orelse
             fatal("expected file path. (Supported files: " ++ app.supported_files ++ ")", .{});
-        };
-        var storage_dir: ?[]const u8 = null;
+        var storage_path: ?[]const u8 = null;
         const next = args.next();
         if (next) |arg| {
-            if (mem.eql(u8, arg, "--storage")) {
+            if (mem.eql(u8, arg, "--storage") or mem.eql(u8, arg, "-s")) {
                 const path = args.next() orelse fatal("expected parameter after {s}", .{arg});
-                storage_dir = path;
+                storage_path = path;
             } else {
                 fatal("unrecognized argument: '{s}'", .{arg});
             }
         }
-        if (storage_dir == null)
-            storage_dir = try app.defaultStorageDirPath(allocator);
-        var storage = try Storage.create(allocator, storage_dir.?);
+        if (storage_path == null)
+            storage_path = try app.defaultStorageDirPath(allocator);
+        var storage = try Storage.create(allocator, storage_path.?);
         defer storage.destroy();
 
         const id = app.importGpsFile(allocator, storage, filepath, null) catch |err| switch (err) {
             else => fatal("{s}", .{@errorName(err)}),
         };
         try writeAndExit("done. id={d}", .{id});
+    }
+
+    if (mem.eql(u8, command, "recalc")) {
+        const id_arg = args.next() orelse fatal("expected id", .{});
+        const id = std.fmt.parseInt(data.Pursuit.ID, id_arg, 10) catch
+            fatal("invalid id: must be a number, but found: '{s}'", .{id_arg});
+        var storage_path: ?[]const u8 = null;
+        var calc_options: Stats.CalcStatsOptions = .{};
+        for (0..3) |_| {
+            const arg = args.next() orelse {
+                if (storage_path == null) fatal("expected storage", .{});
+                break;
+            };
+            if (mem.eql(u8, arg, "--storage") or mem.eql(u8, arg, "-s")) {
+                const path = args.next() orelse fatal("expected parameter after {s}", .{arg});
+                storage_path = path;
+            }
+            if (mem.eql(u8, arg, "--min-speed")) {
+                const ms_arg = args.next() orelse fatal("expected parameter after {s}", .{arg});
+                calc_options.min_speed = std.fmt.parseInt(u8, ms_arg, 10) catch
+                    fatal("invalid min-speed: must be a number, but found '{s}'", .{ms_arg});
+            }
+            if (mem.eql(u8, arg, "--max-time-gap")) {
+                const mtg_arg = args.next() orelse fatal("expected parameter after {s}", .{arg});
+                calc_options.max_time_gap = std.fmt.parseInt(u8, mtg_arg, 10) catch
+                    fatal("invalid max-time-gap: must be a number [0-255], but found '{s}'", .{mtg_arg});
+            }
+        }
+        var storage = try Storage.create(allocator, storage_path.?);
+        defer storage.destroy();
+
+        _ = app.recalcStats(storage, id, calc_options) catch |err|
+            switch (err) {
+            else => fatal("{s}", .{@errorName(err)}),
+        };
+        try writeAndExit("done.", .{});
     }
 
     // if (mem.eql(u8, command, "strava")) {

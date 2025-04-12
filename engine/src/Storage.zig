@@ -12,8 +12,8 @@ const Database = @import("Database.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
 const Medium = data.Medium;
-const Route = data.Route;
-const Stats = data.Stats;
+const Route = @import("Route.zig");
+const Stats = @import("Stats.zig");
 
 pub const storage_dir_name = ".pursuit";
 pub const db_file_name = "pursuit.db";
@@ -104,6 +104,25 @@ pub fn saveEntry(
         stats,
     );
     return id;
+}
+
+pub fn getRoute(storage: *const Storage, id: Pursuit.ID) !Route {
+    const route_file_path = try storage.getRouteFilePath(id);
+    defer storage.alloc.free(route_file_path);
+    var route_file = try storage.dir.openFile(route_file_path, .{});
+    defer route_file.close();
+    return try Route.createFromFile(storage.alloc, route_file);
+}
+
+fn getRouteFilePath(storage: *const Storage, id: Pursuit.ID) ![]const u8 {
+    var buf: [max_id_len]u8 = undefined;
+    const id_str = try std.fmt.bufPrint(&buf, "{d}", .{id});
+    const route_file_path = try fs.path.join(storage.alloc, &.{
+        routes_dir_name,
+        id_str,
+        "route",
+    });
+    return route_file_path;
 }
 
 pub fn ungzip(storage: *const Storage, gzipped_file_path: []const u8) !fs.File {

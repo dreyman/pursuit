@@ -3,7 +3,8 @@ const mem = std.mem;
 const Allocator = mem.Allocator;
 
 const data = @import("data.zig");
-const Distance = data.Distance;
+const geo = @import("geo.zig");
+const Distance = geo.Distance;
 const Pursuit = data.Pursuit;
 
 pub fn generateName(
@@ -17,7 +18,7 @@ pub fn generateName(
     defer alloc.free(date);
     return try std.fmt.allocPrint(alloc, "{d}km {s} ({s})", .{
         km,
-        kind.verb(),
+        if (kind != .unknown) kind.verb() else "",
         date,
     });
 }

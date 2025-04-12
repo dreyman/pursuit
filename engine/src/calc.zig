@@ -7,9 +7,9 @@ const pow = math.pow;
 const asin = math.asin;
 const sqrt = math.sqrt;
 
-const data = @import("data.zig");
-const Distance = data.Distance;
-const Speed = data.Speed;
+const geo = @import("geo.zig");
+const Distance = geo.Distance;
+const Speed = geo.Speed;
 
 pub const earth_r = 6371;
 
@@ -21,7 +21,7 @@ pub fn semicirclesToRadians(semicircles: i32) f32 {
     return (@as(f32, @floatFromInt(semicircles)) * std.math.pi) / 0x80000000;
 }
 
-pub fn convertSemicircles(semicircles: i32, unit: data.CoordUnit) f32 {
+pub fn convertSemicircles(semicircles: i32, unit: geo.Point.Unit) f32 {
     return switch (unit) {
         .degrees => semicirclesToDegrees(semicircles),
         .radians => semicirclesToRadians(semicircles),

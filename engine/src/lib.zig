@@ -42,7 +42,8 @@ export fn pursuit_import_file(
         switch (err) {
         else => return 0,
     };
-    const id = app.importGpsFile(alloc, storage, mem.span(file), null) catch |err| switch (err) {
+    const id = app.importGpsFile(alloc, storage, mem.span(file), null) catch |err|
+        switch (err) {
         else => return 0,
     };
     return id;

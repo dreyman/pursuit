@@ -1,4 +1,5 @@
 const std = @import("std");
+const assert = std.debug.assert;
 const posix = std.posix;
 const fs = std.fs;
 const mem = std.mem;
@@ -8,7 +9,10 @@ const ArrayList = std.ArrayList;
 const constants = @import("constants.zig");
 const Storage = @import("Storage.zig");
 const data = @import("data.zig");
+const geo = @import("geo.zig");
 const Pursuit = data.Pursuit;
+const Stats = @import("Stats.zig");
+const Route = @import("Route.zig");
 const Medium = data.Medium;
 const fitfile = @import("gpsfile/fitfile.zig");
 const gpxfile = @import("gpsfile/gpxfile.zig");
@@ -85,7 +89,7 @@ pub fn importGpsFile(
         .fit => {},
         .gpx => alloc.free(file_content),
     };
-    const coords_unit: data.CoordUnit = switch (filetype) {
+    const coords_unit: geo.Point.Unit = switch (filetype) {
         .fit => .radians,
         .gpx => .degrees,
     };
@@ -96,8 +100,7 @@ pub fn importGpsFile(
     defer route.deinit();
     if (route.len() < constants.route_len_min)
         return ImportError.RouteTooShort;
-    const alg: data.Stats.Alg = if (filetype == .fit) detectAlg(route) else .min_speed;
-    var stats = data.Stats.fromRoute(route, coords_unit, alg);
+    var stats = Stats.fromRoute(route, coords_unit, .{});
     if (filetype == .fit) {
         route.toDegrees();
         stats.toDegrees();
@@ -115,9 +118,14 @@ pub fn importGpsFile(
     return try storage.saveEntry(file_path, p, route, stats);
 }
 
-fn detectAlg(route: data.Route) data.Stats.Alg {
-    for (1..route.time.len) |i| {
-        if (route.time[i] - route.time[i - 1] == 1) return .every_second;
-    }
-    return .min_speed;
+pub fn recalcStats(
+    storage: *Storage,
+    id: Pursuit.ID,
+    options: Stats.CalcStatsOptions,
+) !Stats {
+    var route = try storage.getRoute(id);
+    defer route.deinit();
+    const stats = Stats.fromRoute(route, .degrees, options);
+    try storage.db.updateStats(id, stats);
+    return stats;
 }
