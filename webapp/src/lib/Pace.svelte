@@ -2,9 +2,9 @@
 import * as util from '$lib/util.js'
 
 const { distance, time, size = 'xl' } = $props()
-let pace = util.minutesPerKm(distance, time)
-let minutes = Math.floor(pace)
-let seconds = Math.floor((pace - minutes) * 60)
+let pace = $derived(util.minutesPerKm(distance, time))
+let minutes = $derived(Math.floor(pace))
+let seconds = $derived(Math.floor((pace - minutes) * 60))
 </script>
 
 <div class="text-{size} font-mono">

@@ -20,6 +20,8 @@ onMount(async () => {
         }
         const points = []
         for (let i = 0; i < track_points.length; i += 2) {
+            if (isNaN(track_points[i])) console.log(i)
+            if (isNaN(track_points[i + 1])) console.log(i + 1)
             points.push(Leaflet.latLng(track_points[i], track_points[i + 1]))
         }
         draw_track(points)

@@ -1,15 +1,15 @@
 /**
- * @param {any} pursuit
+ * @param {any} stats
  * @returns {MapCfg}
  */
-export function mapCfg(pursuit) {
+export function mapCfg(stats) {
     const center = [
-        (pursuit.westernmost_lat + pursuit.easternmost_lat) / 2,
-        (pursuit.northernmost_lon + pursuit.southernmost_lon) / 2,
+        (stats.westernmost_lat + stats.easternmost_lat) / 2,
+        (stats.northernmost_lon + stats.southernmost_lon) / 2,
     ]
     const bounds = [
-        [pursuit.northernmost_lat, pursuit.westernmost_lon],
-        [pursuit.southernmost_lat, pursuit.easternmost_lon]
+        [stats.northernmost_lat, stats.westernmost_lon],
+        [stats.southernmost_lat, stats.easternmost_lon]
     ]
     return { center, bounds }
 }

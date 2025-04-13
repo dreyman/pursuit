@@ -4,7 +4,8 @@ export const Medium = {
     list: async (fetch) => {
         try {
             const resp = await fetch(`${API_URL}/medium`)
-            if (resp.status != 200) return []
+            if (resp.status != 200)
+                return []
             return await resp.json()
         } catch (err) {
             return []
@@ -13,7 +14,8 @@ export const Medium = {
     getById: async (fetch, id) => {
         try {
             const resp = await fetch(`${API_URL}/medium/${id}`)
-            if (resp.status != 200) return null
+            if (resp.status != 200)
+                return null
             return await resp.json()
         } catch (err) {
             return null
@@ -25,7 +27,8 @@ export const Medium = {
                 method: 'POST',
                 body: JSON.stringify(payload),
             })
-            if (resp.status != 200) return null
+            if (resp.status != 200)
+                return null
             return await resp.json()
         } catch (err) {
             return null
@@ -46,7 +49,8 @@ export const Pursuit = {
     getById: async (fetch, id) => {
         try {
             const resp = await fetch(`${API_URL}/pursuit/${id}`)
-            if (resp.status != 200) return null
+            if (resp.status != 200)
+                return null
             return await resp.json()
         } catch (err) {
             return null
@@ -58,10 +62,29 @@ export const Pursuit = {
                 method: 'PUT',
                 body: JSON.stringify(payload),
             })
-            if (resp.status != 200) return false
+            if (resp.status != 200)
+                return false
             return true
         } catch (err) {
             return false
+        }
+    }
+}
+
+export const Stats = {
+    recalc: async (fetch, id, payload) => {
+        try {
+            const resp = await fetch(`${API_URL}/pursuit/${id}/stats`, {
+                method: 'PUT',
+                body: JSON.stringify(payload),
+            })
+            const resp_body = await resp.json()
+            if (resp.status != 200)
+                return [null, resp_body]
+            return [resp_body, null]
+        } catch (err) {
+            console.log(err)
+            return null
         }
     }
 }
@@ -73,7 +96,8 @@ export const Pursuit = {
 export async function get_track(fetch, id) {
     try {
         const resp = await fetch(`${API_URL}/pursuit/${id}/track`)
-        if (resp.status != 200) return null
+        if (resp.status != 200)
+            return null
         const blob = await resp.blob()
         const arrayBuffer = await blob.arrayBuffer()
         return new Float32Array(arrayBuffer)

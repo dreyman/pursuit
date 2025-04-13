@@ -33,6 +33,7 @@ let { children, title, onclose } = $props()
     left: 50%;
     top: 20%;
     transform: translateX(-50%);
+    box-shadow: var(--dialog-shadow);
 }
 
 h1 {

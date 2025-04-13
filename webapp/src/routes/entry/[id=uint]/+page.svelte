@@ -2,6 +2,7 @@
 import { getContext } from 'svelte'
 import Dialog from '$lib/Dialog.svelte'
 import PursuitForm from '$lib/PursuitForm.svelte'
+import StatsForm from './StatsForm.svelte'
 import Track from '$lib/Track.svelte'
 import Time from '$lib/Time.svelte'
 import Distance from '$lib/Distance.svelte'
@@ -13,11 +14,13 @@ import * as app from '$lib/app.js'
 const { data } = $props()
 
 const pursuit = $state(data.pursuit)
+const stats = $derived(pursuit.stats)
 const mediums = getContext('mediums')
 
 let medium = findMedium(pursuit.medium_id)
 let medium_name = $state(medium.name)
 let edit_form_dialog_visible = $state(false)
+let stats_dialog_visible = $state(false)
 
 function onsave(updated_fields) {
     Object.assign(pursuit, updated_fields)
@@ -34,6 +37,11 @@ function findMedium(id) {
     }
     return app.unknown_medium
 }
+
+function updateStats(updated_stats) {
+    stats_dialog_visible = false
+    Object.assign(pursuit.stats, updated_stats)
+}
 </script>
 
 {#if edit_form_dialog_visible}
@@ -42,29 +50,55 @@ function findMedium(id) {
     </Dialog>
 {/if}
 
-<div class="flex flex-col items-center gap-1">
+{#if stats_dialog_visible}
+    <Dialog title="Recalculate" onclose={() => (stats_dialog_visible = false)}>
+        <StatsForm id={pursuit.id} onsubmit={updateStats} />
+    </Dialog>
+{/if}
+
+<div class="flex max-w-180 flex-col items-center gap-1 px-4">
     <h1 class="flex items-center gap-1">
         <span>{pursuit.name}</span>
-        <button onclick={() => (edit_form_dialog_visible = true)} class="icon-btn"
+        <button onclick={() => (edit_form_dialog_visible = true)} class="icon-btn text-gray-400"
             ><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="text-gray-400">{util.timestampToFullDate(pursuit.start_time * 1000)}</h2>
+    <h2 class="text-gray-400">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
     <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium_name}</a></h3>
-    <p>{pursuit.description}</p>
-    <div class="flex gap-6">
-        <Distance val={pursuit.distance} />
-        <Time seconds={pursuit.moving_time} />
-        <Time seconds={pursuit.total_time} />
-        {#if pursuit.kind == app.Kind.cycling}
-            <span class="font-mono text-xl"
-                ><span class="bold">{(pursuit.avg_speed / 1000).toFixed(1)}</span>km/h</span
-            >
-        {:else if pursuit.kind == app.Kind.running}
-            <Pace distance={pursuit.distance} time={pursuit.moving_time} />
-        {/if}
+    <div class="relative flex w-full items-center justify-center gap-6">
+        <div class="flex flex-col items-center">
+            <span class="text-sm text-gray-400">Distance</span>
+            <Distance val={stats.distance} />
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm text-gray-400">Moving Time</span>
+            <Time seconds={stats.moving_time} />
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm text-gray-400">Total Time</span>
+            <Time seconds={stats.total_time} />
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-sm text-gray-400">
+                {#if pursuit.kind == app.Kind.running}Pace{:else}Avg Speed{/if}
+            </span>
+            {#if pursuit.kind == app.Kind.running}
+                <Pace distance={stats.distance} time={stats.moving_time} />
+            {:else}
+                <span class="font-mono text-xl"
+                    ><span class="bold">{(stats.avg_speed / 1000).toFixed(1)}</span>km/h</span
+                >
+            {/if}
+        </div>
+        <button
+            onclick={() => (stats_dialog_visible = true)}
+            class="icon-btn absolute right-0 text-gray-400"
+        >
+            <Icon name="settings" />
+        </button>
     </div>
-    <Track id={pursuit.id} cfg={util.mapCfg(pursuit)} />
+    <p>{pursuit.description}</p>
+    <Track id={pursuit.id} cfg={util.mapCfg(stats)} />
 </div>
 
 <style>
