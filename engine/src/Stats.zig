@@ -88,12 +88,8 @@ pub fn fromRoute(
         };
         const time_diff_hours: f64 = @as(f64, @floatFromInt(t2 - t1)) / 3600;
         const speed = distance / time_diff_hours;
-        // const moving = switch (alg) {
-        //     .every_second => t2 - t1 == 1,
-        //     .min_speed => speed > Alg.min_speed_kmh,
-        //     .min_speed_max_time_gap => speed > Alg.min_speed_kmh and t2 - t1 < Alg.max_time_gap,
-        // };
-        const moving = t2 - t1 <= options.max_time_gap and speed >= @as(f64, @floatFromInt(options.min_speed));
+        const moving = t2 - t1 <= options.max_time_gap and
+            speed >= @as(f64, @floatFromInt(options.min_speed));
         if (moving) {
             total_distance += distance;
         } else {

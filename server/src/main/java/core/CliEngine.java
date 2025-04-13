@@ -1,14 +1,13 @@
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class CliEngine implements Engine {
+public class CliEngine  {
     public String cli_path;
 
     public CliEngine(String cli_path) {
         this.cli_path = cli_path;
     }
 
-    @Override
     public String version() throws Engine.Err {
         throw new UnsupportedOperationException();
     }
