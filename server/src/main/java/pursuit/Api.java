@@ -1,5 +1,7 @@
 package pursuit;
 
+import core.Engine;
+
 import java.sql.SQLException;
 import java.util.List;
 

@@ -1,4 +1,7 @@
+import core.Engine;
+import core.ForeignEngine;
 import pursuit.Pursuit;
+import stats.Stats;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -32,7 +35,7 @@ public class App {
 
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
-        engine = new ForeignEngine(LIB_PATH, app_dir_path.toString());
+        engine = new ForeignEngine(LIB_PATH, this.app_dir);
     }
 
     public Pursuit importFile(String path) {
@@ -52,7 +55,20 @@ public class App {
         }
     }
 
+    public Stats recalcStats(int id, int min_speed, int max_time_gap) {
+        try {
+            engine.recalcStats(id, min_speed, max_time_gap);
+            // fixme just retrieve stats (or even only recalculated fields)
+            var pursuit = pursuitApi.getById(id);
+            return pursuit.stats;
+        } catch (Engine.Err e) {
+            e.printStackTrace();
+            throw new api.InternalError();
+        }
+    }
+
     public File getTrackFile(int pursuit_id) {
-        return new File(Path.of(routes_dir, String.valueOf(pursuit_id), "track").toString());
+        Path path = Path.of(routes_dir, String.valueOf(pursuit_id), "track");
+        return new File(path.toString());
     }
 }

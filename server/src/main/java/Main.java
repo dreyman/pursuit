@@ -1,4 +1,5 @@
 import api.ErrorResponse;
+import api.InvalidPayload;
 import api.InvalidRequest;
 import com.google.gson.*;
 import io.javalin.Javalin;
@@ -12,6 +13,7 @@ import io.javalin.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import pursuit.QueryParams;
 import pursuit.UpdatePayload;
+import stats.RecalcRequest;
 
 import java.io.FileInputStream;
 import java.lang.reflect.Type;
@@ -130,6 +132,17 @@ public class Main {
                 ctx.status(NOT_FOUND);
             }
         });
+        api.put("/api/pursuit/{id}/stats", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var req = RecalcRequest.fromJson(ctx.body());
+                var stats = app.recalcStats(id, req.min_speed, req.max_time_gap);
+                ctx.json(stats);
+                ctx.status(OK);
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
+        });
     }
 
     static void initExceptionMapping(JavalinDefaultRoutingApi<Javalin> javalin) {
@@ -141,6 +154,10 @@ public class Main {
         javalin.exception(api.InvalidRequest.class, (e, ctx) -> {
             ctx.status(UNPROCESSABLE_CONTENT);
             ctx.json(new ErrorResponse(e.getMessage()));
+        });
+        javalin.exception(InvalidPayload.class, (e, ctx) -> {
+           ctx.status(UNPROCESSABLE_CONTENT);
+           ctx.json(e.invalid_fields);
         });
     }
 
