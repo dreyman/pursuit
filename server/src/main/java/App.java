@@ -7,35 +7,27 @@ import java.io.File;
 import java.nio.file.Path;
 
 public class App {
-    static String STORAGE_DIR = "WIP";
-    static String LIB_PATH = "../engine/zig-out/lib/libpursuit.so";
 
-    String app_dir;
+    Config config;
     String sqlite_db_file;
     String routes_dir;
     String temp_dir;
-    String cli_path;
 
     public pursuit.Api pursuitApi;
     public medium.Api mediumApi;
     public Engine engine;
 
-    public App() {
-        String home = System.getenv("HOME");
-        if (home == null) {
-            throw new RuntimeException("HOME not found");
-        }
-        var app_dir_path = Path.of(home, STORAGE_DIR);
+    public App(Config config) {
+        this.config = config;
+        var app_dir = Path.of(config.storage_dir);
 
-        this.app_dir = app_dir_path.toString();
-        this.sqlite_db_file = app_dir_path.resolve("pursuit.db").toString();
-        this.routes_dir = app_dir_path.resolve("routes").toString();
-        this.temp_dir = app_dir_path.resolve("temp").toString();
-        this.cli_path = app_dir_path.resolve("prst").toString();
+        this.sqlite_db_file = app_dir.resolve("pursuit.db").toString();
+        this.routes_dir = app_dir.resolve("routes").toString();
+        this.temp_dir = app_dir.resolve("temp").toString();
 
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
-        engine = new ForeignEngine(LIB_PATH, this.app_dir);
+        engine = new ForeignEngine(config.libpursuit_path, config.storage_dir);
     }
 
     public Pursuit importFile(String path) {

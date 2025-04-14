@@ -16,7 +16,9 @@ import pursuit.UpdatePayload;
 import stats.RecalcRequest;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 
@@ -24,8 +26,11 @@ import static io.javalin.http.HttpStatus.*;
 
 public class Main {
 
+    static Gson gson = new Gson();
+
     public static void main(String[] args) {
-        var app = new App();
+        var config = getAppConfig();
+        var app = new App(config);
         var javalin = Javalin.create(Main::config);
         initApiEndpoints(javalin, app);
         initExceptionMapping(javalin);
@@ -143,6 +148,18 @@ public class Main {
                 ctx.status(NOT_FOUND);
             }
         });
+    }
+
+    static Config getAppConfig() {
+        try {
+            String cfg_json = Files.readString(Path.of("appconfig.json"));
+            return gson.fromJson(cfg_json, Config.class);
+        } catch (IOException _) {
+            System.out.println("Failed to read appconfig.json");
+        } catch (JsonSyntaxException _) {
+            System.out.println("Failed to parse appconfig.json: json syntax error");
+        }
+        return null;
     }
 
     static void initExceptionMapping(JavalinDefaultRoutingApi<Javalin> javalin) {

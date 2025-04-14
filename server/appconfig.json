@@ -1,0 +1,4 @@
+{
+  "storage_dir": "",
+  "libpursuit_path": "../engine/zig-out/lib/libpursuit.so"
+}
