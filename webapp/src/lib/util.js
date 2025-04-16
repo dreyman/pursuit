@@ -1,3 +1,6 @@
+const today = new Date()
+const current_year = today.getFullYear()
+
 /**
  * @param {any} stats
  * @returns {MapCfg}
@@ -20,7 +23,7 @@ export function mapCfg(stats) {
  */
 export function timestampToString(timestamp) {
     const d = new Date(timestamp)
-    return d.toDateString()
+    return dateStrWithoutCurrentYear(d)
 }
 
 /**
@@ -29,7 +32,7 @@ export function timestampToString(timestamp) {
  */
 export function timestampToFullDate(timestamp) {
     const d = new Date(timestamp)
-    return d.toLocaleTimeString() + ' ' + d.toDateString()
+    return d.toLocaleTimeString() + ' ' + dateStrWithoutCurrentYear(d)
 }
 
 /**
@@ -65,6 +68,17 @@ export function avgSpeedKmh(distance, time) {
  */
 export function metersToKm(meters) {
     return Math.floor(meters / 1000);
+}
+
+/**
+ * @param {Date} date
+ * @returns {string}
+ */
+function dateStrWithoutCurrentYear(date) {
+    const date_str = date.toDateString()
+    if (date.getFullYear() == current_year)
+        return date_str.substring(0, date_str.length - 5)
+    return date_str
 }
 
 /**

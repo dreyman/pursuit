@@ -40,7 +40,7 @@ function changeKind(kind) {
 }
 </script>
 
-<div class="form mt-2 flex flex-col items-center gap-4">
+<div class="form mt-2 flex w-120 flex-col items-center gap-4">
     {#if err != null}
         <span class="text-red-500">{err}</span>
     {/if}
@@ -103,10 +103,6 @@ function changeKind(kind) {
 </div>
 
 <style>
-.form {
-    width: 27rem;
-}
-
 label {
     width: 100%;
 }

@@ -31,16 +31,16 @@ function timeAsString(seconds) {
     <h1 class="text-3xl">{data.medium.name}</h1>
     <div class="flex gap-8">
         <div class="stats-item flex flex-col items-center">
-            <span class="text-sm text-gray-400">Distance</span>
+            <span class="text-semi text-sm">Distance</span>
             <Distance val={data.medium.distance} rounded={true} />
         </div>
         <div class="flex flex-col items-center">
-            <span class="text-sm text-gray-400">Time</span>
+            <span class="text-semi text-sm">Time</span>
             <span class="font-mono text-xl">{timeAsString(data.medium.time)}</span>
         </div>
         {#if data.medium.kind == app.MediumKind.bike}
             <div class="flex flex-col items-center">
-                <span class="text-sm text-gray-400">Avg Speed</span>
+                <span class="text-semi text-sm">Avg Speed</span>
                 <span class="font-mono text-xl">
                     {util.avgSpeedKmh(data.medium.distance, data.medium.time).toFixed(2)}km/h
                 </span>
@@ -56,7 +56,7 @@ function timeAsString(seconds) {
     <section>
         <div class="section-title mb-1 flex items-center">
             <span class="grow-2"></span>
-            <h2 class="mx-1 text-gray-400">Last pursuits</h2>
+            <h2 class="text-semi mx-1">Last pursuits</h2>
             <span class="grow-2"></span>
         </div>
         <PursuitList items={data.medium.last_pursuits} showicon={false} />
@@ -70,7 +70,6 @@ function timeAsString(seconds) {
 
 .section-title h2 {
     font-size: 1rem;
-    font-family: monospace;
     text-transform: uppercase;
 }
 </style>

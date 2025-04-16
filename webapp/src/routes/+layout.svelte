@@ -27,7 +27,7 @@ setContext('mediums', mediums)
         </a>
     </nav>
 
-    <div class="page-content flex grow flex-col items-center">
+    <div class="mt-4 flex w-full grow flex-col items-center">
         {@render children()}
     </div>
 </div>
@@ -35,6 +35,8 @@ setContext('mediums', mediums)
 <style>
 nav {
     background: #1e1f1f;
+    height: 100%;
+    position: fixed;
 }
 
 nav a {
@@ -51,10 +53,5 @@ nav a:hover {
 nav a.active {
     background: var(--pc);
     color: #000;
-}
-
-.page-content {
-    margin-top: 1rem;
-    width: 100%;
 }
 </style>

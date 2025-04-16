@@ -56,30 +56,31 @@ function updateStats(updated_stats) {
     </Dialog>
 {/if}
 
-<div class="flex max-w-180 flex-col items-center gap-1 px-4">
-    <h1 class="flex items-center gap-1">
+<div class="flex max-w-180 flex-col items-center gap-1">
+    <h1 class="relative w-full text-center">
         <span>{pursuit.name}</span>
-        <button onclick={() => (edit_form_dialog_visible = true)} class="icon-btn text-gray-400"
-            ><Icon name="pencil" /></button
+        <button
+            onclick={() => (edit_form_dialog_visible = true)}
+            class="icon-btn absolute right-0 text-gray-500"><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="text-gray-400">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
+    <h2 class="text-semi">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
     <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium_name}</a></h3>
-    <div class="relative flex w-full items-center justify-center gap-6">
+    <div class="relative flex w-full min-w-132 items-center justify-center gap-6">
         <div class="flex flex-col items-center">
-            <span class="text-sm text-gray-400">Distance</span>
+            <span class="text-semi text-sm">Distance</span>
             <Distance val={stats.distance} />
         </div>
         <div class="flex flex-col items-center">
-            <span class="text-sm text-gray-400">Moving Time</span>
+            <span class="text-semi text-sm">Moving Time</span>
             <Time seconds={stats.moving_time} />
         </div>
         <div class="flex flex-col items-center">
-            <span class="text-sm text-gray-400">Total Time</span>
+            <span class="text-semi text-sm">Total Time</span>
             <Time seconds={stats.total_time} />
         </div>
         <div class="flex flex-col items-center">
-            <span class="text-sm text-gray-400">
+            <span class="text-semi text-sm">
                 {#if pursuit.kind == app.Kind.running}Pace{:else}Avg Speed{/if}
             </span>
             {#if pursuit.kind == app.Kind.running}
@@ -92,7 +93,7 @@ function updateStats(updated_stats) {
         </div>
         <button
             onclick={() => (stats_dialog_visible = true)}
-            class="icon-btn absolute right-0 text-gray-400"
+            class="icon-btn absolute right-0 text-gray-500"
         >
             <Icon name="settings" />
         </button>
@@ -104,7 +105,6 @@ function updateStats(updated_stats) {
 <style>
 h1 {
     font-size: 1.5rem;
-    line-height: 1.5rem;
 }
 
 .bold {

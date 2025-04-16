@@ -11,6 +11,9 @@ let map
 let map_el
 let failed_to_load = $state(false)
 
+const start_emoji = '🟢' // '▶️'
+const finish_emoji = '🟥' // '🏁'
+
 onMount(async () => {
     if (app.debug.use_map_placeholder) return
     api.get_track(fetch, id).then(track_points => {
@@ -31,6 +34,12 @@ onMount(async () => {
 
 function draw_track(points) {
     Leaflet.polyline(points, { color: 'red' }).addTo(map)
+    Leaflet.marker(points[0], {
+        icon: Leaflet.divIcon({ className: 'emoji-marker', html: start_emoji }),
+    }).addTo(map)
+    Leaflet.marker(points[points.length - 1], {
+        icon: Leaflet.divIcon({ className: 'emoji-marker', html: finish_emoji }),
+    }).addTo(map)
 }
 </script>
 
@@ -41,8 +50,24 @@ function draw_track(points) {
 
 <style>
 .map {
-    width: 600px;
+    width: 100%;
     height: 600px;
     background: #a0a0a0;
+}
+
+:global {
+    .emoji-marker-lg {
+        position: absolute;
+        top: -15px;
+        left: -10px;
+        font-size: 1.5rem;
+    }
+
+    .emoji-marker {
+        position: absolute;
+        top: -7px;
+        left: -4px;
+        font-size: 1rem;
+    }
 }
 </style>

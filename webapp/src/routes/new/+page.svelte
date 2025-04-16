@@ -28,16 +28,13 @@ async function on_file_upload(e) {
 </script>
 
 <div class="page">
-    <input type="file"
-           id="fileupload"
-           accept=".fit, .fit.gz, .gpx, .gpx.gz"
-           onchange={on_file_upload} />
+    <input
+        type="file"
+        id="fileupload"
+        accept=".fit, .fit.gz, .gpx, .gpx.gz"
+        onchange={on_file_upload}
+    />
 </div>
 
 <style>
-.page {
-}
-
-input[type='file'] {
-}
 </style>

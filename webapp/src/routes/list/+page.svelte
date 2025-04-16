@@ -7,10 +7,20 @@ import PursuitList from '$lib/PursuitList.svelte'
 
 let { data } = $props()
 
-let params = new URLSearchParams(page.url.search)
+let params = null
 let kind = $derived(page.url.searchParams.get('kind') ?? null)
 let filters_dialog_visible = $state(false)
-let filters = $state(initFilters(params))
+let filters = $state({
+    distance: {
+        min: null,
+        max: null,
+    },
+})
+
+$effect(() => {
+    params = new URLSearchParams(page.url.search)
+    filters = initFilters(params)
+})
 
 function setKind(val) {
     if (kind == val) return
@@ -56,16 +66,16 @@ function initFilters(params) {
 </script>
 
 <ul class="filter-btns mb-4 flex">
-    <button onclick={() => setKind(null)} class:active={kind == null}>all</button>
-    <button onclick={() => setKind('cycling')} class:active={kind == 'cycling'}>cycling</button>
-    <button onclick={() => setKind('running')} class:active={kind == 'running'}>running</button>
-    <button onclick={() => setKind('walking')} class:active={kind == 'walking'}>walking</button>
-    <button onclick={() => (filters_dialog_visible = true)}
+    <button onmousedown={() => setKind(null)} class:active={kind == null}>all</button>
+    <button onmousedown={() => setKind('cycling')} class:active={kind == 'cycling'}>cycling</button>
+    <button onmousedown={() => setKind('running')} class:active={kind == 'running'}>running</button>
+    <button onmousedown={() => setKind('walking')} class:active={kind == 'walking'}>walking</button>
+    <button onmousedown={() => (filters_dialog_visible = true)}
         ><Icon name="adjustments-horizontal" /></button
     >
 </ul>
 
-<PursuitList items={data.pursuits} />
+<PursuitList items={data.pursuits} showicon={kind == null} />
 
 {#if filters_dialog_visible}
     <Dialog title="Filter" onclose={() => (filters_dialog_visible = false)}>
@@ -92,7 +102,7 @@ function initFilters(params) {
 }
 
 .filter-btns button.active {
-    color: var(--pc);
+    color: var(--link-color);
 }
 
 .filter-btns button:first-child {
