@@ -56,7 +56,7 @@ function updateStats(updated_stats) {
     </Dialog>
 {/if}
 
-<div class="flex max-w-180 flex-col items-center gap-1">
+<div class="flex w-full flex-col items-center gap-1 md:w-180">
     <h1 class="relative w-full text-center">
         <span>{pursuit.name}</span>
         <button
@@ -66,31 +66,35 @@ function updateStats(updated_stats) {
     </h1>
     <h2 class="text-semi">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
     <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium_name}</a></h3>
-    <div class="relative flex w-full min-w-132 items-center justify-center gap-6">
-        <div class="flex flex-col items-center">
-            <span class="text-semi text-sm">Distance</span>
-            <Distance val={stats.distance} />
-        </div>
-        <div class="flex flex-col items-center">
-            <span class="text-semi text-sm">Moving Time</span>
-            <Time seconds={stats.moving_time} />
-        </div>
-        <div class="flex flex-col items-center">
-            <span class="text-semi text-sm">Total Time</span>
-            <Time seconds={stats.total_time} />
-        </div>
-        <div class="flex flex-col items-center">
-            <span class="text-semi text-sm">
-                {#if pursuit.kind == app.Kind.running}Pace{:else}Avg Speed{/if}
-            </span>
-            {#if pursuit.kind == app.Kind.running}
-                <Pace distance={stats.distance} time={stats.moving_time} />
-            {:else}
-                <span class="font-mono text-xl"
-                    ><span class="bold">{(stats.avg_speed / 1000).toFixed(1)}</span>km/h</span
-                >
-            {/if}
-        </div>
+    <div class="relative flex w-full flex-wrap items-center justify-center gap-6 px-12">
+        <span class="flex gap-6">
+            <div class="flex flex-col items-center">
+                <span class="text-semi text-sm">Distance</span>
+                <Distance val={stats.distance} />
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-semi text-sm">
+                    {#if pursuit.kind == app.Kind.running}Pace{:else}Avg Speed{/if}
+                </span>
+                {#if pursuit.kind == app.Kind.running}
+                    <Pace distance={stats.distance} time={stats.moving_time} />
+                {:else}
+                    <span class="font-mono text-xl"
+                        ><span class="bold">{(stats.avg_speed / 1000).toFixed(1)}</span>km/h</span
+                    >
+                {/if}
+            </div>
+        </span>
+        <span class="flex gap-6">
+            <div class="flex flex-col items-center">
+                <span class="text-semi text-sm">Moving Time</span>
+                <Time seconds={stats.moving_time} />
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-semi text-sm">Total Time</span>
+                <Time seconds={stats.total_time} />
+            </div>
+        </span>
         <button
             onclick={() => (stats_dialog_visible = true)}
             class="icon-btn absolute right-0 text-gray-500"
@@ -99,7 +103,9 @@ function updateStats(updated_stats) {
         </button>
     </div>
     <p>{pursuit.description}</p>
-    <Track id={pursuit.id} cfg={util.mapCfg(stats)} />
+    <div class="w-full">
+        <Track id={pursuit.id} cfg={util.mapCfg(stats)} />
+    </div>
 </div>
 
 <style>

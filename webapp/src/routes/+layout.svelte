@@ -27,7 +27,7 @@ setContext('mediums', mediums)
         </a>
     </nav>
 
-    <div class="mt-4 flex w-full grow flex-col items-center">
+    <div class="mt-4 ml-14 flex w-full grow flex-col items-center">
         {@render children()}
     </div>
 </div>
@@ -37,6 +37,7 @@ nav {
     background: #1e1f1f;
     height: 100%;
     position: fixed;
+    z-index: 500;
 }
 
 nav a {

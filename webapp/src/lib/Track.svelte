@@ -55,14 +55,8 @@ function draw_track(points) {
     background: #a0a0a0;
 }
 
+/* this must be global, otherwise it doesn't work with leaflet */
 :global {
-    .emoji-marker-lg {
-        position: absolute;
-        top: -15px;
-        left: -10px;
-        font-size: 1.5rem;
-    }
-
     .emoji-marker {
         position: absolute;
         top: -7px;
