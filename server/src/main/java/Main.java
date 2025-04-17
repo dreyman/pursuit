@@ -6,6 +6,7 @@ import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.ContentType;
 import io.javalin.http.UnprocessableContentResponse;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.router.JavalinDefaultRoutingApi;
@@ -29,7 +30,13 @@ public class Main {
     static Gson gson = new Gson();
 
     public static void main(String[] args) {
-        var config = getAppConfig();
+        Config config;
+        try {
+            config = getAppConfig();
+        } catch (RuntimeException x) {
+            System.out.println("Error: " + x.getMessage());
+            return;
+        }
         var app = new App(config);
         var javalin = Javalin.create(Main::config);
         initApiEndpoints(javalin, app);
@@ -155,11 +162,10 @@ public class Main {
             String cfg_json = Files.readString(Path.of("appconfig.json"));
             return gson.fromJson(cfg_json, Config.class);
         } catch (IOException _) {
-            System.out.println("Failed to read appconfig.json");
+            throw new RuntimeException("Failed to read appconfig.json");
         } catch (JsonSyntaxException _) {
-            System.out.println("Failed to parse appconfig.json: json syntax error");
+            throw new RuntimeException("Failed to parse appconfig.json: json syntax error");
         }
-        return null;
     }
 
     static void initExceptionMapping(JavalinDefaultRoutingApi<Javalin> javalin) {
@@ -182,6 +188,15 @@ public class Main {
         config.bundledPlugins
                 .enableCors(cors -> cors.addRule(CorsPluginConfig.CorsRule::anyHost));
         config.jsonMapper(gsonMapper());
+
+        config.showJavalinBanner = false;
+
+        config.spaRoot.addFile("/", "webapp/200.html", Location.EXTERNAL);
+        config.staticFiles.add(staticFiles -> {
+            staticFiles.hostedPath = "/";
+            staticFiles.directory = "webapp";
+            staticFiles.location = Location.EXTERNAL;
+        });
     }
 
     static JsonMapper gsonMapper() {

@@ -1,12 +1,17 @@
 plugins {
     id("java")
+    application
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "com.github.dreyman.pursuit"
+version = "0.0.1-wip"
 
 repositories {
     mavenCentral()
+}
+
+application {
+    mainClass = "Main"
 }
 
 dependencies {
