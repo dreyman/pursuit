@@ -4,11 +4,13 @@ import Dialog from '$lib/Dialog.svelte'
 import PursuitForm from '$lib/PursuitForm.svelte'
 import StatsForm from './StatsForm.svelte'
 import Track from '$lib/Track.svelte'
+import Map from '$lib/Map.svelte'
 import Time from '$lib/Time.svelte'
 import Distance from '$lib/Distance.svelte'
 import Pace from '$lib/Pace.svelte'
 import Icon from '$lib/Icon.svelte'
 import * as util from '$lib/util.js'
+import * as maputil from '$lib/maputil.js'
 import * as app from '$lib/app.js'
 
 const { data } = $props()
@@ -54,7 +56,7 @@ function updateStats(updated_stats) {
     </Dialog>
 {/if}
 
-<div class="flex w-full flex-col items-center gap-1 md:w-180">
+<div class="mt-4 flex w-full flex-col items-center gap-1 md:w-180">
     <h1 class="relative w-full text-center">
         <span>{pursuit.name}</span>
         <button
@@ -101,8 +103,10 @@ function updateStats(updated_stats) {
         </button>
     </section>
     <p>{pursuit.description}</p>
-    <div class="w-full">
-        <Track id={pursuit.id} cfg={util.mapCfg(stats)} />
+    <div class="h-140 w-full">
+        <Map config={maputil.mapCfg(stats)}>
+            <Track id={pursuit.id} />
+        </Map>
     </div>
 </div>
 

@@ -11,7 +11,8 @@ declare global {
 
     type MapCfg = {
         center: [number, number];
-        bounds: [[number, number], [number, number]];
+        bounds?: [[number, number], [number, number]];
+        zoom?: number;
     }
 
     type Bike = {

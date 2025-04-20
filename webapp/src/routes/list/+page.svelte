@@ -65,7 +65,7 @@ function initFilters(params) {
 }
 </script>
 
-<ul class="btns-select mb-4">
+<ul class="btns-select my-4">
     <button onmousedown={() => setKind(null)} class:active={kind == null}>all</button>
     <button onmousedown={() => setKind('cycling')} class:active={kind == 'cycling'}>cycling</button>
     <button onmousedown={() => setKind('running')} class:active={kind == 'running'}>running</button>

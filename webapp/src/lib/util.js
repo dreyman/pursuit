@@ -2,22 +2,6 @@ const today = new Date()
 const current_year = today.getFullYear()
 
 /**
- * @param {any} stats
- * @returns {MapCfg}
- */
-export function mapCfg(stats) {
-    const center = [
-        (stats.westernmost_lat + stats.easternmost_lat) / 2,
-        (stats.northernmost_lon + stats.southernmost_lon) / 2,
-    ]
-    const bounds = [
-        [stats.northernmost_lat, stats.westernmost_lon],
-        [stats.southernmost_lat, stats.easternmost_lon]
-    ]
-    return { center, bounds }
-}
-
-/**
  * @param {number} timestamp
  * @returns {string}
  */
@@ -87,24 +71,6 @@ function dateStrWithoutCurrentYear(date) {
  */
 function timeUnitStr(val) {
     return val < 10 ? '0' + val : '' + val
-}
-
-/**
- * @param {any} Leaflet
- * @param {HTMLElement} map_el
- * @param {MapCfg} cfg
- * @returns {any} leaflet map object
- * */
-export function initLeafletMap(Leaflet, map_el, cfg) {
-    const map = Leaflet
-        .map(map_el, { zoomControl: false, zoomSnap: 0.5 })
-        .setView(cfg.center, 12)
-    Leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map)
-    map.fitBounds(cfg.bounds)
-    return map
 }
 
 /**

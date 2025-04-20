@@ -6,7 +6,7 @@ import { page } from '$app/state'
 import Icon from '$lib/Icon.svelte'
 
 let { data, children } = $props()
-const icon_size = 1.75
+const icon_size = 2
 const mediums = $state(data.mediums)
 setContext('mediums', mediums)
 </script>
@@ -22,12 +22,15 @@ setContext('mediums', mediums)
         <a href="/mediums" class:active={page.route.id?.startsWith('/mediums')}>
             <Icon name="tool" size={icon_size} />
         </a>
+        <a href="/landmarks" class:active={page.route.id?.startsWith('/landmarks')}>
+            <Icon name="map-pin" size={icon_size} />
+        </a>
         <a href="/settings" class:active={page.route.id?.startsWith('/settings')}>
             <Icon name="settings" size={icon_size} />
         </a>
     </nav>
 
-    <div class="mt-4 ml-14 flex w-full grow flex-col items-center">
+    <div class="ml-14 flex w-full grow flex-col items-center">
         {@render children()}
     </div>
 </div>
@@ -36,6 +39,7 @@ setContext('mediums', mediums)
 nav {
     background: #1e1f1f;
     height: 100%;
+    width: 3.5rem;
     position: fixed;
     z-index: 500;
 }

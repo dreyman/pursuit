@@ -5,7 +5,7 @@ const config = {
     kit: {
         adapter: adapter({
             fallback: '200.html',
-        })
+        }),
     }
 };
 

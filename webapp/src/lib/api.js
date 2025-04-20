@@ -39,7 +39,7 @@ export const Medium = {
 export const Pursuit = {
     list: async (fetch, query) => {
         try {
-            const resp = await fetch(`${API_URL}/pursuit` + query)
+            const resp = await fetch(`${API_URL}/pursuit${query}`)
             if (resp.status != 200) return []
             return await resp.json()
         } catch (err) {
@@ -93,7 +93,7 @@ export const Stats = {
  * @param {any} fetch
  * @param {number} id
  */
-export async function get_track(fetch, id) {
+export async function getTrack(fetch, id) {
     try {
         const resp = await fetch(`${API_URL}/pursuit/${id}/track`)
         if (resp.status != 200)
