@@ -40,7 +40,7 @@ function changeKind(kind) {
 }
 </script>
 
-<div class="form mt-2 flex w-120 flex-col items-center gap-4">
+<div class="form mt-2 flex w-120 flex-col gap-6">
     {#if err != null}
         <span class="text-red-500">{err}</span>
     {/if}
@@ -48,58 +48,64 @@ function changeKind(kind) {
         <span>Name:</span>
         <input bind:value={form.name} type="text" />
     </label>
-    <div class="flex items-center gap-2 self-start">
+    <div class="flex gap-2 self-start">
         <span>Type:</span>
-        {#each app.kinds as kind}
-            <button
-                onclick={() => changeKind(kind)}
-                class="option-btn"
-                class:selected={form.kind == kind}>{kind}</button
-            >
-        {/each}
-    </div>
-    {#if form.kind == 'cycling'}
-        <div class="flex items-center gap-2 self-start">
-            <span>Bike:</span>
-            <button
-                onclick={() => (form.medium_id = null_medium_id)}
-                class="option-btn"
-                class:selected={form.medium_id == null_medium_id}>None</button
-            >
-            {#each bikes as bike}
+        <ul class="btns-select flex">
+            {#each app.kinds as kind}
                 <button
-                    onclick={() => (form.medium_id = bike.id)}
+                    onclick={() => changeKind(kind)}
                     class="option-btn"
-                    class:selected={form.medium_id == bike.id}
-                    >{bike.id == app.default_bike_id ? 'None' : bike.name}</button
+                    class:active={form.kind == kind}>{kind}</button
                 >
             {/each}
+        </ul>
+    </div>
+    {#if form.kind == 'cycling'}
+        <div class="flex gap-2 self-start">
+            <span>Bike:</span>
+            <ul class="btns-select">
+                {#each bikes as bike}
+                    <button
+                        onclick={() => (form.medium_id = bike.id)}
+                        class="option-btn"
+                        class:active={form.medium_id == bike.id}
+                        >{bike.id == app.default_bike_id ? 'None' : bike.name}</button
+                    >
+                {/each}
+                <button
+                    onclick={() => (form.medium_id = null_medium_id)}
+                    class="option-btn"
+                    class:active={form.medium_id == null_medium_id}>None</button
+                >
+            </ul>
         </div>
     {/if}
     {#if form.kind == 'running' || form.kind == 'walking'}
         <div class="flex items-center gap-2 self-start">
             <span>Shoes:</span>
-            <button
-                onclick={() => (form.medium_id = null_medium_id)}
-                class="option-btn"
-                class:selected={form.medium_id == null_medium_id}>None</button
-            >
-            {#if shoes.length == 0}Create{/if}
-            {#each shoes as item}
+            <ul class="btns-select">
+                {#if shoes.length == 0}Create{/if}
+                {#each shoes as item}
+                    <button
+                        onclick={() => (form.medium_id = item.id)}
+                        class="option-btn"
+                        class:active={form.medium_id == item.id}
+                        >{item.id == app.default_shoes_id ? 'None' : item.name}</button
+                    >
+                {/each}
                 <button
-                    onclick={() => (form.medium_id = item.id)}
+                    onclick={() => (form.medium_id = null_medium_id)}
                     class="option-btn"
-                    class:selected={form.medium_id == item.id}
-                    >{item.id == app.default_shoes_id ? 'None' : item.name}</button
+                    class:active={form.medium_id == null_medium_id}>None</button
                 >
-            {/each}
+            </ul>
         </div>
     {/if}
     <label>
         <span>Description:</span>
         <textarea bind:value={form.description} rows="5"></textarea>
     </label>
-    <button class="submit-btn" onclick={submit}>save</button>
+    <button class="submit-btn self-center" onclick={submit}>save</button>
 </div>
 
 <style>
@@ -108,13 +114,13 @@ label {
 }
 
 .option-btn {
-    color: var(--light-grey);
+    /*    color: var(--light-grey);*/
 }
 
-.option-btn.selected {
+/*.option-btn.selected {
     color: var(--pc);
     font-weight: bold;
-}
+}*/
 
 input,
 textarea {

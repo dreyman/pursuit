@@ -96,7 +96,9 @@ function timeUnitStr(val) {
  * @returns {any} leaflet map object
  * */
 export function initLeafletMap(Leaflet, map_el, cfg) {
-    const map = Leaflet.map(map_el, { zoomControl: false }).setView(cfg.center, 12)
+    const map = Leaflet
+        .map(map_el, { zoomControl: false, zoomSnap: 0.5 })
+        .setView(cfg.center, 12)
     Leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',

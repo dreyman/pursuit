@@ -17,8 +17,7 @@ const pursuit = $state(data.pursuit)
 const stats = $derived(pursuit.stats)
 const mediums = getContext('mediums')
 
-let medium = findMedium(pursuit.medium_id)
-let medium_name = $state(medium.name)
+let medium = $state(findMedium(pursuit.medium_id))
 let edit_form_dialog_visible = $state(false)
 let stats_dialog_visible = $state(false)
 
@@ -26,7 +25,6 @@ function onsave(updated_fields) {
     Object.assign(pursuit, updated_fields)
     if (updated_fields.medium_id !== undefined) {
         medium = findMedium(pursuit.medium_id)
-        medium_name = medium.name
     }
     edit_form_dialog_visible = false
 }
@@ -65,8 +63,8 @@ function updateStats(updated_stats) {
         >
     </h1>
     <h2 class="text-semi">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
-    <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium_name}</a></h3>
-    <div class="relative flex w-full flex-wrap items-center justify-center gap-6 px-12">
+    <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium.name}</a></h3>
+    <section class="relative flex w-full flex-wrap items-center justify-center gap-6 px-12">
         <span class="flex gap-6">
             <div class="flex flex-col items-center">
                 <span class="text-semi text-sm">Distance</span>
@@ -101,7 +99,7 @@ function updateStats(updated_stats) {
         >
             <Icon name="settings" />
         </button>
-    </div>
+    </section>
     <p>{pursuit.description}</p>
     <div class="w-full">
         <Track id={pursuit.id} cfg={util.mapCfg(stats)} />
@@ -109,10 +107,6 @@ function updateStats(updated_stats) {
 </div>
 
 <style>
-h1 {
-    font-size: 1.5rem;
-}
-
 .bold {
     font-weight: bold;
 }

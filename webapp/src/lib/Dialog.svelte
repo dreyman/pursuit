@@ -18,14 +18,14 @@ let { children, title, onclose } = $props()
 
 <style>
 .dialog-bg {
-    z-index: 1000;
+    z-index: 1100;
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
 }
 
 .dialog {
-    z-index: 1001;
+    z-index: 1101;
     background: #27282c;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;

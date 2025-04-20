@@ -51,6 +51,10 @@ a {
     color: var(--link-color);
 }
 
+h1 {
+    font-size: 1.5rem;
+}
+
 button {
     border-radius: var(--btn-radius);
     padding: 0 1rem;
@@ -84,4 +88,30 @@ input, textarea {
 
 .text-semi {
     color: #ccc;
+}
+
+.btns-select {
+    display: flex;
+}
+
+.btns-select button {
+    border-radius: 0;
+}
+
+.btns-select button:hover {
+    background-color: var(--grey-200);
+}
+
+.btns-select button.active {
+    color: var(--link-color);
+}
+
+.btns-select button:first-child {
+    border-bottom-left-radius: var(--btn-radius);
+    border-top-left-radius: var(--btn-radius);
+}
+
+.btns-select button:last-child {
+    border-bottom-right-radius: var(--btn-radius);
+    border-top-right-radius: var(--btn-radius);
 }

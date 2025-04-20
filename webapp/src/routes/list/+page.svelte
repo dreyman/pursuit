@@ -65,7 +65,7 @@ function initFilters(params) {
 }
 </script>
 
-<ul class="filter-btns mb-4 flex">
+<ul class="btns-select mb-4">
     <button onmousedown={() => setKind(null)} class:active={kind == null}>all</button>
     <button onmousedown={() => setKind('cycling')} class:active={kind == 'cycling'}>cycling</button>
     <button onmousedown={() => setKind('running')} class:active={kind == 'running'}>running</button>
@@ -93,25 +93,4 @@ function initFilters(params) {
 {/if}
 
 <style>
-.filter-btns button {
-    border-radius: 0;
-}
-
-.filter-btns button:hover {
-    background-color: var(--grey-200);
-}
-
-.filter-btns button.active {
-    color: var(--link-color);
-}
-
-.filter-btns button:first-child {
-    border-bottom-left-radius: var(--btn-radius);
-    border-top-left-radius: var(--btn-radius);
-}
-
-.filter-btns button:last-child {
-    border-bottom-right-radius: var(--btn-radius);
-    border-top-right-radius: var(--btn-radius);
-}
 </style>
