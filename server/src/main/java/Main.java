@@ -11,11 +11,13 @@ import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.router.JavalinDefaultRoutingApi;
 import io.javalin.util.FileUtil;
+import landmarks.Landmark;
 import org.jetbrains.annotations.NotNull;
 import pursuit.QueryParams;
 import pursuit.UpdatePayload;
 import stats.RecalcRequest;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -50,6 +52,12 @@ public class Main {
             ctx.contentType(ContentType.JSON);
             ctx.result("{\"hello\":\"there\"}");
         });
+//        api.post("/api/migrate", ctx -> {
+//            var migration = new Migration();
+//            migration.migrate(app.landmarksApi);
+//
+//            ctx.status(200);
+//        });
 
         api.get("/api/medium", ctx -> {
             var list = app.mediumApi.query();
@@ -128,8 +136,16 @@ public class Main {
             var path = Path.of(app.temp_dir, file.filename()).toString();
             FileUtil.streamToFile(file.content(), path);
 
-            var pursuit = app.importFile(path);
-            ctx.json(pursuit);
+            try {
+                var pursuit = app.importFile(path);
+                ctx.json(pursuit);
+            } finally {
+                var deleted = new File(path).delete();
+                // fixme proper logging
+                if (!deleted)
+                    System.out.printf("Failed to delete temp file: %s", path);
+            }
+            ctx.status(500);
         });
         api.get("/api/pursuit/{id}/track", ctx -> {
             try {
@@ -155,6 +171,13 @@ public class Main {
                 ctx.status(NOT_FOUND);
             }
         });
+
+        api.get("/api/landmarks/list", ctx -> {
+            var landmarks = app.landmarksApi.query();
+            ctx.json(landmarks);
+        });
+
+        api.get("/api/*", ctx -> ctx.status(NOT_FOUND));
     }
 
     static Config getAppConfig() {

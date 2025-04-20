@@ -15,6 +15,7 @@ public class App {
 
     public pursuit.Api pursuitApi;
     public medium.Api mediumApi;
+    public landmarks.Api landmarksApi;
     public Engine engine;
 
     public App(Config config) {
@@ -27,6 +28,7 @@ public class App {
 
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
+        landmarksApi = new landmarks.Api(sqlite_db_file);
         engine = new ForeignEngine(config.libpursuit_path, config.storage_dir);
     }
 
@@ -36,10 +38,6 @@ public class App {
             if (id == 0) {
                 throw new RuntimeException("Unexpected result");
             }
-            var deleted = new File(path).delete();
-            // fixme proper logging
-            if (!deleted)
-                System.out.printf("Failed to delete temp file: %s", path);
             return pursuitApi.getById(id);
         } catch (Engine.Err err) {
             err.printStackTrace();
