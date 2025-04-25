@@ -3,19 +3,21 @@ import { onMount, setContext } from 'svelte'
 import Leaflet from 'leaflet'
 import * as app from '$lib/app.js'
 
-const { config, children } = $props()
+const { children, config, onclick } = $props()
 let map
 let mapelement
 let mounted = $state(false)
 
 onMount(async () => {
     if (app.debug.use_map_placeholder) return
+    // fixme get rid of hardcoded default config
     const cfg = config || {
         center: [49.03836, 31.451241],
         zoom: 6.5,
     }
     map = initLeafletMap(Leaflet, mapelement, cfg)
     setContext('map', map)
+    map.on('click', onclick)
     mounted = true
 })
 

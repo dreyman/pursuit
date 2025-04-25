@@ -1,0 +1,60 @@
+<script>
+import { goto } from '$app/navigation'
+import Map from '$lib/Map.svelte'
+import Marker from '$lib/Marker.svelte'
+import Dialog from '$lib/Dialog.svelte'
+import LandmarkForm from './LandmarkForm.svelte'
+
+const { data, children } = $props()
+let landmarks = $state(data.landmarks)
+let new_landmark = $state(null)
+
+function onMapClick(event) {
+    goto('/landmarks')
+    const point = event.latlng
+    new_landmark = {
+        lat: point.lat,
+        lon: point.lng,
+    }
+}
+
+function onMarkerClick(id) {
+    new_landmark = null
+    goto('/landmarks/' + id)
+}
+
+function newLandmark(lm) {
+    landmarks.push(lm)
+    new_landmark = null
+}
+</script>
+
+<div class="landmarks-map">
+    <Map onclick={onMapClick}>
+        {#each landmarks as landmark}
+            <Marker
+                lat={landmark.lat}
+                lon={landmark.lon}
+                icon="🟣"
+                onclick={() => onMarkerClick(landmark.id)}
+            />
+        {/each}
+    </Map>
+</div>
+
+{#if !!new_landmark}
+    <Dialog title="Create" bg={false} top="1rem" onclose={() => (new_landmark = null)}>
+        <LandmarkForm landmark={new_landmark} onsubmit={newLandmark} />
+    </Dialog>
+{/if}
+
+{#if children}
+    {@render children()}
+{/if}
+
+<style>
+.landmarks-map {
+    height: 100%;
+    width: 100%;
+}
+</style>

@@ -1,19 +1,29 @@
 <script>
+import { scale, fade } from 'svelte/transition'
 import Icon from '$lib/Icon.svelte'
 
-let { children, title, onclose } = $props()
+let { children, title, onclose, bg = true, top = '20%' } = $props()
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="dialog-bg" onclick={onclose}></div>
-<div class="dialog">
+{#if bg}
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+    <div class="dialog-bg" onclick={onclose}></div>
+{/if}
+<div
+    class="dialog"
+    style:top
+    in:scale={{ duration: 100, start: 0.75 }}
+    out:fade={{ duration: 100 }}
+>
     <button class="icon-btn absolute top-0 right-0" onclick={onclose}>
         <Icon name="x" />
     </button>
     <header class="mb-4">
         <h1 class="text-center">{title}</h1>
     </header>
-    {@render children()}
+    {#if children}
+        {@render children()}
+    {/if}
 </div>
 
 <style>
@@ -31,9 +41,8 @@ let { children, title, onclose } = $props()
     border-radius: 0.5rem;
     position: absolute;
     left: 50%;
-    top: 20%;
     transform: translateX(-50%);
-    box-shadow: var(--dialog-shadow);
+    box-shadow: var(--shadow-sm);
 }
 
 h1 {

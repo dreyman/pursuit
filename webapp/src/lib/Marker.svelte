@@ -2,7 +2,7 @@
 import { onMount, onDestroy, getContext } from 'svelte'
 import Leafet from 'leaflet'
 
-const { lat, lon, icon = '🟣' } = $props()
+const { lat, lon, icon = '🟣', onclick } = $props()
 
 let map
 let leaflet_marker
@@ -15,6 +15,7 @@ onMount(() => {
     }
     leaflet_marker = Leafet.marker([lat, lon], options)
     leaflet_marker.addTo(map)
+    if (onclick) leaflet_marker.on('click', onclick)
 })
 
 onDestroy(() => {

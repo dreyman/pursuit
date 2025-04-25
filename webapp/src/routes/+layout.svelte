@@ -1,12 +1,13 @@
 <script>
 import 'leaflet/dist/leaflet.css'
 import '../app.css'
+import '../misc.css'
 import { setContext } from 'svelte'
 import { page } from '$app/state'
 import Icon from '$lib/Icon.svelte'
 
 let { data, children } = $props()
-const icon_size = 2
+const icon_size = 1.9
 const mediums = $state(data.mediums)
 setContext('mediums', mediums)
 </script>
@@ -47,7 +48,7 @@ nav {
 nav a {
     white-space: nowrap;
     font-weight: 500;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.8rem;
     color: #fff;
 }
 
