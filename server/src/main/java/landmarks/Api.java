@@ -28,12 +28,32 @@ public class Api {
         }
     }
 
-    public void create(Payload payload) {
+    public Landmark getById(int id) {
+        try {
+            return repo.getById(id);
+        } catch (SQLException x) {
+            throw new RuntimeException(x);
+        }
+    }
+
+    public int create(Payload payload) {
         var lm = new Landmark();
         lm.created_at = (int) (System.currentTimeMillis() / 1000);
         payload.setFields(lm);
         try {
-            repo.insert(lm);
+            int id = repo.insert(lm);
+            if (id == 0)
+                throw new api.InternalError();
+            return id;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean delete(int id) {
+        try {
+            return repo.delete(id);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

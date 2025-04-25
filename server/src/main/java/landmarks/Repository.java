@@ -1,7 +1,5 @@
 package landmarks;
 
-import medium.CreatePayload;
-
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,9 +21,19 @@ public class Repository {
         }
     }
 
+    public Landmark getById(int id) throws SQLException {
+        var sql = "SELECT * FROM " + table + " WHERE id = ?";
+        try (var c = DriverManager.getConnection(db_url);
+             var s = c.prepareStatement(sql)) {
+            s.setInt(1, id);
+            var rs = s.executeQuery();
+            if (!rs.next()) return null;
+            return Landmark.fromResultSet(rs);
+        }
+    }
+
     public int insert(Landmark lm) throws SQLException {
-        var sql = "INSERT INTO " + table + " (name, lat, lon, created_at) " +
-                "VALUES (?, ?, ?, ?)";
+        var sql = "INSERT INTO " + table + " (name, lat, lon, created_at) " + "VALUES (?, ?, ?, ?)";
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
             var i = 0;
@@ -41,6 +49,16 @@ public class Repository {
                 return generatedKeys.getInt(1);
             }
             return 0;
+        }
+    }
+
+    public boolean delete(int id) throws SQLException {
+        var sql = "DELETE FROM " + table + " WHERE id = ?";
+        try (var c = DriverManager.getConnection(db_url);
+             var s = c.prepareStatement(sql)) {
+            s.setInt(1, id);
+            var count = s.executeUpdate();
+            return count == 1;
         }
     }
 

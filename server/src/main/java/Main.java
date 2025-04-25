@@ -24,6 +24,8 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.javalin.http.HttpStatus.*;
 
@@ -176,10 +178,39 @@ public class Main {
             var landmarks = app.landmarksApi.query();
             ctx.json(landmarks);
         });
+        api.get("/api/landmarks/{id}", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var lm = app.landmarksApi.getById(id);
+                if (lm == null) {
+                    ctx.status(NOT_FOUND);
+                    return;
+                }
+                ctx.json(lm);
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
+        });
         api.post("/api/landmarks/new", ctx -> {
-            app.landmarksRestApi.create(ctx.body());
-            ctx.json("{}");
+            int id = app.landmarksRestApi.create(ctx.body());
+            var resp_body = new HashMap<String, Integer>(1);
+            resp_body.put("id", id);
+            ctx.json(resp_body);
             ctx.status(OK);
+        });
+        api.delete("/api/landmarks/{id}", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var deleted = app.landmarksApi.delete(id);
+                if (!deleted) {
+                    ctx.status(NOT_FOUND);
+                    return;
+                }
+                ctx.json("{}");
+                ctx.status(OK);
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
         });
 
         api.get("/api/*", ctx -> ctx.status(NOT_FOUND));
