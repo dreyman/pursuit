@@ -1,4 +1,5 @@
 <script>
+import { setContext } from 'svelte'
 import { goto } from '$app/navigation'
 import Map from '$lib/Map.svelte'
 import Marker from '$lib/Marker.svelte'
@@ -8,6 +9,8 @@ import LandmarkForm from './LandmarkForm.svelte'
 const { data, children } = $props()
 let landmarks = $state(data.landmarks)
 let new_landmark = $state(null)
+
+setContext('remove', removeLandmark)
 
 function onMapClick(event) {
     goto('/landmarks')
@@ -27,11 +30,19 @@ function newLandmark(lm) {
     landmarks.push(lm)
     new_landmark = null
 }
+
+function removeLandmark(id) {
+    const idx = landmarks.findIndex(lm => lm.id == id)
+    if (idx == -1) {
+        return
+    }
+    landmarks.splice(idx, 1)
+}
 </script>
 
 <div class="landmarks-map">
     <Map onclick={onMapClick}>
-        {#each landmarks as landmark}
+        {#each landmarks as landmark (landmark.id)}
             <Marker
                 lat={landmark.lat}
                 lon={landmark.lon}

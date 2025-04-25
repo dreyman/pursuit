@@ -16,6 +16,7 @@ async function submit() {
         invalid = err
         return
     }
+    landmark.id = resp.id
     onsubmit(landmark)
 }
 </script>

@@ -1,6 +1,5 @@
-export async function load({ fetch, url, parent, params }) {
-    const data = await parent()
-    const landmarks = data.landmarks
-    const id = +params.id
-    return { landmark: landmarks.find(lm => lm.id === id) }
+import * as Landmarks from '$lib/landmarks.api.js';
+
+export async function load({ fetch, params }) {
+    return { landmark: await Landmarks.get(fetch, +params.id) }
 }
