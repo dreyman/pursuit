@@ -3,7 +3,7 @@ import { onMount, setContext } from 'svelte'
 import Leaflet from 'leaflet'
 import * as app from '$lib/app.js'
 
-const { children, config, onclick } = $props()
+const { children, config, onclick, onmovestart } = $props()
 let map
 let mapelement
 let mounted = $state(false)
@@ -18,6 +18,7 @@ onMount(async () => {
     map = initLeafletMap(Leaflet, mapelement, cfg)
     setContext('map', map)
     map.on('click', onclick)
+    map.on('movestart', onmovestart)
     mounted = true
 })
 

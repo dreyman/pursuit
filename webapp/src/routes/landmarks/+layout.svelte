@@ -38,10 +38,27 @@ function removeLandmark(id) {
     }
     landmarks.splice(idx, 1)
 }
+
+function onMapMoveStart() {
+    clear()
+}
+
+function pageOnKeyDown(e) {
+    if (e.key == 'Escape') {
+        clear()
+    }
+}
+
+function clear() {
+    new_landmark = null
+    goto('/landmarks')
+}
 </script>
 
+<svelte:window onkeydown={pageOnKeyDown} />
+
 <div class="landmarks-map">
-    <Map onclick={onMapClick}>
+    <Map onclick={onMapClick} onmovestart={onMapMoveStart}>
         {#each landmarks as landmark (landmark.id)}
             <Marker
                 lat={landmark.lat}
