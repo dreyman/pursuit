@@ -16,6 +16,7 @@ public class App {
     public pursuit.Api pursuitApi;
     public medium.Api mediumApi;
     public landmarks.Api landmarksApi;
+    public landmarks.Rest landmarksRestApi;
     public Engine engine;
 
     public App(Config config) {
@@ -29,6 +30,7 @@ public class App {
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
         landmarksApi = new landmarks.Api(sqlite_db_file);
+        landmarksRestApi = new landmarks.Rest(landmarksApi);
         engine = new ForeignEngine(config.libpursuit_path, config.storage_dir);
     }
 

@@ -176,6 +176,11 @@ public class Main {
             var landmarks = app.landmarksApi.query();
             ctx.json(landmarks);
         });
+        api.post("/api/landmarks/new", ctx -> {
+            app.landmarksRestApi.create(ctx.body());
+            ctx.json("{}");
+            ctx.status(OK);
+        });
 
         api.get("/api/*", ctx -> ctx.status(NOT_FOUND));
     }

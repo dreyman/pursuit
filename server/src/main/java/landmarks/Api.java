@@ -28,8 +28,10 @@ public class Api {
         }
     }
 
-    public void create(Landmark lm) {
+    public void create(Payload payload) {
+        var lm = new Landmark();
         lm.created_at = (int) (System.currentTimeMillis() / 1000);
+        payload.setFields(lm);
         try {
             repo.insert(lm);
         } catch (SQLException e) {

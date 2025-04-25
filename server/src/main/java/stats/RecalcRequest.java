@@ -1,5 +1,6 @@
 package stats;
 
+import api.JsonPayload;
 import com.google.gson.JsonSyntaxException;
 
 public class RecalcRequest {
@@ -10,11 +11,11 @@ public class RecalcRequest {
 
     public static RecalcRequest fromJson(String json) {
         var errors = new java.util.HashMap<String, String>(2);
-        api.JsonObj payload;
+        JsonPayload payload;
         try {
-            payload = new api.JsonObj(json);
+            payload = new JsonPayload(json);
         } catch (JsonSyntaxException x) {
-            payload = new api.JsonObj("{}");
+            payload = new JsonPayload("{}");
         }
         RecalcRequest result = new RecalcRequest();
         var val = payload.getInt("min_speed", 0, 255);
