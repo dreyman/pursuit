@@ -8,6 +8,7 @@ const setup = @import("setup.zig");
 const data = @import("data.zig");
 const Storage = @import("Storage.zig");
 const Stats = @import("Stats.zig");
+const query = @import("query.zig");
 
 const version = "0.0.1-wip";
 
@@ -100,6 +101,20 @@ pub fn main() !void {
             else => fatal("{s}", .{@errorName(err)}),
         };
         try writeAndExit("done.", .{});
+    }
+
+    if (mem.eql(u8, command, "find")) {
+        const timestamp_arg = args.next() orelse fatal("expected timestmap", .{});
+        const timestamp = std.fmt.parseInt(u32, timestamp_arg, 10) catch
+            fatal("invalid timestamp value", .{});
+        const storage_path = "/home/ihor/.pursuit-dev";
+        var storage = try Storage.create(allocator, storage_path);
+        defer storage.destroy();
+
+        const point = try query.findPointByTimestamp(storage, timestamp) orelse
+            try writeAndExit("Not found", .{});
+
+        try writeAndExit("{d}, {d}", .{ point.lat, point.lon });
     }
 
     // if (mem.eql(u8, command, "strava")) {

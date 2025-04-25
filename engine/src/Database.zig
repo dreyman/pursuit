@@ -141,6 +141,14 @@ pub fn updateStats(
     });
 }
 
+pub fn findByTimestamp(database: *Database, timestamp: u32) !?Pursuit.ID {
+    const sql = "select id from pursuit where start_time < ? and finish_time > ? limit 1";
+    var stmt = try database.sqlite.prepareDynamic(sql);
+    defer stmt.deinit();
+    const id = try stmt.one(Pursuit.ID, .{}, .{ timestamp, timestamp });
+    return id;
+}
+
 pub fn setMedium(
     database: *Database,
     pursuit_id: Pursuit.ID,

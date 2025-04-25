@@ -186,7 +186,7 @@ test attr {
     try testing.expectError(Error.InvalidGpx, attr("<tag some=\"val  ", "some"));
 }
 
-const daysToMonth = [_]u9{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+const days_to_month = [_]u9{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 pub const time_format = "yyyy-mm-ddThh:mm:ssZ";
 const epoch = std.time.epoch;
 const parseUint = std.fmt.parseUnsigned;
@@ -194,11 +194,14 @@ const isLeap = epoch.isLeapYear;
 const seconds_in_day = 86_400;
 
 pub fn timeStrToTimestamp(t: []const u8) !u32 {
-    if (t.len != time_format.len) return Error.InvalidGpxTime;
+    if (t.len != time_format.len)
+        return Error.InvalidGpxTime;
     const year = try parseUint(u16, t[0..4], 10);
-    if (year < 1970) return Error.InvalidGpxTime;
+    if (year < 1970)
+        return Error.InvalidGpxTime;
     const month = try parseUint(u4, t[5..7], 10);
-    if (month < 1 or month > 12) return Error.InvalidGpxTime;
+    if (month < 1 or month > 12)
+        return Error.InvalidGpxTime;
     const day = try parseUint(u5, t[8..10], 10);
     const hour = try parseUint(u6, t[11..13], 10);
     const minute = try parseUint(u6, t[14..16], 10);
@@ -208,7 +211,7 @@ pub fn timeStrToTimestamp(t: []const u8) !u32 {
     for (1970..year) |y| {
         timestamp += @as(u32, epoch.getDaysInYear(@intCast(y))) * seconds_in_day;
     }
-    var day_index = daysToMonth[month - 1];
+    var day_index = days_to_month[month - 1];
     if (month > 2 and isLeap(year)) day_index += 1;
     day_index += day - 1;
 
