@@ -32,7 +32,7 @@ public class Repository {
         }
     }
 
-    public MediumStats getStats(int id) throws SQLException {
+    public Stats getStats(int id) throws SQLException {
         var q = "SELECT m.id AS id, m.name AS name, m.kind AS kind, " +
                 "sum(p.distance) AS distance, sum(p.moving_time) AS time FROM " +
                 table + " m JOIN " + pursuit.Repository.table +
@@ -42,7 +42,7 @@ public class Repository {
              var s = c.prepareStatement(q)) {
             var rs = s.executeQuery();
             if (!rs.next()) return null;
-            return MediumStats.fromResultSet(rs);
+            return Stats.fromResultSet(rs);
         }
     }
 

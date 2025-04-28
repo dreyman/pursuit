@@ -3,7 +3,7 @@ package pursuit;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class UpdatePayload {
+public class Payload {
     public String name;
     public String description;
     public Pursuit.Kind kind;

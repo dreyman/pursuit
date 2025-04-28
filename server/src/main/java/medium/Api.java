@@ -1,6 +1,7 @@
 package medium;
 
 import api.InvalidRequest;
+import pursuit.Query;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -30,11 +31,11 @@ public class Api {
         }
     }
 
-    public MediumStats getStats(int id) {
+    public Stats getStats(int id) {
         try {
             var medium = repo.getStats(id);
             if (medium == null) return null;
-            var params = new pursuit.QueryParams();
+            var params = new Query();
             params.medium = medium.id;
             params.limit = 25;
             medium.last_pursuits = pursuitApi.query(params);

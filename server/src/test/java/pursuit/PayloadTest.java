@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UpdatePayloadTest {
+public class PayloadTest {
 
     @Test
     void buildQuery() {
-        var payload = new UpdatePayload();
+        var payload = new Payload();
         String table = "some_table";
 
         payload.name = "New name";

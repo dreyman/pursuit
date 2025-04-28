@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListItem {
+public class Summary {
     public int id;
     public String name;
     public Pursuit.Kind kind;
@@ -17,8 +17,8 @@ public class ListItem {
     public int avg_speed;
     public int avg_travel_speed;
 
-    public static ListItem fromResultSet(ResultSet rs) throws SQLException {
-        var item = new ListItem();
+    public static Summary fromResultSet(ResultSet rs) throws SQLException {
+        var item = new Summary();
         item.id = rs.getInt("id");
         item.name = rs.getString("name");
         item.kind = Pursuit.Kind.values()[rs.getInt("kind")];
@@ -31,8 +31,8 @@ public class ListItem {
         return item;
     }
 
-    public static List<ListItem> listFromResultSet(ResultSet rs) throws SQLException {
-        var list = new ArrayList<ListItem>();
+    public static List<Summary> listFromResultSet(ResultSet rs) throws SQLException {
+        var list = new ArrayList<Summary>();
         while (rs.next()) list.add(fromResultSet(rs));
         return list;
     }

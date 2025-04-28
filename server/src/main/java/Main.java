@@ -12,8 +12,8 @@ import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.router.JavalinDefaultRoutingApi;
 import io.javalin.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
-import pursuit.QueryParams;
-import pursuit.UpdatePayload;
+import pursuit.Query;
+import pursuit.Payload;
 import stats.RecalcRequest;
 
 import java.io.File;
@@ -92,7 +92,7 @@ public class Main {
 
         api.get("/api/pursuit", ctx -> {
             try {
-                var params = new QueryParams(ctx.queryParamMap());
+                var params = new Query(ctx.queryParamMap());
                 var list = app.pursuitApi.query(params);
                 ctx.json(list);
             } catch (api.InvalidRequest x) {
@@ -116,7 +116,7 @@ public class Main {
         api.put("/api/pursuit/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                var payload = ctx.bodyAsClass(UpdatePayload.class);
+                var payload = ctx.bodyAsClass(Payload.class);
                 var updated = app.pursuitApi.update(id, payload);
                 if (!updated) {
                     ctx.status(NOT_FOUND);

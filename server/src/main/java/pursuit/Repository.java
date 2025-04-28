@@ -15,18 +15,18 @@ public class Repository {
 
     public Repository(String db_file_path) {
         this.db_url = "jdbc:sqlite:" + db_file_path;
-        this.list_item_fields = Arrays.stream(ListItem.class.getFields())
+        this.list_item_fields = Arrays.stream(Summary.class.getFields())
                 .map(Field::getName)
                 .collect(Collectors.joining(", "));
     }
 
-    public List<ListItem> list(QueryParams params) throws SQLException {
+    public List<Summary> list(Query params) throws SQLException {
         String sql = "SELECT " + list_item_fields + " FROM " + table +
                 " " + params.buildSql();
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
             var rs = s.executeQuery();
-            return ListItem.listFromResultSet(rs);
+            return Summary.listFromResultSet(rs);
         }
     }
 
@@ -41,7 +41,7 @@ public class Repository {
         }
     }
 
-    public int update(int id, UpdatePayload payload) throws SQLException {
+    public int update(int id, Payload payload) throws SQLException {
         var sql = payload.buildSql(table);
         if (sql == null) throw new InternalError();
 

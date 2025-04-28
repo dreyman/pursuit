@@ -4,20 +4,20 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class MediumStats {
+public class Stats {
     public int id;
     public Medium.Kind kind;
     public String name;
     public int distance;
     public int time;
-    public List<pursuit.ListItem> last_pursuits;
+    public List<pursuit.Summary> last_pursuits;
 
-    public MediumStats() {
+    public Stats() {
         last_pursuits = List.of();
     }
 
-    public static MediumStats fromResultSet(ResultSet rs) throws SQLException {
-        var m = new MediumStats();
+    public static Stats fromResultSet(ResultSet rs) throws SQLException {
+        var m = new Stats();
         m.id = rs.getInt("id");
         m.kind = Medium.Kind.valueOf(rs.getString("kind"));
         m.name = rs.getString("name");

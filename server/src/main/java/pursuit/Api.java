@@ -10,9 +10,9 @@ public class Api {
         repo = new Repository(sqlite_db_file);
     }
 
-    public List<ListItem> query(QueryParams params) {
+    public List<Summary> query(Query query) {
         try {
-            return repo.list(params);
+            return repo.list(query);
         } catch (SQLException x) {
             x.printStackTrace();
             return List.of();
@@ -27,7 +27,7 @@ public class Api {
         }
     }
 
-    public boolean update(int id, UpdatePayload payload) {
+    public boolean update(int id, Payload payload) {
         try {
             if (payload.isEmpty()) return true;
             var updated_count = repo.update(id, payload);

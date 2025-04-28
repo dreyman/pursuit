@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class QueryParams {
+public class Query {
     public static final int max_limit = 50;
     public static final int default_limit = 25;
     public static final String default_order_by_field = "start_time";
@@ -23,9 +23,9 @@ public class QueryParams {
     public String order = default_order;
     public int limit = default_limit;
 
-    public QueryParams() {}
+    public Query() {}
 
-    public QueryParams(Map<String, List<String>> params) {
+    public Query(Map<String, List<String>> params) {
         var limit = getUintParam(params, "limit");
         this.limit = limit == null ? default_limit : Math.min(limit, max_limit);
 

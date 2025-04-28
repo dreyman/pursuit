@@ -1,4 +1,4 @@
-package query.flyby;
+package location;
 
 import api.JsonPayload;
 import com.google.gson.JsonSyntaxException;

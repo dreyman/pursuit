@@ -1,14 +1,15 @@
-package query;
+package location;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import core.Engine;
-import pursuit.Query;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Api {
+
     Engine engine;
     pursuit.Api pursuitApi;
     Gson gson;
@@ -19,26 +20,26 @@ public class Api {
         this.gson = new Gson();
     }
 
-    public List<LocationVisit> locationFlybys(LocationVisitsParams params) {
+    public List<Flyby> locationFlybys(Query query) {
         try {
             String json = engine.locationVisits(
-                    params.lat,
-                    params.lon,
-                    params.max_distance,
-                    params.time_gap
+                    query.lat,
+                    query.lon,
+                    query.max_distance,
+                    query.time_gap
             );
-            List<LocationVisit> items = gson.fromJson(json, new TypeToken<ArrayList<LocationVisit>>() {
-            }.getType());
-            var q = new Query();
-            q.ids = items.stream().map(v -> v.id).toList();
-            q.limit = items.size();
+            Type FlybysListType = new TypeToken<ArrayList<Flyby>>() {}.getType();
+            List<Flyby> flybys = gson.fromJson(json, FlybysListType);
+            var q = new pursuit.Query();
+            q.ids = flybys.stream().map(v -> v.pursuit_id).toList();
+            q.limit = flybys.size();
             var pursuits = pursuitApi.query(q);
-            items.forEach(item ->
+            flybys.forEach(item ->
                     item.pursuit = pursuits.stream()
-                            .filter(p -> p.id == item.id)
+                            .filter(p -> p.id == item.pursuit_id)
                             .findFirst()
                             .orElseThrow(api.InternalError::new));
-            return items;
+            return flybys;
         } catch (Engine.Err e) {
             throw new RuntimeException(e);
         }
