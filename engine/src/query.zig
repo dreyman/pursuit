@@ -29,15 +29,15 @@ pub fn findPointByTimestamp(storage: *Storage, timestamp: u32) !?geo.Point {
     return null;
 }
 
-pub const RoutePoint = extern struct {
-    id: Pursuit.ID,
+pub const LocationFlyby = extern struct {
+    pursuit_id: Pursuit.ID,
     lat: f32,
     lon: f32,
     timestamp: u32,
     distance: geo.Distance.Km,
 };
 
-pub fn findClosestPointsJson(
+pub fn findLocationFlybysJson(
     gpa: Allocator,
     storage: *Storage,
     point: geo.Point,
@@ -47,37 +47,28 @@ pub fn findClosestPointsJson(
 ) !ArrayList(u8) {
     const ids = try storage.db.findContainingPoint(point);
     defer storage.db.alloc.free(ids);
-    var points = try ArrayList(*RoutePoint).initCapacity(gpa, max_count);
+    var flybys = try ArrayList(*LocationFlyby).initCapacity(gpa, max_count);
     defer {
-        for (points.items) |p| gpa.destroy(p);
-        points.deinit();
+        for (flybys.items) |p| gpa.destroy(p);
+        flybys.deinit();
     }
 
     for (ids) |route_id| {
-        if (points.items.len >= max_count)
+        if (flybys.items.len >= max_count)
             break;
         try routeClosestPoints(
             gpa,
             storage,
             route_id,
             point,
-            &points,
+            &flybys,
             max_distance,
             time_gap,
         );
     }
-    if (points.items.len == 0) {
-        try points.append(.{
-            .id = 1698388144,
-            .lat = 49.0,
-            .lon = 32.0,
-            .timestamp = 1698388544,
-            .distance = 0.001,
-        });
-    }
     var json_str = try ArrayList(u8).initCapacity(gpa, 20_000);
     try std.json.stringify(
-        points.items,
+        flybys.items,
         .{ .whitespace = .indent_4 },
         json_str.writer(),
     );
@@ -89,7 +80,7 @@ pub fn routeClosestPoints(
     storage: *Storage,
     route_id: Pursuit.ID,
     point: geo.Point,
-    list: *ArrayList(*RoutePoint),
+    list: *ArrayList(*LocationFlyby),
     max_distance: geo.Distance.Km,
     time_gap: u32,
 ) !void {
@@ -104,7 +95,7 @@ pub fn routeClosestPoints(
         );
         if (distance < max_distance) {
             var replace = false;
-            const route_point = rp: {
+            const flyby = rp: {
                 if (list.items.len > 0) {
                     const last = list.items[list.items.len - 1];
                     if (distance < last.distance) {
@@ -112,26 +103,26 @@ pub fn routeClosestPoints(
                             replace = true;
                             break :rp last;
                         } else {
-                            break :rp try gpa.create(RoutePoint);
+                            break :rp try gpa.create(LocationFlyby);
                         }
                     } else {
                         if (route.time[i] - last.timestamp <= time_gap) {
                             continue;
                         } else {
-                            break :rp try gpa.create(RoutePoint);
+                            break :rp try gpa.create(LocationFlyby);
                         }
                     }
                 }
-                break :rp try gpa.create(RoutePoint);
+                break :rp try gpa.create(LocationFlyby);
             };
-            route_point.* = .{
-                .id = route_id,
+            flyby.* = .{
+                .pursuit_id = route_id,
                 .lat = route.lat[i],
                 .lon = route.lon[i],
                 .timestamp = route.time[i],
                 .distance = distance,
             };
-            if (!replace) try list.append(route_point);
+            if (!replace) try list.append(flyby);
         }
     }
 }

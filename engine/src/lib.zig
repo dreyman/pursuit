@@ -67,7 +67,7 @@ export fn pursuit_recalc_stats(
     return 0;
 }
 
-export fn pursuit_closest_points(
+export fn pursuit_location_flybys(
     storage_dir: [*:0]const u8,
     lat: f32,
     lon: f32,
@@ -77,7 +77,7 @@ export fn pursuit_closest_points(
     const max_count = 20;
     const storage = Storage.create(gpa, mem.span(storage_dir)) catch
         return null;
-    var json_list = query.findClosestPointsJson(
+    var json_list = query.findLocationFlybysJson(
         gpa,
         storage,
         .{ .lat = lat, .lon = lon },
