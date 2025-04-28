@@ -6,7 +6,7 @@ const current_year = today.getFullYear()
  * @returns {string}
  */
 export function timestampToString(timestamp) {
-    const d = new Date(timestamp)
+    const d = new Date(timestamp * 1000)
     return dateStrWithoutCurrentYear(d)
 }
 
@@ -15,7 +15,7 @@ export function timestampToString(timestamp) {
  * @returns {string}
  */
 export function timestampToFullDate(timestamp) {
-    const d = new Date(timestamp)
+    const d = new Date(timestamp * 1000)
     return d.toLocaleTimeString() + ' ' + dateStrWithoutCurrentYear(d)
 }
 

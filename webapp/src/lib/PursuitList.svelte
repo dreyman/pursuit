@@ -23,9 +23,7 @@ const { items, showicon = true } = $props()
                 {pursuit.name}
             </a>
             <Distance val={pursuit.distance} size="sm" rounded={true} />
-            <span class="text-sm text-gray-400"
-                >{util.timestampToString(pursuit.start_time * 1000)}</span
-            >
+            <span class="text-sm text-gray-400">{util.timestampToString(pursuit.start_time)}</span>
         </li>
     {/each}
 </ul>

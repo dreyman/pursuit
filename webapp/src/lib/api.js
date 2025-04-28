@@ -105,3 +105,17 @@ export async function getTrack(fetch, id) {
         return null
     }
 }
+
+export async function locationFlybys(fetch, lat, lon) {
+    try {
+        const resp = await fetch(`${API_URL}/location/flybys`, {
+            method: 'POST',
+            body: JSON.stringify({ lat, lon }),
+        })
+        if (resp.status != 200)
+            return null
+        return await resp.json()
+    } catch (err) {
+        return null
+    }
+}

@@ -1,6 +1,7 @@
 <script>
 import { setContext } from 'svelte'
 import { goto } from '$app/navigation'
+import * as Landmarks from '$lib/landmarks.api.js'
 import Map from '$lib/Map.svelte'
 import Marker from '$lib/Marker.svelte'
 import Dialog from '$lib/Dialog.svelte'
@@ -8,30 +9,33 @@ import LandmarkForm from './LandmarkForm.svelte'
 
 const { data, children } = $props()
 let landmarks = $state(data.landmarks)
-let new_landmark = $state(null)
+let landmark_form = $state(null)
+let selected_point = $state(null)
 
-setContext('remove', removeLandmark)
+setContext('removeLandmark', removeLandmark)
 
-function onMapClick(event) {
-    goto('/landmarks')
-    const point = event.latlng
-    new_landmark = {
-        lat: point.lat,
-        lon: point.lng,
+function onMapClick(map_click) {
+    selected_point = {
+        lat: map_click.latlng.lat,
+        lon: map_click.latlng.lng,
     }
+    landmark_form = null
+    goto('/landmarks')
 }
 
 function onMarkerClick(id) {
-    new_landmark = null
+    selected_point = null
+    landmark_form = null
     goto('/landmarks/' + id)
 }
 
 function newLandmark(lm) {
     landmarks.push(lm)
-    new_landmark = null
+    landmark_form = null
 }
 
-function removeLandmark(id) {
+async function removeLandmark(id) {
+    await Landmarks.remove(id)
     const idx = landmarks.findIndex(lm => lm.id == id)
     if (idx == -1) {
         return
@@ -39,26 +43,29 @@ function removeLandmark(id) {
     landmarks.splice(idx, 1)
 }
 
-function onMapMoveStart() {
-    clear()
-}
-
 function pageOnKeyDown(e) {
-    if (e.key == 'Escape') {
-        clear()
-    }
+    if (e.key == 'Escape') clear()
 }
 
 function clear() {
-    new_landmark = null
+    landmark_form = null
+    selected_point = null
     goto('/landmarks')
+}
+
+function showLandmarkForm(point) {
+    clear()
+    landmark_form = {
+        lat: point.lat,
+        lon: point.lon,
+    }
 }
 </script>
 
 <svelte:window onkeydown={pageOnKeyDown} />
 
-<div class="landmarks-map">
-    <Map onclick={onMapClick} onmovestart={onMapMoveStart}>
+<div class="h-full w-full">
+    <Map onclick={onMapClick} onmovestart={clear}>
         {#each landmarks as landmark (landmark.id)}
             <Marker
                 lat={landmark.lat}
@@ -70,9 +77,20 @@ function clear() {
     </Map>
 </div>
 
-{#if !!new_landmark}
-    <Dialog title="Create" bg={false} top="1rem" onclose={() => (new_landmark = null)}>
-        <LandmarkForm landmark={new_landmark} onsubmit={newLandmark} />
+{#if !!selected_point}
+    <Dialog
+        title={selected_point.lat.toFixed(6) + ', ' + selected_point.lon.toFixed(6)}
+        bg={false}
+        top="1rem"
+        onclose={() => (selected_point = null)}
+    >
+        <div class="flex justify-center gap-2">
+            <button onclick={() => showLandmarkForm(selected_point)}>Save</button>
+        </div>
+    </Dialog>
+{:else if !!landmark_form}
+    <Dialog title="Create" bg={false} top="1rem" onclose={() => (landmark_form = null)}>
+        <LandmarkForm landmark={landmark_form} onsubmit={newLandmark} />
     </Dialog>
 {/if}
 
@@ -81,8 +99,4 @@ function clear() {
 {/if}
 
 <style>
-.landmarks-map {
-    height: 100%;
-    width: 100%;
-}
 </style>

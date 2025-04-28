@@ -23,6 +23,9 @@ setContext('mediums', mediums)
         <a href="/mediums" class:active={page.route.id?.startsWith('/mediums')}>
             <Icon name="tool" size={icon_size} />
         </a>
+        <a href="/map" class:active={page.route.id?.startsWith('/map')}>
+            <Icon name="map" size={icon_size} />
+        </a>
         <a href="/landmarks" class:active={page.route.id?.startsWith('/landmarks')}>
             <Icon name="map-pin" size={icon_size} />
         </a>

@@ -17,8 +17,8 @@ onMount(async () => {
     }
     map = initLeafletMap(Leaflet, mapelement, cfg)
     setContext('map', map)
-    map.on('click', onclick)
-    map.on('movestart', onmovestart)
+    if (onclick) map.on('click', onclick)
+    if (onmovestart) map.on('movestart', onmovestart)
     mounted = true
 })
 
@@ -29,10 +29,10 @@ onMount(async () => {
  * @returns {any} leaflet map object
  * */
 export function initLeafletMap(Leaflet, mapelement, cfg) {
-    const map = Leaflet.map(mapelement, { zoomControl: false, zoomSnap: 0.5 }).setView(
-        cfg.center,
-        cfg.zoom ?? 12
-    )
+    const map = Leaflet.map(mapelement, {
+        zoomControl: false,
+        zoomSnap: 0.5,
+    }).setView(cfg.center, cfg.zoom ?? 12)
     Leaflet.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -45,7 +45,7 @@ export function initLeafletMap(Leaflet, mapelement, cfg) {
 </script>
 
 <div class="map" bind:this={mapelement}></div>
-{#if mounted}
+{#if mounted && children}
     {@render children()}
 {/if}
 

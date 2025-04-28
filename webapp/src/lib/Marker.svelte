@@ -7,9 +7,10 @@ const { lat, lon, icon = '🟣', onclick } = $props()
 let map
 let leaflet_marker
 
-onMount(() => {
+$effect(() => {
     map = getContext('map')
     if (!map) return
+    if (leaflet_marker) if (leaflet_marker) leaflet_marker.remove()
     const options = {
         icon: Leafet.divIcon({ className: 'emoji-marker', html: icon }),
     }

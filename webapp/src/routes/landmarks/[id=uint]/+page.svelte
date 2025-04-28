@@ -3,13 +3,11 @@ import { getContext } from 'svelte'
 import { goto } from '$app/navigation'
 import Icon from '$lib/Icon.svelte'
 import Dialog from '$lib/Dialog.svelte'
-import * as Landmarks from '$lib/landmarks.api.js'
 
 const { data } = $props()
-const removeLandmark = getContext('remove')
+const removeLandmark = getContext('removeLandmark')
 
 async function remove() {
-    await Landmarks.remove(data.landmark.id)
     removeLandmark(data.landmark.id)
     goto('/landmarks')
 }

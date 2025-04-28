@@ -64,7 +64,7 @@ function updateStats(updated_stats) {
             class="icon-btn absolute right-0 text-gray-500"><Icon name="pencil" /></button
         >
     </h1>
-    <h2 class="text-semi">{util.timestampToFullDate(stats.start_time * 1000)}</h2>
+    <h2 class="text-semi">{util.timestampToFullDate(stats.start_time)}</h2>
     <h3>{app.mediumLabel(pursuit.kind)}: <a href="/mediums/{medium.id}">{medium.name}</a></h3>
     <section class="relative flex w-full flex-wrap items-center justify-center gap-6 px-12">
         <span class="flex gap-6">
