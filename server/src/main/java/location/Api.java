@@ -22,7 +22,7 @@ public class Api {
 
     public List<Flyby> locationFlybys(Query query) {
         try {
-            String json = engine.locationVisits(
+            String json = engine.locationFlybys(
                     query.lat,
                     query.lon,
                     query.max_distance,

@@ -11,6 +11,7 @@ import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.router.JavalinDefaultRoutingApi;
 import io.javalin.util.FileUtil;
+import location.Flyby;
 import org.jetbrains.annotations.NotNull;
 import pursuit.Query;
 import pursuit.Payload;
@@ -24,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 
 import static io.javalin.http.HttpStatus.*;
 
@@ -211,10 +213,10 @@ public class Main {
             }
         });
 
-        api.post("/api/query/location", ctx -> {
-            var params = query.LocationVisitsParams.fromJson(ctx.body());
-            var result = app.queryApi.locationFlybys(params);
-            ctx.json(result);
+        api.post("/api/location/flybys", ctx -> {
+            var query = location.Query.fromJson(ctx.body());
+            List<Flyby> flybys = app.locationApi.locationFlybys(query);
+            ctx.json(flybys);
         });
 
         api.get("/api/*", ctx -> ctx.status(NOT_FOUND));

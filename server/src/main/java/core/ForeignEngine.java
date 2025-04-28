@@ -1,8 +1,8 @@
 package core;
 
 import java.lang.foreign.*;
+import java.lang.invoke.MethodHandle;
 import java.nio.file.Path;
-import java.util.List;
 
 import static java.lang.foreign.FunctionDescriptor.of;
 import static java.lang.foreign.FunctionDescriptor.ofVoid;
@@ -17,10 +17,9 @@ public class ForeignEngine implements Engine {
     static final Func version_fn = new Func("pursuit_version", of(ADDRESS));
     static final Func recalc_stats_fn = new Func("pursuit_recalc_stats",
             of(JAVA_INT, ADDRESS, JAVA_INT, JAVA_INT, JAVA_INT));
-    static final Func closest_points_fn = new Func("pursuit_closest_points",
+    static final Func location_flybys_fn = new Func("pursuit_location_flybys",
             of(ADDRESS, ADDRESS, JAVA_FLOAT, JAVA_FLOAT, JAVA_DOUBLE, JAVA_INT));
-    static final Func free_str_fn = new Func("pursuit_free_str",
-            ofVoid(ADDRESS));
+    static final Func free_str_fn = new Func("pursuit_free_str", ofVoid(ADDRESS));
 
     public String lib_path;
     public String storage_path;
@@ -69,19 +68,19 @@ public class ForeignEngine implements Engine {
         }
     }
 
-    public String locationVisits(float lat,
+    public String locationFlybys(float lat,
                                  float lon,
                                  double max_distance,
                                  int time_gap) throws Err {
         try (Arena arena = Arena.ofConfined()) {
             var path = Path.of(lib_path);
             SymbolLookup libpursuit = SymbolLookup.libraryLookup(path, arena);
-            var func_ptr = libpursuit.find(closest_points_fn.name)
-                    .orElseThrow(() -> Engine.Err.functionNotFound(closest_points_fn.name));
-            var func = Linker.nativeLinker().downcallHandle(func_ptr, closest_points_fn.descriptor);
+            var func_ptr = libpursuit.find(location_flybys_fn.name)
+                    .orElseThrow(() -> Engine.Err.functionNotFound(location_flybys_fn.name));
+            var fn_handle = Linker.nativeLinker().downcallHandle(func_ptr, location_flybys_fn.descriptor);
 
             var storage_path = arena.allocateFrom(this.storage_path);
-            MemorySegment mem = (MemorySegment) func.invokeExact(
+            MemorySegment mem = (MemorySegment) fn_handle.invokeExact(
                     storage_path,
                     lat, lon, max_distance, time_gap
             );
@@ -101,17 +100,22 @@ public class ForeignEngine implements Engine {
 
     public String version() throws Engine.Err {
         try (Arena arena = Arena.ofConfined()) {
-            var path = Path.of(lib_path);
-            SymbolLookup libpursuit = SymbolLookup.libraryLookup(path, arena);
-            var func_ptr = libpursuit.find(version_fn.name)
-                    .orElseThrow(() -> Engine.Err.functionNotFound(version_fn.name));
-            var func = Linker.nativeLinker().downcallHandle(func_ptr, version_fn.descriptor);
+            var fn_handle = getLibMethodHandle(version_fn, arena);
 
-            MemorySegment result = (MemorySegment) func.invokeExact();
+            MemorySegment result = (MemorySegment) fn_handle.invokeExact();
             result = result.reinterpret(Long.MAX_VALUE);
             return result.getString(0);
         } catch (Throwable t) {
             throw new Engine.Err("Unexpected error", t);
         }
     }
+
+    MethodHandle getLibMethodHandle(Func func, Arena arena) throws Engine.Err {
+        var path = Path.of(lib_path);
+        SymbolLookup libpursuit = SymbolLookup.libraryLookup(path, arena);
+        var func_ptr = libpursuit.find(func.name)
+                .orElseThrow(() -> Engine.Err.functionNotFound(func.name));
+        return Linker.nativeLinker().downcallHandle(func_ptr, func.descriptor);
+    }
+
 }
