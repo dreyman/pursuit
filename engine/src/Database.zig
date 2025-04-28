@@ -6,6 +6,7 @@ const fs = std.fs;
 
 const sqlitelib = @import("sqlite");
 
+const geo = @import("geo.zig");
 const Stats = @import("Stats.zig");
 const data = @import("data.zig");
 const Pursuit = data.Pursuit;
@@ -147,6 +148,25 @@ pub fn findByTimestamp(database: *Database, timestamp: u32) !?Pursuit.ID {
     defer stmt.deinit();
     const id = try stmt.one(Pursuit.ID, .{}, .{ timestamp, timestamp });
     return id;
+}
+
+pub fn findContainingPoint(database: *Database, point: geo.Point) ![]Pursuit.ID {
+    const sql =
+        \\ select id from pursuit where
+        \\ northernmost_lat > ? and
+        \\ southernmost_lat < ? and
+        \\ easternmost_lon > ? and
+        \\ westernmost_lon < ?
+    ;
+    var stmt = try database.sqlite.prepareDynamic(sql);
+    defer stmt.deinit();
+    const ids = try stmt.all(Pursuit.ID, database.alloc, .{}, .{
+        point.lat,
+        point.lat,
+        point.lon,
+        point.lon,
+    });
+    return ids;
 }
 
 pub fn setMedium(
