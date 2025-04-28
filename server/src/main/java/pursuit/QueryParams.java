@@ -17,6 +17,7 @@ public class QueryParams {
     public Integer medium;
     public Integer distance_min;
     public Integer distance_max;
+    public List<Integer> ids;
 
     public String order_by_field = default_order_by_field;
     public String order = default_order;
@@ -63,6 +64,15 @@ public class QueryParams {
         if (this.distance_max != null) {
             if (!where.isEmpty()) where.append(" AND ");
             where.append("distance <= ").append(this.distance_max * 1000);
+        }
+        if (this.ids != null && !this.ids.isEmpty()) {
+            if (!where.isEmpty()) where.append(" AND ");
+            where.append("id IN (");
+            for (int i = 0; i < this.ids.size(); i++) {
+                where.append(this.ids.get(i));
+                if (i < this.ids.size() - 1) where.append(", ");
+            }
+            where.append(")");
         }
 
         if (!where.isEmpty())

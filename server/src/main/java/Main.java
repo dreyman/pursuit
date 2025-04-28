@@ -11,7 +11,6 @@ import io.javalin.json.JsonMapper;
 import io.javalin.plugin.bundled.CorsPluginConfig;
 import io.javalin.router.JavalinDefaultRoutingApi;
 import io.javalin.util.FileUtil;
-import landmarks.Landmark;
 import org.jetbrains.annotations.NotNull;
 import pursuit.QueryParams;
 import pursuit.UpdatePayload;
@@ -25,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.Map;
 
 import static io.javalin.http.HttpStatus.*;
 
@@ -211,6 +209,12 @@ public class Main {
             } catch (NumberFormatException x) {
                 ctx.status(NOT_FOUND);
             }
+        });
+
+        api.post("/api/query/location", ctx -> {
+            var params = query.LocationVisitsParams.fromJson(ctx.body());
+            var result = app.queryApi.locationFlybys(params);
+            ctx.json(result);
         });
 
         api.get("/api/*", ctx -> ctx.status(NOT_FOUND));

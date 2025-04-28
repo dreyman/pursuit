@@ -1,29 +1,29 @@
-package landmarks;
+package query;
 
 import api.JsonPayload;
 import com.google.gson.JsonSyntaxException;
 
-import java.util.HashMap;
-
 import static core.Constants.*;
+import static core.Constants.longitude_max;
 
-public class Payload {
-    static int name_len_min = 1;
-    static int name_len_max = 100;
+public class LocationVisitsParams {
+    static final int default_time_gap = 60;
+    static final double default_max_distance = 0.1;
 
-    String name;
-    float lat;
-    float lon;
+    public float lat;
+    public float lon;
+    public int time_gap;
+    public double max_distance;
 
-    public static Payload fromJson(String json_str) {
-        var errors = new HashMap<String, String>(3);
+    public static LocationVisitsParams fromJson(String json_str) {
+        var errors = new java.util.HashMap<String, String>(2);
         JsonPayload json;
         try {
             json = new JsonPayload(json_str);
         } catch (JsonSyntaxException x) {
             json = new JsonPayload("{}");
         }
-        Payload result = new Payload();
+        var result = new LocationVisitsParams();
         var val = json.getFloat("lat", latitude_min, latitude_max);
         if (val.err() != null) errors.put("lat", val.err());
         else result.lat = val.val();
@@ -32,20 +32,12 @@ public class Payload {
         if (val.err() != null) errors.put("lon", val.err());
         else result.lon = val.val();
 
-        var name = json.getString("name", name_len_min, name_len_max);
-        if (name.err() != null) errors.put("name", name.err());
-        else result.name = name.val();
+        result.time_gap = default_time_gap;
+        result.max_distance = default_max_distance;
 
         if (!errors.isEmpty())
             throw new api.InvalidPayload(errors);
 
         return result;
-    }
-
-    // fixme
-    public void setFields(Landmark lm) {
-        lm.name = this.name;
-        lm.lat = this.lat;
-        lm.lon = this.lon;
     }
 }

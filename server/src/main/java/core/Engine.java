@@ -1,5 +1,7 @@
 package core;
 
+import java.util.List;
+
 public interface Engine {
 
     String version() throws Err;
@@ -7,6 +9,11 @@ public interface Engine {
     int importFile(String path) throws Err;
 
     void recalcStats(int id, int min_speed, int max_time_gap) throws Err;
+
+    String locationVisits(float lat,
+                          float lon,
+                          double max_distance,
+                          int time_gap) throws Err;
 
     class Err extends Exception {
         String message;
