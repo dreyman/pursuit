@@ -19,6 +19,7 @@ docker run --rm -p 127.0.0.1:7070:7070 -v <STORAGE_DIRECTORY>:/appstorage pursui
 ## todo
 - Install/Setup
 - Dashboard page
+- Tags
 - Support other record fields: heart rate, temperature, candence, power etc.
 - Support other fit file types
 - Stats graphs: speed, elevation, hr etc.
