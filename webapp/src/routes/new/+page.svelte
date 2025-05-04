@@ -3,7 +3,7 @@ import { goto } from '$app/navigation'
 import * as cache from '$lib/shared_state.js'
 // fixme use bind:files
 
-async function on_file_upload(e) {
+async function onFileUpload(e) {
     if (!e.target || !e.target.files || !e.target.files[0]) return
     const fd = new FormData()
     fd.append('file', e.target.files[0])
@@ -32,7 +32,7 @@ async function on_file_upload(e) {
         type="file"
         id="fileupload"
         accept=".fit, .fit.gz, .gpx, .gpx.gz"
-        onchange={on_file_upload}
+        onchange={onFileUpload}
     />
 </div>
 

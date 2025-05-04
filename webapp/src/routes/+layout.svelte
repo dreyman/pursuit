@@ -14,11 +14,11 @@ setContext('mediums', mediums)
 
 <div class="flex h-full w-full">
     <nav class="flex flex-col">
+        <a href="/" class:active={page.route.id == '/'}>
+            <Icon name="circle-plus" size={icon_size} />
+        </a>
         <a href="/list" class:active={page.route.id?.startsWith('/list')}>
             <Icon name="list" size={icon_size} />
-        </a>
-        <a href="/new" class:active={page.route.id?.startsWith('/new')}>
-            <Icon name="circle-plus" size={icon_size} />
         </a>
         <a href="/mediums" class:active={page.route.id?.startsWith('/mediums')}>
             <Icon name="tool" size={icon_size} />

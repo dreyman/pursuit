@@ -120,3 +120,10 @@ export async function locationFlybys(fetch, lat, lon) {
         return null
     }
 }
+
+export async function uploadFile(file) {
+    return fetch(`${API_URL}/gpsfile`, {
+        method: 'POST',
+        body: file,
+    })
+}
