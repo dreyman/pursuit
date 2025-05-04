@@ -15,8 +15,8 @@ public class Query {
 
     public Pursuit.Kind kind;
     public Integer medium;
-    public Integer distance_min;
-    public Integer distance_max;
+    public Integer distance_km_min;
+    public Integer distance_km_max;
     public List<Integer> ids;
 
     public String order_by_field = default_order_by_field;
@@ -42,8 +42,8 @@ public class Query {
         }
 
         this.medium = getUintParam(params, "medium");
-        this.distance_min = getUintParam(params, "distance_min");
-        this.distance_max = getUintParam(params, "distance_max");
+        this.distance_km_min = getUintParam(params, "distance_min");
+        this.distance_km_max = getUintParam(params, "distance_max");
     }
 
     public String buildSql() {
@@ -57,13 +57,13 @@ public class Query {
             if (!where.isEmpty()) where.append(" AND ");
             where.append("medium_id = ").append(this.medium);
         }
-        if (this.distance_min != null) {
+        if (this.distance_km_min != null) {
             if (!where.isEmpty()) where.append(" AND ");
-            where.append("distance >= ").append(this.distance_min * 1000);
+            where.append("distance >= ").append(this.distance_km_min * 1000);
         }
-        if (this.distance_max != null) {
+        if (this.distance_km_max != null) {
             if (!where.isEmpty()) where.append(" AND ");
-            where.append("distance <= ").append(this.distance_max * 1000);
+            where.append("distance <= ").append(this.distance_km_max * 1000);
         }
         if (this.ids != null && !this.ids.isEmpty()) {
             if (!where.isEmpty()) where.append(" AND ");

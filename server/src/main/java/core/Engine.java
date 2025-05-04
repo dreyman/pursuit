@@ -4,6 +4,8 @@ public interface Engine {
 
     String version() throws Err;
 
+    void install() throws Err;
+
     int importFile(String path) throws Err;
 
     void recalcStats(int id, int min_speed, int max_time_gap) throws Err;

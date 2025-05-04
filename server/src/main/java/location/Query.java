@@ -3,8 +3,9 @@ package location;
 import api.JsonPayload;
 import com.google.gson.JsonSyntaxException;
 
+import java.util.List;
+
 import static core.Constants.*;
-import static core.Constants.longitude_max;
 
 public class Query {
     static final int default_time_gap = 60;
@@ -39,5 +40,11 @@ public class Query {
             throw new api.InvalidPayload(errors);
 
         return result;
+    }
+
+    static String firstOrNull(List<String> values) {
+        if (values == null || values.isEmpty())
+            return null;
+        return values.get(0);
     }
 }

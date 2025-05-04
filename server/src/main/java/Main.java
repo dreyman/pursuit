@@ -19,9 +19,7 @@ import stats.RecalcRequest;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
@@ -31,18 +29,15 @@ import static io.javalin.http.HttpStatus.*;
 
 public class Main {
 
-    static Gson gson = new Gson();
-
     public static void main(String[] args) {
-        Config config;
+        App app;
         try {
-            config = getAppConfig();
+            app = App.initFromArgs(args);
         } catch (RuntimeException x) {
-            System.out.println("Error: " + x.getMessage());
+            System.err.println("Error: " + x.getMessage());
             return;
         }
-        var app = new App(config);
-        var javalin = Javalin.create(Main::config);
+        var javalin = Javalin.create(Main::javalinConfig);
         initApiEndpoints(javalin, app);
         initExceptionMapping(javalin);
         javalin.start(7070);
@@ -147,7 +142,6 @@ public class Main {
                 if (!deleted)
                     System.out.printf("Failed to delete temp file: %s", path);
             }
-            ctx.status(500);
         });
         api.get("/api/pursuit/{id}/track", ctx -> {
             try {
@@ -166,7 +160,11 @@ public class Main {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
                 var req = RecalcRequest.fromJson(ctx.body());
-                var stats = app.recalcStats(id, req.min_speed, req.max_time_gap);
+                var stats = app.statsApi.recalcStats(
+                        id,
+                        req.min_speed,
+                        req.max_time_gap
+                );
                 ctx.json(stats);
                 ctx.status(OK);
             } catch (NumberFormatException x) {
@@ -214,23 +212,13 @@ public class Main {
         });
 
         api.post("/api/location/flybys", ctx -> {
+
             var query = location.Query.fromJson(ctx.body());
             List<Flyby> flybys = app.locationApi.locationFlybys(query);
             ctx.json(flybys);
         });
 
         api.get("/api/*", ctx -> ctx.status(NOT_FOUND));
-    }
-
-    static Config getAppConfig() {
-        try {
-            String cfg_json = Files.readString(Path.of("appconfig.json"));
-            return gson.fromJson(cfg_json, Config.class);
-        } catch (IOException _) {
-            throw new RuntimeException("Failed to read appconfig.json");
-        } catch (JsonSyntaxException _) {
-            throw new RuntimeException("Failed to parse appconfig.json: json syntax error");
-        }
     }
 
     static void initExceptionMapping(JavalinDefaultRoutingApi<Javalin> javalin) {
@@ -249,7 +237,7 @@ public class Main {
         });
     }
 
-    static void config(JavalinConfig config) {
+    static void javalinConfig(JavalinConfig config) {
         config.bundledPlugins
                 .enableCors(cors -> cors.addRule(CorsPluginConfig.CorsRule::anyHost));
         config.jsonMapper(gsonMapper());

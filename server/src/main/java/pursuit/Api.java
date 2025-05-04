@@ -31,7 +31,8 @@ public class Api {
         try {
             if (payload.isEmpty()) return true;
             var updated_count = repo.update(id, payload);
-            assert updated_count == 1;
+            if (updated_count > 1)
+                throw new api.InternalError();
             return updated_count > 0;
         } catch (SQLException x) {
             x.printStackTrace();
