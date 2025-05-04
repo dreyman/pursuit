@@ -212,7 +212,6 @@ public class Main {
         });
 
         api.post("/api/location/flybys", ctx -> {
-
             var query = location.Query.fromJson(ctx.body());
             List<Flyby> flybys = app.locationApi.locationFlybys(query);
             ctx.json(flybys);

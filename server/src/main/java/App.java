@@ -27,11 +27,12 @@ public class App {
         this.routes_dir = app_dir.resolve("routes").toString();
         this.temp_dir = app_dir.resolve("temp").toString();
 
+        engine = new ForeignEngine(lib_file_path, storage_dir);
         pursuitApi = new pursuit.Api(sqlite_db_file);
         mediumApi = new medium.Api(sqlite_db_file, pursuitApi);
         landmarksApi = new landmarks.Api(sqlite_db_file);
         landmarksRestApi = new landmarks.Rest(landmarksApi);
-        engine = new ForeignEngine(lib_file_path, storage_dir);
+        statsApi = new stats.Api(engine, pursuitApi);
         locationApi = new location.Api(engine, pursuitApi);
     }
 

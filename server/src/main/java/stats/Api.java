@@ -7,8 +7,9 @@ public class Api {
     Engine engine;
     pursuit.Api pursuitApi;
 
-    public Api(Engine engine) {
+    public Api(Engine engine, pursuit.Api pursuitApi) {
         this.engine = engine;
+        this.pursuitApi = pursuitApi;
     }
 
     public Stats recalcStats(int id, int min_speed, int max_time_gap) {
