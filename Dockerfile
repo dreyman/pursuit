@@ -7,7 +7,8 @@ WORKDIR /
 RUN mv webapp-src/build/ webapp-build
 
 FROM amazoncorretto:24.0.1-alpine
-COPY engine engine-src
+COPY server /server-src
+COPY engine /engine-src
 RUN mkdir -p /deps
 WORKDIR /deps
 RUN wget https://ziglang.org/builds/zig-linux-$(uname -m)-0.15.0-dev.386+2e35fdd03.tar.xz
@@ -17,7 +18,6 @@ WORKDIR /engine-src
 RUN /deps/local/zig build --release=safe
 
 WORKDIR /
-COPY server /server-src
 RUN mkdir -p server-build
 WORKDIR /server-src
 RUN ./gradlew build

@@ -29,9 +29,9 @@ setContext('mediums', mediums)
         <a href="/landmarks" class:active={page.route.id?.startsWith('/landmarks')}>
             <Icon name="map-pin" size={icon_size} />
         </a>
-        <a href="/settings" class:active={page.route.id?.startsWith('/settings')}>
+        <!-- <a href="/settings" class:active={page.route.id?.startsWith('/settings')}>
             <Icon name="settings" size={icon_size} />
-        </a>
+        </a> -->
     </nav>
 
     <div class="ml-14 flex w-full grow flex-col items-center">

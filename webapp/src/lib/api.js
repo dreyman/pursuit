@@ -92,6 +92,7 @@ export const Stats = {
 /**
  * @param {any} fetch
  * @param {number} id
+ * @returns {Float32Array}
  */
 export async function getTrack(fetch, id) {
     try {

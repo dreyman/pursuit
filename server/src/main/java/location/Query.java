@@ -18,18 +18,18 @@ public class Query {
 
     public static Query fromJson(String json_str) {
         var errors = new java.util.HashMap<String, String>(2);
-        JsonPayload json;
+        JsonPayload payload;
         try {
-            json = new JsonPayload(json_str);
+            payload = new JsonPayload(json_str);
         } catch (JsonSyntaxException x) {
-            json = new JsonPayload("{}");
+            payload = new JsonPayload("{}");
         }
         var result = new Query();
-        var val = json.getFloat("lat", latitude_min, latitude_max);
+        var val = payload.getFloat("lat", latitude_min, latitude_max);
         if (val.err() != null) errors.put("lat", val.err());
         else result.lat = val.val();
 
-        val = json.getFloat("lon", longitude_min, longitude_max);
+        val = payload.getFloat("lon", longitude_min, longitude_max);
         if (val.err() != null) errors.put("lon", val.err());
         else result.lon = val.val();
 
