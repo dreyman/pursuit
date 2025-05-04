@@ -80,7 +80,7 @@ pub fn routeClosestPoints(
     storage: *Storage,
     route_id: Pursuit.ID,
     point: geo.Point,
-    list: *ArrayList(*LocationFlyby),
+    flybys: *ArrayList(*LocationFlyby),
     max_distance: geo.Distance.Km,
     time_gap: u32,
 ) !void {
@@ -96,8 +96,8 @@ pub fn routeClosestPoints(
         if (distance < max_distance) {
             var replace = false;
             const flyby = rp: {
-                if (list.items.len > 0) {
-                    const last = list.items[list.items.len - 1];
+                if (flybys.items.len > 0) {
+                    const last = flybys.items[flybys.items.len - 1];
                     if (distance < last.distance) {
                         if (route.time[i] - last.timestamp <= time_gap) {
                             replace = true;
@@ -122,7 +122,7 @@ pub fn routeClosestPoints(
                 .timestamp = route.time[i],
                 .distance = distance,
             };
-            if (!replace) try list.append(flyby);
+            if (!replace) try flybys.append(flyby);
         }
     }
 }

@@ -16,18 +16,24 @@ pub fn install(alloc: Allocator, storage_dir_path: []const u8) !void {
     const db_file_path = try setupStorage(alloc, storage_dir_path);
     defer alloc.free(db_file_path);
     const sqlite = try setupDatabase(db_file_path);
-    var database = Database{
-        .alloc = alloc,
-        .sqlite = sqlite.*,
-        .file = db_file_path,
-    };
-    defer database.destroy();
+    defer sqlite.deinit();
+    // var database = try alloc.create(Database);
+    // database.* = Database{
+    //     .alloc = alloc,
+    //     .sqlite = sqlite.*,
+    //     .file = db_file_path,
+    // };
+    // defer database.destroy();
     // try setupInitialData(&database);
 }
 
 fn setupStorage(alloc: Allocator, storage_dir_path: []const u8) ![:0]const u8 {
-    try std.fs.cwd().makeDir(storage_dir_path);
-    var storage_dir = try std.fs.cwd().openDir(storage_dir_path, .{});
+    fs.cwd().makeDir(storage_dir_path) catch |err|
+        switch (err) {
+        error.PathAlreadyExists => {},
+        else => return err,
+    };
+    var storage_dir = try fs.cwd().openDir(storage_dir_path, .{});
     defer storage_dir.close();
     try storage_dir.makeDir(Storage.temp_dir_name);
     try storage_dir.makeDir(Storage.routes_dir_name);

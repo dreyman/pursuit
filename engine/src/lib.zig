@@ -4,32 +4,11 @@ const mem = std.mem;
 
 const app = @import("app.zig");
 const query = @import("query.zig");
+const setup = @import("setup.zig");
 const data = @import("data.zig");
 const geo = @import("geo.zig");
 const Pursuit = data.Pursuit;
 const Storage = @import("Storage.zig");
-
-// const GPA = std.heap.GeneralPurposeAllocator(.{});
-// var gpa = GPA{};
-// var alloc = gpa.allocator();
-
-// var gpa: ?GPA = gpa: {
-//     if (builtin.link_libc) {
-//         if (switch (builtin.mode) {
-//             .ReleaseSafe, .ReleaseFast => true,
-//             else => false,
-//         }) break :gpa null;
-//     }
-
-//     break :gpa GPA{};
-// };
-
-// const alloc: std.mem.Allocator = if (gpa) |*value|
-//     value.allocator()
-// else if (builtin.link_libc)
-//     std.heap.c_allocator
-// else
-//     unreachable;
 
 const gpa: std.mem.Allocator = std.heap.c_allocator;
 
@@ -91,5 +70,16 @@ export fn pursuit_location_flybys(
 }
 
 export fn pursuit_free_str(str: [*:0]u8) void {
-    gpa.free(std.mem.sliceTo(str, 0));
+    gpa.free(mem.span(str));
+}
+
+export fn pursuit_init(storage_dir: [*:0]u8) u8 {
+    const allocator = gpa;
+
+    const path = allocator.dupe(u8, mem.sliceTo(storage_dir, 0)) catch
+        return 1;
+    defer allocator.free(path);
+    setup.install(allocator, path) catch
+        return 1;
+    return 0;
 }

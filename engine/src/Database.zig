@@ -33,8 +33,8 @@ pub fn create(alloc: Allocator, dbfile: [:0]const u8) !*Database {
 }
 
 pub fn destroy(database: *Database) void {
-    database.alloc.free(database.file);
     database.sqlite.deinit();
+    database.alloc.free(database.file);
     database.alloc.destroy(database);
 }
 

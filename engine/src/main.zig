@@ -30,6 +30,7 @@ pub fn main() !void {
 
     if (mem.eql(u8, command, "init")) {
         const storage_path = args.next();
+        // fixme get rid of default storage path, it should always be provided
         var default_storage: ?[]const u8 = null;
         if (storage_path == null) {
             default_storage = try app.defaultStorageDirPath(allocator);
@@ -101,20 +102,6 @@ pub fn main() !void {
             else => fatal("{s}", .{@errorName(err)}),
         };
         try writeAndExit("done.", .{});
-    }
-
-    if (mem.eql(u8, command, "find")) {
-        const timestamp_arg = args.next() orelse fatal("expected timestmap", .{});
-        const timestamp = std.fmt.parseInt(u32, timestamp_arg, 10) catch
-            fatal("invalid timestamp value", .{});
-        const storage_path = "/home/ihor/.pursuit-dev";
-        var storage = try Storage.create(allocator, storage_path);
-        defer storage.destroy();
-
-        const point = try query.findPointByTimestamp(storage, timestamp) orelse
-            try writeAndExit("Not found", .{});
-
-        try writeAndExit("{d}, {d}", .{ point.lat, point.lon });
     }
 
     // if (mem.eql(u8, command, "strava")) {
