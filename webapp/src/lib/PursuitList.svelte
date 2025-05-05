@@ -4,10 +4,10 @@ import Icon from '$lib/Icon.svelte'
 import * as util from '$lib/util.js'
 import Distance from '$lib/Distance.svelte'
 
-const { items, showicon = true } = $props()
+const { items, showicon = true, className = '' } = $props()
 </script>
 
-<ul class="flex flex-col gap-1">
+<ul class="flex flex-col gap-1 {className}">
     {#each items as pursuit}
         <li class="flex items-center gap-2">
             {#if showicon}

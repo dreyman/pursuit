@@ -5,6 +5,7 @@ import api.InvalidRequest;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Query {
@@ -22,12 +23,14 @@ public class Query {
     public String order_by_field = default_order_by_field;
     public String order = default_order;
     public int limit = default_limit;
+    public int offset = 0;
 
     public Query() {}
 
     public Query(Map<String, List<String>> params) {
         var limit = getUintParam(params, "limit");
         this.limit = limit == null ? default_limit : Math.min(limit, max_limit);
+        this.offset = Optional.ofNullable(getUintParam(params, "offset")).orElse(0);
 
         var kind_param = firstOrNull(params.get("kind"));
         if (kind_param != null) {
@@ -82,13 +85,16 @@ public class Query {
                 .append(" ")
                 .append(this.order);
         sql.append(" LIMIT ").append(this.limit);
+        if (this.offset != 0)
+            sql.append(" OFFSET ").append(this.offset);
 
         return sql.toString();
     }
 
     static Integer getUintParam(Map<String, List<String>> params, String param_name) {
         var param_str = firstOrNull(params.get(param_name));
-        if (param_str == null) return null;
+        if (param_str == null)
+            return null;
         try {
             var param_val = Integer.parseInt(param_str);
             if (param_val <= 0)

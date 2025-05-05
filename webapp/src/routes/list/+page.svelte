@@ -1,15 +1,18 @@
 <script>
 import { page } from '$app/state'
 import { goto } from '$app/navigation'
+import * as api from '$lib/api.js'
 import Icon from '$lib/Icon.svelte'
 import Dialog from '$lib/Dialog.svelte'
 import PursuitList from '$lib/PursuitList.svelte'
 
 let { data } = $props()
+let pursuits = $state(data.pursuits)
 
 let params = null
 let kind = $derived(page.url.searchParams.get('kind') ?? null)
 let filters_dialog_visible = $state(false)
+let load_more_visible = $state(true)
 let filters = $state({
     distance: {
         min: null,
@@ -63,9 +66,18 @@ function initFilters(params) {
         },
     }
 }
+
+async function loadMore() {
+    params.set('offset', pursuits.length)
+    const query_str = '?' + params.toString()
+    params.delete('offset')
+    const more = await api.Pursuit.list(fetch, query_str)
+    if (more.length == 0) load_more_visible = false
+    else pursuits.push(...more)
+}
 </script>
 
-<ul class="btns-select my-4">
+<ul class="btns-select mt-4">
     <button onmousedown={() => setKind(null)} class:active={kind == null}>all</button>
     <button onmousedown={() => setKind('cycling')} class:active={kind == 'cycling'}>cycling</button>
     <button onmousedown={() => setKind('running')} class:active={kind == 'running'}>running</button>
@@ -75,7 +87,10 @@ function initFilters(params) {
     >
 </ul>
 
-<PursuitList items={data.pursuits} showicon={kind == null} />
+<PursuitList items={pursuits} showicon={kind == null} className="mt-4" />
+{#if load_more_visible}
+    <button onclick={loadMore} class="my-2">load more</button>
+{/if}
 
 {#if filters_dialog_visible}
     <Dialog title="Filter" onclose={() => (filters_dialog_visible = false)}>

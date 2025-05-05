@@ -34,7 +34,7 @@ setContext('mediums', mediums)
         </a> -->
     </nav>
 
-    <div class="ml-14 flex w-full grow flex-col items-center">
+    <div class="flex w-full grow flex-col items-center">
         {@render children()}
     </div>
 </div>

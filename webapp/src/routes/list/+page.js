@@ -1,4 +1,4 @@
-import * as api from '$lib/api.js';
+import * as api from '$lib/api.js'
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, url }) {
