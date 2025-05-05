@@ -9,11 +9,6 @@ import PursuitList from '$lib/PursuitList.svelte'
 let { data } = $props()
 let pursuits = $state([])
 
-$effect(() => {
-    pursuits = data.pursuits
-    load_more_visible = data.pursuits.length > 0
-})
-
 let params = null
 let kind = $derived(page.url.searchParams.get('kind') ?? null)
 let filters_dialog_visible = $state(false)
@@ -23,6 +18,11 @@ let filters = $state({
         min: null,
         max: null,
     },
+})
+
+$effect(() => {
+    pursuits = data.pursuits
+    load_more_visible = data.pursuits.length > 0
 })
 
 $effect(() => {

@@ -19,7 +19,7 @@ const { items, showicon = true, className = '' } = $props()
                     <Icon name="question-mark" size={1.3} />
                 {/if}
             {/if}
-            <a href="/entry/{pursuit.id}" class="text-lg">
+            <a href="/entries/{pursuit.id}" class="text-lg">
                 {pursuit.name}
             </a>
             <Distance val={pursuit.distance} size="sm" rounded={true} />
