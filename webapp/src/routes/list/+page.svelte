@@ -7,7 +7,12 @@ import Dialog from '$lib/Dialog.svelte'
 import PursuitList from '$lib/PursuitList.svelte'
 
 let { data } = $props()
-let pursuits = $state(data.pursuits)
+let pursuits = $state([])
+
+$effect(() => {
+    pursuits = data.pursuits
+    load_more_visible = data.pursuits.length > 0
+})
 
 let params = null
 let kind = $derived(page.url.searchParams.get('kind') ?? null)
