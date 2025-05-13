@@ -1,4 +1,4 @@
-package core;
+package engine;
 
 public interface Engine {
 
@@ -14,6 +14,8 @@ public interface Engine {
                           float lon,
                           double max_distance,
                           int time_gap) throws Err;
+
+    LocationForTimestamp locationByTimestamp(int timestamp) throws Err;
 
     class Err extends Exception {
         String message;

@@ -35,6 +35,7 @@ public class Main {
             app = App.initFromArgs(args);
         } catch (RuntimeException x) {
             System.err.println("Error: " + x.getMessage());
+            x.printStackTrace();
             return;
         }
         var javalin = Javalin.create(Main::javalinConfig);
@@ -57,13 +58,13 @@ public class Main {
 //        });
 
         api.get("/api/medium", ctx -> {
-            var list = app.mediumApi.query();
+            var list = app.medium_api.query();
             ctx.json(list);
         });
         api.post("/api/medium/new", ctx -> {
             try {
                 var payload = ctx.bodyAsClass(medium.CreatePayload.class);
-                var new_medium = app.mediumApi.create(payload);
+                var new_medium = app.medium_api.create(payload);
                 ctx.json(new_medium);
             } catch (IllegalArgumentException x) {
                 ctx.status(UNPROCESSABLE_CONTENT);
@@ -76,7 +77,7 @@ public class Main {
         api.get("/api/medium/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                var medium = app.mediumApi.getStats(id);
+                var medium = app.medium_api.getStats(id);
                 if (medium == null) {
                     ctx.status(NOT_FOUND);
                     return;
@@ -90,7 +91,7 @@ public class Main {
         api.get("/api/pursuit", ctx -> {
             try {
                 var params = new Query(ctx.queryParamMap());
-                var list = app.pursuitApi.query(params);
+                var list = app.pursuit_api.query(params);
                 ctx.json(list);
             } catch (api.InvalidRequest x) {
                 ctx.status(UNPROCESSABLE_CONTENT);
@@ -100,7 +101,7 @@ public class Main {
         api.get("/api/pursuit/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                var pursuit = app.pursuitApi.getById(id);
+                var pursuit = app.pursuit_api.getById(id);
                 if (pursuit == null) {
                     ctx.status(NOT_FOUND);
                     return;
@@ -114,7 +115,7 @@ public class Main {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
                 var payload = ctx.bodyAsClass(Payload.class);
-                var updated = app.pursuitApi.update(id, payload);
+                var updated = app.pursuit_api.update(id, payload);
                 if (!updated) {
                     ctx.status(NOT_FOUND);
                 }
@@ -160,7 +161,7 @@ public class Main {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
                 var req = RecalcRequest.fromJson(ctx.body());
-                var stats = app.statsApi.recalcStats(
+                var stats = app.stats_api.recalcStats(
                         id,
                         req.min_speed,
                         req.max_time_gap
@@ -173,13 +174,13 @@ public class Main {
         });
 
         api.get("/api/landmarks/list", ctx -> {
-            var landmarks = app.landmarksApi.query();
+            var landmarks = app.landmarks_api.query();
             ctx.json(landmarks);
         });
         api.get("/api/landmarks/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                var lm = app.landmarksApi.getById(id);
+                var lm = app.landmarks_api.getById(id);
                 if (lm == null) {
                     ctx.status(NOT_FOUND);
                     return;
@@ -190,7 +191,7 @@ public class Main {
             }
         });
         api.post("/api/landmarks/new", ctx -> {
-            int id = app.landmarksRestApi.create(ctx.body());
+            int id = app.landmarks_resp_api.create(ctx.body());
             var resp_body = new HashMap<String, Integer>(1);
             resp_body.put("id", id);
             ctx.json(resp_body);
@@ -199,7 +200,7 @@ public class Main {
         api.delete("/api/landmarks/{id}", ctx -> {
             try {
                 var id = Integer.parseInt(ctx.pathParam("id"));
-                var deleted = app.landmarksApi.delete(id);
+                var deleted = app.landmarks_api.delete(id);
                 if (!deleted) {
                     ctx.status(NOT_FOUND);
                     return;
@@ -211,9 +212,41 @@ public class Main {
             }
         });
 
+        api.get("/api/photos/list", ctx -> {
+            var photos = app.photos_api.query();
+            ctx.json(photos);
+        });
+        api.get("/api/photos/{id}", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var photo = app.photos_api.getById(id);
+                if (photo == null) {
+                    ctx.status(NOT_FOUND);
+                    return;
+                }
+                ctx.json(photo);
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
+        });
+        api.get("/api/photos/{id}/file", ctx -> {
+            try {
+                var id = Integer.parseInt(ctx.pathParam("id"));
+                var photo = app.photos_api.getById(id);
+                if (photo == null) {
+                    ctx.status(NOT_FOUND);
+                    return;
+                }
+                var file = new File(photo.file);
+                ctx.result(new FileInputStream(file));
+            } catch (NumberFormatException x) {
+                ctx.status(NOT_FOUND);
+            }
+        });
+
         api.post("/api/location/flybys", ctx -> {
             var query = location.Query.fromJson(ctx.body());
-            List<Flyby> flybys = app.locationApi.locationFlybys(query);
+            List<Flyby> flybys = app.location_api.locationFlybys(query);
             ctx.json(flybys);
         });
 

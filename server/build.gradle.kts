@@ -22,6 +22,7 @@ dependencies {
     implementation("io.javalin:javalin:6.4.0")
     implementation("com.google.code.gson:gson:2.12.1")
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+    implementation("com.drewnoakes:metadata-extractor:2.19.0")
 }
 
 tasks.test {

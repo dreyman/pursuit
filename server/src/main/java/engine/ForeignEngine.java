@@ -1,4 +1,6 @@
-package core;
+package engine;
+
+import com.google.gson.Gson;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -21,13 +23,16 @@ public class ForeignEngine implements Engine {
             of(ADDRESS, ADDRESS, JAVA_FLOAT, JAVA_FLOAT, JAVA_DOUBLE, JAVA_INT));
     static final Func free_str_fn = new Func("pursuit_free_str", ofVoid(ADDRESS));
     static final Func init_fn = new Func("pursuit_init", of(JAVA_INT, ADDRESS));
+    static final Func location_by_timestamp = new Func("pursuit_find_location_by_timestamp", of(ADDRESS, ADDRESS, JAVA_INT));
 
     public String lib_path;
     public String storage_path;
+    Gson gson;
 
     public ForeignEngine(String lib_path, String storage_path) {
         this.lib_path = lib_path;
         this.storage_path = storage_path;
+        this.gson = new Gson();
     }
 
     public int importFile(String gpsfile) throws Engine.Err {
@@ -85,6 +90,30 @@ public class ForeignEngine implements Engine {
         }
     }
 
+    public LocationForTimestamp locationByTimestamp(int timestamp) throws Err {
+        try (Arena arena = Arena.ofConfined()) {
+            var methodAndLookup = getLookupAndMethodHandle(location_by_timestamp, arena);
+            var fn = methodAndLookup.methodHandle;
+            var libpursuit = methodAndLookup.symbolLookup;
+
+            var storage_path = arena.allocateFrom(this.storage_path);
+            var mem = (MemorySegment) fn.invokeExact(storage_path, timestamp);
+            mem = mem.reinterpret(Long.MAX_VALUE);
+            var json = mem.getString(0);
+
+            var free_fn = getLibMethodHandle(free_str_fn, libpursuit);
+            free_fn.invokeExact(mem);
+
+            try {
+                return gson.fromJson(json, LocationForTimestamp.class);
+            } catch (Exception x) {
+                return null;
+            }
+        } catch (Throwable t) {
+            throw new Engine.Err(t);
+        }
+    }
+
     public void install() throws Engine.Err {
         try (Arena arena = Arena.ofConfined()) {
             var init_fn_handle = getLibMethodHandle(init_fn, arena);
@@ -113,7 +142,8 @@ public class ForeignEngine implements Engine {
         }
     }
 
-    record MethodAndLookup(MethodHandle methodHandle, SymbolLookup symbolLookup){}
+    record MethodAndLookup(MethodHandle methodHandle, SymbolLookup symbolLookup) {
+    }
 
     MethodAndLookup getLookupAndMethodHandle(Func func, Arena arena) throws Engine.Err {
         var path = Path.of(lib_path);
@@ -131,7 +161,7 @@ public class ForeignEngine implements Engine {
     }
 
     MethodHandle getLibMethodHandle(Func func, SymbolLookup symbolLookup)
-            throws Engine.Err{
+            throws Engine.Err {
         var func_ptr = symbolLookup.find(func.name)
                 .orElseThrow(() -> Engine.Err.functionNotFound(func.name));
         return Linker.nativeLinker().downcallHandle(func_ptr, func.descriptor);

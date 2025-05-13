@@ -11,17 +11,17 @@ public class Repository {
 
     public static final String table = "pursuit";
     String db_url;
-    String list_item_fields;
+    String summary_fields;
 
     public Repository(String db_file_path) {
         this.db_url = "jdbc:sqlite:" + db_file_path;
-        this.list_item_fields = Arrays.stream(Summary.class.getFields())
+        this.summary_fields = Arrays.stream(Summary.class.getFields())
                 .map(Field::getName)
                 .collect(Collectors.joining(", "));
     }
 
     public List<Summary> list(Query params) throws SQLException {
-        String sql = "SELECT " + list_item_fields + " FROM " + table +
+        String sql = "SELECT " + summary_fields + " FROM " + table +
                 " " + params.buildSql();
         try (var c = DriverManager.getConnection(db_url);
              var s = c.prepareStatement(sql)) {
