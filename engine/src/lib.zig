@@ -4,6 +4,7 @@ const mem = std.mem;
 
 const app = @import("app.zig");
 const query = @import("query.zig");
+const location_query = @import("query/location.zig");
 const setup = @import("setup.zig");
 const data = @import("data.zig");
 const geo = @import("geo.zig");
@@ -71,6 +72,40 @@ export fn pursuit_location_flybys(
 
 export fn pursuit_free_str(str: [*:0]u8) void {
     gpa.free(mem.span(str));
+}
+
+export fn pursuit_find_location_by_timestamp(
+    storage_dir: [*:0]const u8,
+    timestamp: c_int,
+) ?[*:0]u8 {
+    const empty_result = gpa.dupeZ(u8, "{}") catch
+        return null;
+    if (timestamp < 0)
+        return empty_result;
+    const storage = Storage.create(gpa, mem.span(storage_dir)) catch
+        return empty_result;
+    const maybe_location = location_query.findLocationForTimestamp(
+        gpa,
+        storage,
+        @intCast(timestamp),
+    ) catch
+        return empty_result;
+    const location = maybe_location orelse
+        return empty_result;
+    defer gpa.destroy(location);
+
+    var json_list = std.ArrayList(u8).initCapacity(gpa, 20_000) catch
+        return empty_result;
+    std.json.stringify(
+        location.*,
+        .{ .whitespace = .indent_4 },
+        json_list.writer(),
+    ) catch
+        return empty_result;
+    const json = json_list.toOwnedSliceSentinel(0) catch
+        return empty_result;
+
+    return json;
 }
 
 export fn pursuit_init(storage_dir: [*:0]u8) u8 {

@@ -58,3 +58,10 @@ pub fn avgSpeed(distance_km: Distance.Km, time_seconds: u32) Speed.MetersPerHour
 test avgSpeed {
     try testing.expect(avgSpeed(30, 3_600 * 2) == 15_000);
 }
+
+pub fn midpoint(a: geo.Point, b: geo.Point) geo.Point {
+    return .{
+        .lat = (a.lat + b.lat) / 2,
+        .lon = (a.lon + b.lon) / 2,
+    };
+}

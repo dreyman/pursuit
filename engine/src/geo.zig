@@ -1,6 +1,9 @@
 const std = @import("std");
 const math = std.math;
 
+pub const Latitude = f32;
+pub const Longitude = f32;
+
 pub const Speed = struct {
     pub const MetersPerHour = u21;
 };

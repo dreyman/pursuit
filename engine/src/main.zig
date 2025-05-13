@@ -104,6 +104,36 @@ pub fn main() !void {
         try writeAndExit("done.", .{});
     }
 
+    if (mem.eql(u8, command, "location")) {
+        const timestamp_arg = args.next() orelse fatal("expected timestamp", .{});
+        const timestamp = std.fmt.parseInt(u32, timestamp_arg, 10) catch
+            fatal("invalid timestamp: {s}", .{timestamp_arg});
+        const storage_arg = args.next() orelse fatal("expected storage", .{});
+        var storage = try Storage.create(allocator, storage_arg);
+        defer storage.destroy();
+
+        const query_location = @import("query/location.zig");
+        const location = query_location.findLocationForTimestamp(
+            allocator,
+            storage,
+            timestamp,
+        ) catch |err|
+            switch (err) {
+            else => fatal("{s}", .{@errorName(err)}),
+        } orelse
+            try writeAndExit("Not Found", .{});
+        defer allocator.destroy(location);
+
+        var json_str = try std.ArrayList(u8).initCapacity(allocator, 20_000);
+        try std.json.stringify(
+            location.*,
+            .{ .whitespace = .indent_4 },
+            json_str.writer(),
+        );
+        defer json_str.deinit();
+        try writeAndExit("{s}", .{json_str.items});
+    }
+
     // if (mem.eql(u8, command, "strava")) {
     //     const strava = @import("strava.zig");
     //     const strava_archive_dir = args.next() orelse {
