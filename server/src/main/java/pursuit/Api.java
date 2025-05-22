@@ -27,9 +27,10 @@ public class Api {
         }
     }
 
-    public boolean update(int id, Payload payload) {
+    public boolean update(int id, UpdatePayload payload) {
         try {
-            if (payload.isEmpty()) return true;
+            if (payload.isEmpty())
+                return true;
             var updated_count = repo.update(id, payload);
             if (updated_count > 1)
                 throw new api.InternalError();

@@ -41,10 +41,4 @@ public class Query {
 
         return result;
     }
-
-    static String firstOrNull(List<String> values) {
-        if (values == null || values.isEmpty())
-            return null;
-        return values.get(0);
-    }
 }

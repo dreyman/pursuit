@@ -1,62 +1,40 @@
 package landmarks;
 
-import java.sql.SQLException;
+import db.StrictSqlite;
+
 import java.util.List;
 
-public class Api {
-    Repository repo;
+public class Service {
 
-    public Api(String sqlite_db_file) {
-        repo = new landmarks.Repository(sqlite_db_file);
-    }
+Repository repo;
+StrictSqlite db;
 
-    public void setup() {
-        try {
-            repo.setup();
-        } catch (SQLException x) {
-            x.printStackTrace();
-            throw new RuntimeException(x);
-        }
-    }
+public Service(String sqlite_db_file) {
+    db = new db.jdbc.Sqlite(sqlite_db_file);
+    repo = new landmarks.Repository(db);
+}
 
-    public List<Landmark> query() {
-        try {
-            return repo.list();
-        } catch (SQLException x) {
-            x.printStackTrace();
-            return List.of();
-        }
-    }
+public void setup() {
+    repo.setup();
+}
 
-    public Landmark getById(int id) {
-        try {
-            return repo.getById(id);
-        } catch (SQLException x) {
-            throw new RuntimeException(x);
-        }
-    }
+public List<Landmark> query() {
+    return repo.list();
+}
 
-    public int create(Payload payload) {
-        var lm = new Landmark();
-        lm.created_at = (int) (System.currentTimeMillis() / 1000);
-        payload.setFields(lm);
-        try {
-            int id = repo.insert(lm);
-            if (id == 0)
-                throw new api.InternalError();
-            return id;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
+public Landmark getById(int id) {
+    return repo.getById(id);
+}
 
-    public boolean delete(int id) {
-        try {
-            return repo.delete(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
+public int create(Payload payload) {
+    var lm = new Landmark();
+    lm.created_at = (int) (System.currentTimeMillis() / 1000);
+    payload.setFields(lm);
+    return repo.insert(lm);
+}
+
+public boolean delete(int id) {
+    return repo.delete(id);
+}
+
 }

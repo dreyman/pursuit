@@ -1,7 +1,5 @@
 package util;
 
-import api.InternalError;
-
 public class Sql {
 
 public static String insertOne(String table, String... columns) {
@@ -9,8 +7,8 @@ public static String insertOne(String table, String... columns) {
 }
 
 public static String insert(String table, int count, String... columns) {
-    if (columns == null || columns.length == 0)
-        throw new InternalError("No table columns provided");
+    assert columns != null;
+    assert columns.length > 0;
 
     var query = new StringBuilder("INSERT INTO ").append(table).append(" (");
     var values = new StringBuilder(columns.length * 3 - 2);
@@ -24,9 +22,10 @@ public static String insert(String table, int count, String... columns) {
     }
     query.append(") VALUES ");
     for (int i = 0; i < count; i++) {
-        if (i > 0) query.append(' ');
+        if (i > 0) query.append(", ");
         query.append('(').append(values).append(')');
     }
+    query.append(" RETURNING id");
     return query.toString();
 }
 

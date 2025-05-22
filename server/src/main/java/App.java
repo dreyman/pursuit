@@ -1,16 +1,15 @@
+import com.google.gson.Gson;
 import core.Location;
 import engine.Engine;
 import engine.ForeignEngine;
+import landmarks.Service;
 import photos.Photo;
 import pursuit.Pursuit;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.List;
 
 public class App {
 static final String libpursuit_version = "0.0.1-wip";
@@ -21,12 +20,15 @@ String temp_dir;
 
 public pursuit.Api pursuit_api;
 public medium.Api medium_api;
-public landmarks.Api landmarks_api;
-public landmarks.Rest landmarks_resp_api;
+public Service landmarks;
+public landmarks.Rest landmarks_api;
 public stats.Api stats_api;
 public location.Api location_api;
 public photos.Api photos_api;
+public tag.Repository tag_repo;
 public Engine engine;
+
+public Gson gson;
 
 public App(String storage_dir, String lib_file_path) {
     var app_dir = Path.of(storage_dir);
@@ -38,11 +40,14 @@ public App(String storage_dir, String lib_file_path) {
     engine = new ForeignEngine(lib_file_path, storage_dir);
     pursuit_api = new pursuit.Api(sqlite_db_file);
     medium_api = new medium.Api(sqlite_db_file, pursuit_api);
-    landmarks_api = new landmarks.Api(sqlite_db_file);
-    landmarks_resp_api = new landmarks.Rest(landmarks_api);
+    landmarks = new landmarks.Service(sqlite_db_file);
+    landmarks_api = new landmarks.Rest(landmarks);
     stats_api = new stats.Api(engine, pursuit_api);
     location_api = new location.Api(engine, pursuit_api);
     photos_api = new photos.Api(sqlite_db_file);
+    tag_repo = new tag.Repository(sqlite_db_file);
+
+    gson = new Gson();
 }
 
 public static App initFromArgs(String[] args) {
@@ -74,7 +79,7 @@ public static App initFromArgs(String[] args) {
             throw new RuntimeException("failed to init app in storage path: " + storage_dir_path);
         }
         try {
-            app.landmarks_api.setup();
+            app.landmarks.setup();
         } catch (Exception x) {
             var err = "Failed to setup landmarks db: " + x.getMessage();
             System.err.println(err);

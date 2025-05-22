@@ -16,7 +16,7 @@ public class RestApiTest {
                     "name": ""
                 }
                 """;
-        var rest = new landmarks.Rest(new landmarks.Api(""));
+        var rest = new landmarks.Rest(new Service(""));
         InvalidPayload exception = null;
         try {
             rest.create(json);

@@ -15,30 +15,34 @@ interface Transaction extends AutoCloseable {
 
     void rollback();
 
-    void close() throws Err;
+    void close();
 }
 
 interface QueryResult {
+    boolean next();
 
-    boolean hasNext() throws Err;
-
-    Row next() throws Err;
-}
-
-interface Row {
     // INT / INTEGER
     int getInt(String column);
-
     long getLong(String column);
-
     // TEXT
     String getString(String column);
-
     // REAL
     double getDouble(String column);
-
     float getFloat(String column);
 }
+
+//interface Row {
+//    // INT / INTEGER
+//    int getInt(String column);
+//    long getLong(String column);
+//
+//    // TEXT
+//    String getString(String column);
+//
+//    // REAL
+//    double getDouble(String column);
+//    float getFloat(String column);
+//}
 
 class Err extends RuntimeException {
     public Integer err_code;
@@ -56,4 +60,5 @@ class Err extends RuntimeException {
         return err_code != null && err_code == 21;
     }
 }
+
 }

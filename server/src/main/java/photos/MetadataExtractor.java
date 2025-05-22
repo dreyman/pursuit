@@ -3,23 +3,18 @@ package photos;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
-import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.*;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.GpsDirectory;
 import core.Location;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Date;
-import java.util.TimeZone;
 
 import static com.drew.metadata.exif.ExifDirectoryBase.*;
 
 public class MetadataExtractor {
-
-final static TimeZone UTC = TimeZone.getTimeZone(ZoneId.from(ZoneOffset.UTC));
 
 public static class ExtractException extends Exception {
     public ExtractException(Throwable cause) {

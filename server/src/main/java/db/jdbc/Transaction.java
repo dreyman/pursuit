@@ -81,13 +81,13 @@ Connection getConnection() {
     }
 }
 
-void setArgs(PreparedStatement s, Object... args) throws SQLException {
+static void setArgs(PreparedStatement s, Object... args) throws SQLException {
     var idx = 1;
     for (Object arg : args)
         setArg(s, idx++, arg);
 }
 
-void setArg(PreparedStatement s, int idx, Object arg) throws SQLException {
+static void setArg(PreparedStatement s, int idx, Object arg) throws SQLException {
     if (arg == null) {
         s.setNull(idx, java.sql.Types.NULL);
         return;

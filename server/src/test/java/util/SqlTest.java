@@ -13,7 +13,7 @@ public void insert() {
     var expected =
             "INSERT INTO " + table +
             " (name, age, created_at) VALUES " +
-            "(?, ?, ?) (?, ?, ?) (?, ?, ?)";
+            "(?, ?, ?), (?, ?, ?), (?, ?, ?) RETURNING id";
     assertEquals(expected, sql);
 }
 
@@ -24,7 +24,7 @@ public void insertOne() {
     var expected =
             "INSERT INTO " + table +
                     " (name, age, created_at) VALUES " +
-                    "(?, ?, ?)";
+                    "(?, ?, ?) RETURNING id";
     assertEquals(expected, sql);
 }
 }

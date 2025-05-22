@@ -1,30 +1,34 @@
 package landmarks;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import db.StrictSqlite;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Landmark {
-    public int id;
-    public String name;
-    public float lat;
-    public float lon;
-    public int created_at;
 
-    public static Landmark fromResultSet(ResultSet rs) throws SQLException {
-        var lm = new Landmark();
-        lm.id = rs.getInt("id");
-        lm.name = rs.getString("name");
-        lm.lat = rs.getFloat("lat");
-        lm.lon = rs.getFloat("lon");
-        lm.created_at = rs.getInt("created_at");
-        return lm;
-    }
+public int id;
+public String name;
+public float lat;
+public float lon;
+public int created_at;
 
-    public static List<Landmark> listFromResultSet(ResultSet rs) throws SQLException {
-        var list = new ArrayList<Landmark>();
-        while (rs.next()) list.add(fromResultSet(rs));
-        return list;
+public static Landmark create(StrictSqlite.QueryResult res) {
+    var lm = new Landmark();
+    lm.id = res.getInt("id");
+    lm.name = res.getString("name");
+    lm.lat = res.getFloat("lat");
+    lm.lon = res.getFloat("lon");
+    lm.created_at = res.getInt("created_at");
+    return lm;
+}
+
+public static List<Landmark> createList(StrictSqlite.QueryResult res) {
+    var list = new ArrayList<Landmark>();
+    while (res.next()) {
+        list.add(Landmark.create(res));
     }
+    return list;
+}
+
 }

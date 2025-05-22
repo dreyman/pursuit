@@ -8,7 +8,7 @@ public class PayloadTest {
 
     @Test
     void buildQuery() {
-        var payload = new Payload();
+        var payload = new UpdatePayload();
         String table = "some_table";
 
         payload.name = "New name";
